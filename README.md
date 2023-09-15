@@ -43,7 +43,7 @@ Using `double` for Dlib's layer would cause compile error since Dlib's deep lear
 
 ### `train_one_step()` VS `train()`
 
-Dlib trainer call `train()` will set up an auto trainer with auto learning rate decay. While this auto trainer is easy to implement, we will not be using it. We will use the trainer call `train_one_step()` instead, since we need to collect training status, such as losses and accuracies. Auto trainer will also output training status by calling `be_verbose()`, but this function call will only output status in terminal. It can be used for a console application, but it can't work with this Windows based application.
+Dlib trainer call `train()` will set up an auto trainer with auto learning rate decay. While this auto trainer is easy to implement, we will not be using it. We will use the trainer call `train_one_step()` instead, since we need to collect training status, such as losses and accuracies. Auto trainer will also output training status by calling `be_verbose()`, but this function call will only output status in terminal.
 
 ## `CModelingandAnalysisofUncertaintyDoc::OnANN()` Explained
 
