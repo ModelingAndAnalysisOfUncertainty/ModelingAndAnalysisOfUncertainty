@@ -76,7 +76,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\UweSummer\Desktop\work\ModelingAndAnalysisOfUncertainty\dlib-19.24\source;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\dlib\dlib;$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
