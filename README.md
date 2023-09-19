@@ -10,12 +10,13 @@ The Modeling and Analysis of Uncertainty project is hosted on [GitHub](https://g
 
 ### Overview
 
-Add `dlib/all/source.cpp` to project source files and add the folder containing the dlib folder to the `#include` search path of Solution's Properties' VC++ Dictionaries. The whole Dlib will be compiled with the project instead of installing Dlib as a precompiled library (such as a Dynamic Link Library or Static Library). The downside is the compile time would be longer since the whole Dlib will be compiled. But this method can avoid Visual Studio's incompatible runtimes, build Dlib as a precompiled library and use with Visual Studio would raise Dlib's compile time error. More information can be found [here](http://dlib.net/compile.html).
+Dlib contains a wide range of machine learning algorithms. All designed to be highly modular, quick to execute, and simple to use via a clean and modern C++ API. Add `dlib/all/source.cpp` to project source files and add the folder containing the dlib folder to the `#include` search path of Solution's Properties' VC++ Dictionaries. The whole Dlib will be compiled with the project instead of installing Dlib as a precompiled library (such as a Dynamic Link Library or Static Library). The downside is the compile time would be longer since the whole Dlib will be compiled. But this method can avoid Visual Studio's incompatible runtimes, build Dlib as a precompiled library and use with Visual Studio would raise Dlib's compile time error. More information can be found [here](http://dlib.net/compile.html).
 
 ### Compilation Instructions
 
 #### 1. Add Dlib Source to Project
 
+- If it is the first time you pull from origin, remove and delete the `source.cpp` file from `Solution Explorer`
 - Navigate to `Solution Explorer -> Source Files`.
 - Choose `Add -> Existing Items...`.
 - Select `dlib/all/source.cpp`.
@@ -23,7 +24,7 @@ Add `dlib/all/source.cpp` to project source files and add the folder containing 
 #### 2. Configure Include Path
 
 - In Solution Explorer, go to `Modeling and Analysis of Uncertainty -> Properties -> VC++ Dictionaries -> Include Dictionaries`.
-- Add the file path of `dlib-19.24/source` (DO NOT PUT IN `source/dlib` INCLUDE ONLY THE PATH OF `source` folder).
+- Add the file path of `source/dlib-19.24` (DO NOT PUT IN `dlib-19.24/dlib` INCLUDE ONLY THE PATH OF `source/dlib-19.24` folder).
 
 #### 3. Adjust Precompiled Headers Settings
 
@@ -51,9 +52,4 @@ Using `double` for Dlib's layer would cause compile error since Dlib's deep lear
 
 ### `train_one_step()` VS `train()`
 
-Dlib trainer call `train()` will set up an auto trainer with auto learning rate decay. While this auto trainer is easy to implement, we will not be using it. We will use the trainer call `train_one_step()` instead, since we need to collect training status, such as losses and accuracies. Auto trainer will also output training status by calling `be_verbose()`, but this function call will only output status in terminal.
-
-## `CModelingandAnalysisofUncertaintyDoc::OnANN()` Explained
-
-### Overview
-The `CModelingandAnalysisofUncertaintyDoc::OnANN()` handles the Artificial Neural Network of the MFC program. First, it takes in user training setting from the Dialogue model -- `Selection.DoModal()` and store them inside the `ANNStruct` data structure. Second, it creates worker threads for ANN training --`AfxBeginThread(ANN_EEA_ThreadProc, pData)` -- so the main thread will still be responsive when the worker thread is training. Third, it will wait for the worker thread event message --`MsgWaitForMultipleObjects(1, &hEvent, FALSE, INFINITE, QS_ALLINPUT)`--untill the worker thread finished training. At last, upon receiving the event message, it will close the event handler --`CloseHandle(hEvent);`-- and notify the View to updates --`UpdateAllViews(NULL);`.
+Dlib trainer call `train()` will set up an auto trainer with auto learning rate decay. We also use the trainer call `train_one_step()`, since we need to collect training status, such as losses and accuracies. Auto trainer will also output training status by calling `be_verbose()`, but this function call will only output status in terminal.
