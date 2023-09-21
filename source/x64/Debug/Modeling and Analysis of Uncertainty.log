@@ -1,10 +1,1 @@
-﻿  MainFrm.cpp
-C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\MainFrm.cpp(9,10): fatal  error C1083: Cannot open include file: 'dlib/dnn.h': No such file or directory
-  Modeling and Analysis of Uncertainty.cpp
-C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\dlib\dlib\dlib_include_path_tutorial.txt(1,1): fatal  error C1189: #error:  "Don't put the dlib folder in your include path"
-  Modeling and Analysis of UncertaintyDoc.cpp
-C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\dlib\dlib\dlib_include_path_tutorial.txt(1,1): fatal  error C1189: #error:  "Don't put the dlib folder in your include path"
-  Modeling and Analysis of UncertaintyView.cpp
-C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\dlib\dlib\dlib_include_path_tutorial.txt(1,1): fatal  error C1189: #error:  "Don't put the dlib folder in your include path"
-  ProbabilityDistributions.cpp
-  Generating Code...
+﻿
