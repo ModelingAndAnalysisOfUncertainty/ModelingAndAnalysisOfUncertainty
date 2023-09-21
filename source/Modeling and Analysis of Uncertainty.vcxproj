@@ -76,7 +76,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\dlib\dlib;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\dlib-19.24;$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -220,7 +220,7 @@
     <ClCompile Include="CSpecifyFactorAnalysis.cpp" />
     <ClCompile Include="CSpecifyRegressionModel.cpp" />
     <ClCompile Include="CTwoSampleHypothesisSelection.cpp" />
-    <ClCompile Include="dlib-19.24\source\dlib\all\source.cpp">
+    <ClCompile Include="dlib-19.24\dlib\all\source.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="MainFrm.cpp" />
