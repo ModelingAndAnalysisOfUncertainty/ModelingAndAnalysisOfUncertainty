@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# Ignore specific VS related files and directories
+source/x64/*
+source/.vs/*
