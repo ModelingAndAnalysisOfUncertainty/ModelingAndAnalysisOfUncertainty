@@ -40,6 +40,7 @@
 #define new DEBUG_NEW
 #endif
 
+// Thread Handler for ANN
 #define WM_USER_THREAD_FINISHED WM_APP + 1
 
 // CModelingandAnalysisofUncertaintyDoc
@@ -5411,10 +5412,7 @@ struct ANNStruct {
 };
 
 // EEA Neural Network 1 layers
-void ANN_EEA1(double lr, int total_epoch, int batch_sizes) {
-
-	AfxMessageBox(L"Dataset: EEA Topology: 100");
-
+void ANN_EEA1(double lr, int total_epoch, int batch_sizes, HANDLE hEvent) {
 	// Load the data from file
 	std::vector<dlib::matrix<float>> data;
 	std::vector<unsigned long> labels;
@@ -5520,6 +5518,7 @@ void ANN_EEA1(double lr, int total_epoch, int batch_sizes) {
 		record_acc(message.str());
 		testing_accuracies.push_back(testing_accuracy);
 
+		SetEvent(hEvent);
 	}
 
 	// synchronization for seperate thread
@@ -5585,10 +5584,7 @@ void ANN_EEA1(double lr, int total_epoch, int batch_sizes) {
 }
 
 // EEA Neural Network 2 layers
-void ANN_EEA2(double lr, int total_epoch, int batch_sizes) {
-
-	AfxMessageBox(L"Dataset: EEA Topology: 50, 100");
-
+void ANN_EEA2(double lr, int total_epoch, int batch_sizes, HANDLE hEvent) {
 	// Load the data from file
 	std::vector<dlib::matrix<float>> data;
 	std::vector<unsigned long> labels;
@@ -5695,6 +5691,7 @@ void ANN_EEA2(double lr, int total_epoch, int batch_sizes) {
 		record_acc(message.str());
 		testing_accuracies.push_back(testing_accuracy);
 
+		SetEvent(hEvent);
 	}
 
 	// synchronization for seperate thread
@@ -5760,10 +5757,7 @@ void ANN_EEA2(double lr, int total_epoch, int batch_sizes) {
 }
 
 // EEA Neural Network 3 layers
-void ANN_EEA3(double lr, int total_epoch, int batch_sizes) {
-
-	AfxMessageBox(L"Dataset: EEA Topology: 25, 50, 100");
-
+void ANN_EEA3(double lr, int total_epoch, int batch_sizes, HANDLE hEvent) {
 	// Load the data from file
 	std::vector<dlib::matrix<float>> data;
 	std::vector<unsigned long> labels;
@@ -5871,6 +5865,7 @@ void ANN_EEA3(double lr, int total_epoch, int batch_sizes) {
 		record_acc(message.str());
 		testing_accuracies.push_back(testing_accuracy);
 
+		SetEvent(hEvent);
 	}
 
 	// synchronization for seperate thread
@@ -5936,10 +5931,7 @@ void ANN_EEA3(double lr, int total_epoch, int batch_sizes) {
 }
 
 // EEA Neural Network 4 layers
-void ANN_EEA4(double lr, int total_epoch, int batch_sizes) {
-
-	AfxMessageBox(L"Dataset: EEA Topology: 25, 50, 100, 200");
-
+void ANN_EEA4(double lr, int total_epoch, int batch_sizes, HANDLE hEvent) {
 	// Load the data from file
 	std::vector<dlib::matrix<float>> data;
 	std::vector<unsigned long> labels;
@@ -6047,6 +6039,8 @@ void ANN_EEA4(double lr, int total_epoch, int batch_sizes) {
 		message << "Epoch " << epoch + 1 << " testing accuracy: " << testing_accuracy;
 		record_acc(message.str());
 		testing_accuracies.push_back(testing_accuracy);
+
+		SetEvent(hEvent);
 	}
 
 	// synchronization for seperate thread
@@ -6112,10 +6106,7 @@ void ANN_EEA4(double lr, int total_epoch, int batch_sizes) {
 }
 
 // EEA Neural Network 5 hidden layers
-void ANN_EEA5(double lr, int total_epoch, int batch_sizes) {
-
-	AfxMessageBox(L"Dataset: EEA Topology: 25, 50, 100, 200, 400");
-
+void ANN_EEA5(double lr, int total_epoch, int batch_sizes, HANDLE hEvent) {
 	// Load the data from file
 	std::vector<dlib::matrix<float>> data;
 	std::vector<unsigned long> labels;
@@ -6222,6 +6213,8 @@ void ANN_EEA5(double lr, int total_epoch, int batch_sizes) {
 		message << "Epoch " << epoch + 1 << " testing accuracy: " << testing_accuracy;
 		record_acc(message.str());
 		testing_accuracies.push_back(testing_accuracy);
+
+		SetEvent(hEvent);
 	}
 
 	// synchronization for seperate thread
@@ -6292,9 +6285,9 @@ UINT ANN_EEA1_ThreadProc(LPVOID pParam) {
 	ANNStruct* pData = (ANNStruct*)pParam;
 
 	// Call ANN_EEA with parameters from the structure
-	ANN_EEA1(pData->lr, pData->total_epoch, pData->batch_sizes);
+	ANN_EEA1(pData->lr, pData->total_epoch, pData->batch_sizes, pData->hEvent);
 
-	SetEvent(pData->hEvent);
+	AfxMessageBox(L"Dataset: EEA Topology: 100");
 
 	return 0;
 }
@@ -6305,9 +6298,9 @@ UINT ANN_EEA2_ThreadProc(LPVOID pParam) {
 	ANNStruct* pData = (ANNStruct*)pParam;
 
 	// Call ANN_EEA with parameters from the structure
-	ANN_EEA2(pData->lr, pData->total_epoch, pData->batch_sizes);
+	ANN_EEA2(pData->lr, pData->total_epoch, pData->batch_sizes, pData->hEvent);
 
-	SetEvent(pData->hEvent);
+	AfxMessageBox(L"Dataset: EEA Topology: 100, 50");
 
 	return 0;
 }
@@ -6318,9 +6311,9 @@ UINT ANN_EEA3_ThreadProc(LPVOID pParam) {
 	ANNStruct* pData = (ANNStruct*)pParam;
 
 	// Call ANN_EEA with parameters from the structure
-	ANN_EEA3(pData->lr, pData->total_epoch, pData->batch_sizes);
+	ANN_EEA3(pData->lr, pData->total_epoch, pData->batch_sizes, pData->hEvent);
 
-	SetEvent(pData->hEvent);
+	AfxMessageBox(L"Dataset: EEA Topology: 100, 50, 25");
 
 	return 0;
 }
@@ -6331,9 +6324,9 @@ UINT ANN_EEA4_ThreadProc(LPVOID pParam) {
 	ANNStruct* pData = (ANNStruct*)pParam;
 
 	// Call ANN_EEA with parameters from the structure
-	ANN_EEA4(pData->lr, pData->total_epoch, pData->batch_sizes);
+	ANN_EEA4(pData->lr, pData->total_epoch, pData->batch_sizes, pData->hEvent);
 
-	SetEvent(pData->hEvent);
+	AfxMessageBox(L"Dataset: EEA Topology: 200, 100, 50, 25");
 
 	return 0;
 }
@@ -6344,12 +6337,22 @@ UINT ANN_EEA5_ThreadProc(LPVOID pParam) {
 	ANNStruct* pData = (ANNStruct*)pParam;
 
 	// Call ANN_EEA with parameters from the structure
-	ANN_EEA5(pData->lr, pData->total_epoch, pData->batch_sizes);
+	ANN_EEA5(pData->lr, pData->total_epoch, pData->batch_sizes, pData->hEvent);
 
-	SetEvent(pData->hEvent);
+	AfxMessageBox(L"Dataset: EEA Topology: 400, 200, 100, 50, 25");
 
 	return 0;
 }
+
+// Wait for processing message
+void ProcessPendingMessages() {
+	MSG msg;
+	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+}
+
 
 void CModelingandAnalysisofUncertaintyDoc::OnANN() {
 	CWnd* pParent = nullptr;
@@ -6403,26 +6406,16 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN() {
 		AfxBeginThread(ANN_EEA5_ThreadProc, pData);
 	}
 
-	//Wait until the worker thread finished working
-	while (true) {
-		DWORD result = MsgWaitForMultipleObjects(1, &hEvent, FALSE, INFINITE, QS_ALLINPUT);
-		if (result == WAIT_OBJECT_0) {
-			// thread signaled completion
-			break;
-		}
-		else if (result == WAIT_OBJECT_0 + 1) {
-			// messages to process
-			MSG msg;
-			while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
+	for (int i = 0; i < epoch_num; ++i) {
+		DWORD dwResult = WaitForSingleObject(hEvent, INFINITE);
+		if (dwResult == WAIT_OBJECT_0) {
+			ProcessPendingMessages();
+			// The event is signaled, so update the views
+			UpdateAllViews(NULL);
+			ResetEvent(hEvent);  // Reset the event for the next epoch
 		}
 	}
 	CloseHandle(hEvent);
-
-	// Call this to update the view
-	UpdateAllViews(NULL);
 }
 
 // Enablers for modeling methods after datafile was read

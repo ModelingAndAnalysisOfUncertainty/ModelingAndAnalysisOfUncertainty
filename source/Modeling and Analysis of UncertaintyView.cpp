@@ -9377,10 +9377,6 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 		}
 	}
 
-	// Clear the txt file after reading
-	std::ofstream clear_file_loss("ANN_Update/training_loss.txt", std::ios::trunc);
-	clear_file_loss.close();
-
 	CClientDC dc(this);
 	CRect rc;
 	GetClientRect(&rc);
@@ -9438,10 +9434,6 @@ void CModelingandAnalysisofUncertaintyView::PlotAccuraciesCurve() {
 			testing_accuracies.push_back(testing_accuracy);
 		}
 	}
-
-	// Clear the txt file after reading
-	std::ofstream clear_file_acc("ANN_Update/training_acc.txt", std::ios::trunc);
-	clear_file_acc.close();
 
 	CClientDC dc(this);
 	CRect rc;
