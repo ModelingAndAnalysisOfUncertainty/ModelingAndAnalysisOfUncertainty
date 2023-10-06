@@ -34,5 +34,5 @@
 # Ignore specific VS related files and directories
 source/x64/*
 source/.vs/*
-*.vcxproj
+source/*.vcxproj
 .idea/*
