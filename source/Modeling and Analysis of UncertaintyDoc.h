@@ -3,6 +3,7 @@
 #include <fstream>
 #include <ctime>
 #include "ProbabilityDistributions.h"
+#include <omp.h>
 
 #pragma once
 
