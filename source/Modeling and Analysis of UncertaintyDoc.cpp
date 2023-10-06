@@ -6474,6 +6474,24 @@ std::vector<int> CModelingandAnalysisofUncertaintyDoc::randsample(int n, int k) 
 	return indices;
 }
 
+void CModelingandAnalysisofUncertaintyDoc::VecTranspose(std::vector<std::vector<double> > &b)
+{
+    if (b.size() == 0)
+        return;
+
+	std::vector<std::vector<double> > trans_vec(b[0].size(), std::vector<double>());
+
+    for (int i = 0; i < b.size(); i++)
+    {
+        for (int j = 0; j < b[i].size(); j++)
+        {
+            trans_vec[j].push_back(b[i][j]);
+        }
+    }
+
+    b = trans_vec;    // <--- reassign here
+}
+
 
 void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	// Define constants
@@ -6505,6 +6523,19 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	X.insert(X.end(), Xclass3.begin(), Xclass3.end());
 	//Normalize data
 	X = zscore(X);
+
+
+	std::ofstream FILE;
+	FILE.open("outfile.txt");
+	VecTranspose(X);
+
+	for (int i = 0; i < X.size(); i++) {
+		for (int j = 0; j < X[i].size(); j++) {
+			FILE << X[i][j] << " ";
+		}
+		FILE << std::endl;
+	}
+
 	// Generate ytrue as described in MATLAB
 	std::vector<int> ytrue;
 	for (int c = 0; c < C; ++c) {
@@ -6555,13 +6586,13 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 
 	// Randomize the order of X_re and Y_re
 	for (int i = 0; i < 3 * N; ++i) {
-		X_reordered[i] = X[index[i] - 1];
+		X_reordered[i] = X[index[i]];
 		for (int c = 0; c < C; ++c) {
 			// Probably breaks because Y.size() = 3;
-			Y_reordered[i][c] = Y[index[i] - 1][c];
+			Y_reordered[i][c] = Y[index[i]][c];
 		}
 		// random pick 1,2 or 3
-		ytrue_reordered[i] = ytrue[index[i] - 1];
+		ytrue_reordered[i] = ytrue[index[i]];
 	}
 
 	// Separate the data into training and testing sets
