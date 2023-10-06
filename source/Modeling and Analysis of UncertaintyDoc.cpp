@@ -6598,25 +6598,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 		}
 		ytrue_test[i] = ytrue_reordered[Ntrain + i];
 	}
-	// 0 -> 2550 Maybe a little bit redundant ??
-	/*
-	for (int i = 0; i < Ntrain; ++i) {
-		Xtrain[i] = X[index[i]];
-	}
-	for (int i = Ntrain; i < 3 * N; ++i) {
-		Xtest[i - Ntrain] = X[index[i]];
-	}
 
-	// Define Ytrain and Ytest
-	std::vector<std::vector<double>> Ytrain(Ntrain, std::vector<double>(C));
-	std::vector<std::vector<double>> Ytest(Ntest, std::vector<double>(C));
-
-	// Define ytrue for the training data
-	std::vector<int> ytrue_train(Ntrain);
-	for (int i = 0; i < Ntrain; ++i) {
-		ytrue_train[i] = ytrue[index[i]];
-	}
-	*/
 
 	// 1x60, 1x18
 	std::vector<double> w(C * n_weights);
@@ -6745,89 +6727,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 		// Print the current epoch and spe_new
 		std::cout << epoch << "\t" << spe_new << std::endl;
 	}
-
-	// Main training loop
-	/*
-	for (int epoch = 1; epoch <= n_epochs; ++epoch) {
-		double spe_new = 0.0;
-		for (int c = 0; c < C; ++c) {
-			std::vector<int> index = randsample(Ntrain, train);
-			std::vector<double> weights(w.begin() + c * n_weights, w.begin() + (c + 1) * n_weights);
-			std::vector<double> biases(b.begin() + c * n_biases, b.begin() + (c + 1) * n_biases);
-
-			// Get network predictions for the training data
-			std::vector<std::vector<double>> F = std::vector<std::vector<double>>(N, std::vector<double>(H, 0.0));
-			std::vector<double>yhat = std::vector<double>(N, 0.0);
-			CString version_two;
-			version_two.Append(L"classification");
-			std::vector<double> yhat = GetNetworkPrediction(Xtrain, H, weights, biases, F, yhat, version_two);
-
-			// Compute the error (d) for the current class
-			std::vector<double> d;
-			for (int i = 0; i < train; ++i) {
-				d[i] = Ytrain[i][c] - yhat[i];
-			}
-
-			// Update weights and biases
-			int pos = c * n_weights + M * H;
-			std::vector<double> dphi_t(train, 0.0);
-			for (int i = 0; i < train; ++i) {
-				dphi_t[i] = yhat[i] * (1.0 - yhat[i]);
-			}
-
-			// Update weights connecting the hidden to the output layer
-			for (int h = 0; h < H; ++h) {
-				weights[pos + h] += eta * std::inner_product(d.begin(), d.end(), dphi_t.begin(), 0.0);
-			}
-
-			// Update bias term connecting hidden to output layer
-			b[c * n_biases + H] += eta * std::inner_product(d.begin(), d.end(), dphi_t.begin(), 0.0);
-
-			// Update weights connecting the input to the hidden layer
-			for (int h = 0; h < H; ++h) {
-				std::vector<double> dphi_fh(train, 0.0);
-				for (int i = 0; i < train; ++i) {
-					dphi_fh[i] = F[i][h] * (1.0 - F[i][h]);
-				}
-
-				for (int j = 0; j < M; ++j) {
-					for (int i = 0; i < train; ++i) {
-						pos = c * n_weights + (j - 1) * H + h;
-						weights[pos] += eta * weights[c * n_weights + M * H + h] * d[i] * (dphi_t[i] * dphi_fh[i] * Xtrain[i][j]);
-					}
-				}
-
-				pos = c * n_biases + h;
-				b[pos] += eta * weights[c * n_weights + M * H + h] * std::inner_product(d.begin(), d.end(), dphi_t.begin(), 0.0);
-			}
-
-
-			// Compute delta0 for the current class
-			std::vector<double> delta0(Ntest, 0.0);
-			for (int i = 0; i < Ntest; ++i) {
-				delta0[i] = Ytest[i][c] - yhat0[i];
-			}
-
-			// Update spe_new for the current class
-			spe_new += std::inner_product(delta0.begin(), delta0.end(), delta0.begin(), 0.0) / Ntest;
-		}
-
-		// Check if spe_new is smaller than MIN and update wopt, bopt, and Yhat0 accordingly
-		if (spe_new < MIN) {
-			std::vector<double> wopt;
-			wopt.empty();
-			wopt = w;
-			std::vector<double> bopt;
-			bopt.empty();
-			bopt = b;
-			MIN = spe_new;
-			Yhat0 = yhat0;
-		}
-
-		// Print the current epoch and spe_new
-		std::cout << epoch << "\t" << spe_new << std::endl;
-	}
-	*/
 }
 
 void CModelingandAnalysisofUncertaintyDoc::GetNetworkPrediction(const std::vector<std::vector<double>>& X, const int H,
