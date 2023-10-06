@@ -70,7 +70,7 @@ BEGIN_MESSAGE_MAP(CModelingandAnalysisofUncertaintyDoc, CDocument)
 	ON_COMMAND(ID_REGULARIZATION_L1NORM, &CModelingandAnalysisofUncertaintyDoc::OnL1_Regularization)
 	ON_COMMAND(ID_REGULARIZATION_L2NORM, &CModelingandAnalysisofUncertaintyDoc::OnL2_Regularization)
 	ON_COMMAND(ID_MACHINELEARNING_KERNELPARTIALLEASTSQUARES, &CModelingandAnalysisofUncertaintyDoc::OnKPLS)
-	ON_COMMAND(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORK, &CModelingandAnalysisofUncertaintyDoc::OnANN)
+	ON_COMMAND(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORK, &CModelingandAnalysisofUncertaintyDoc::OnANN_MFC)
 
 	ON_UPDATE_COMMAND_UI(ID_BASICSTATISTICS_DESCRIPTIVESTATISTICS, &CModelingandAnalysisofUncertaintyDoc::OnUpdateDescriptiveStatistics)
 	ON_UPDATE_COMMAND_UI(ID_HYPOTHESISTESTING_ONESAMPLE, &CModelingandAnalysisofUncertaintyDoc::OnUpdateOnesample)
@@ -5399,7 +5399,7 @@ void record_acc(const std::string& message) {
    Learning rate, total number of epoch, batch size, and the frequency
    of training status */
 
-// Data Structure for user input
+   // Data Structure for user input
 struct ANNStruct {
 	double lr;
 	int total_epoch;
@@ -6164,9 +6164,9 @@ void ANN_EEA5(double lr, int total_epoch, int batch_sizes, HANDLE hEvent) {
 	// Calculate total number of mini-batches
 	int total_batches = (training_data.size() + batch_size - 1) / batch_size;
 
-	for (int epoch = 0; epoch < num_epochs; ++epoch){
+	for (int epoch = 0; epoch < num_epochs; ++epoch) {
 		// Loop over mini-batches
-		for (int batch_idx = 0; batch_idx < total_batches; ++batch_idx){
+		for (int batch_idx = 0; batch_idx < total_batches; ++batch_idx) {
 			// clear the previous batch
 			batch_data.clear();
 			batch_labels.clear();
@@ -6174,7 +6174,7 @@ void ANN_EEA5(double lr, int total_epoch, int batch_sizes, HANDLE hEvent) {
 			// Create a batch
 			int start_idx = batch_idx * batch_size;
 			batch_loss = 0.0;
-			for (int idx = start_idx; idx < std::min(start_idx + batch_size, (int)training_data.size()); ++idx){
+			for (int idx = start_idx; idx < std::min(start_idx + batch_size, (int)training_data.size()); ++idx) {
 				batch_data.push_back(training_data[idx]);
 				batch_labels.push_back(training_labels[idx]);
 			}
@@ -6389,7 +6389,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN() {
 	pData->total_epoch = epoch_num;
 	pData->batch_sizes = batch_num;
 	pData->hEvent = hEvent;
-	
+
 	if (Selection.m_selectedTask == 1) {
 		AfxBeginThread(ANN_EEA1_ThreadProc, pData);
 	}
@@ -6418,6 +6418,461 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN() {
 	CloseHandle(hEvent);
 }
 
+
+//Experimental Stuff
+// Function to calculate the sum of squared errors
+double CModelingandAnalysisofUncertaintyDoc::sum_squared_error(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2) {
+	double error = 0.0;
+	int numRows = Y1.size();
+	int numCols = Y1[0].size();
+
+	for (int i = 0; i < numRows; ++i) {
+		for (int j = 0; j < numCols; ++j) {
+			error += pow(Y1[i][j] - Y2[i][j], 2);
+		}
+	}
+	return error / (numRows * numCols);
+}
+
+// Function to calculate z-score normalization
+std::vector<std::vector<double>> CModelingandAnalysisofUncertaintyDoc::zscore(const std::vector<std::vector<double>>& data) {
+	std::vector<std::vector<double>> normalized;
+	int numRows = data.size();
+	int numCols = data[0].size();
+
+	for (int j = 0; j < numCols; ++j) {
+		double mean = 0.0;
+		double stdDev = 0.0;
+		for (int i = 0; i < numRows; ++i) {
+			mean += data[i][j];
+		}
+		mean /= numRows;
+		for (int i = 0; i < numRows; ++i) {
+			stdDev += pow(data[i][j] - mean, 2);
+		}
+		stdDev = sqrt(stdDev / (numRows - 1));
+
+		std::vector<double> column;
+		for (int i = 0; i < numRows; ++i) {
+			double normalizedValue = (data[i][j] - mean) / stdDev;
+			column.push_back(normalizedValue);
+		}
+		normalized.push_back(column);
+	}
+
+	return normalized;
+}
+
+// Function to get a random sample from a vector
+std::vector<int> CModelingandAnalysisofUncertaintyDoc::randsample(int n, int k) {
+	std::vector<int> indices(n);
+	for (int i = 0; i < n; ++i) {
+		indices[i] = i;
+	}
+	std::random_shuffle(indices.begin(), indices.end());
+	indices.resize(k);
+	return indices;
+}
+
+
+void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
+	// Define constants
+	const int N = 1000;
+	const int M = 3;
+	const int C = 3;
+	const int H = 5;
+	const int n_epochs = 200000;
+	const int train = 20;
+	const double eta = 1e-1 / train;
+	// Initialize random number generator seed
+	std::srand(1);
+
+	// Generate random data for three classes
+	std::vector<std::vector<double>> Xclass1(N, std::vector<double>(M));
+	std::vector<std::vector<double>> Xclass2(N, std::vector<double>(M));
+	std::vector<std::vector<double>> Xclass3(N, std::vector<double>(M));
+
+	for (int i = 0; i < N; ++i) {
+		for (int j = 0; j < M; ++j) {
+			Xclass1[i][j] = static_cast<double>(std::rand()) / RAND_MAX + 1.0;
+			Xclass2[i][j] = static_cast<double>(std::rand()) / RAND_MAX;
+			Xclass3[i][j] = static_cast<double>(std::rand()) / RAND_MAX - 1.0;
+		}
+	}
+	// Combine data for all classes
+	std::vector<std::vector<double>> X = Xclass1;
+	X.insert(X.end(), Xclass2.begin(), Xclass2.end());
+	X.insert(X.end(), Xclass3.begin(), Xclass3.end());
+	//Normalize data
+	X = zscore(X);
+	// Generate ytrue as described in MATLAB
+	std::vector<int> ytrue;
+	for (int c = 0; c < C; ++c) {
+		for (int i = 0; i < N; ++i) {
+			ytrue.push_back(c + 1);
+		}
+	}
+
+	// Generate y1, y2, and y3
+	std::vector<int> y1(N, 1);
+	std::vector<int> y2(N, 0);
+	std::vector<int> y3(N, 0);
+
+
+	for (int i = 0; i < 2000; i++) {
+		y1.push_back(0);
+		if (i < 1000) {
+			y2.push_back(1);
+			y3.push_back(0);
+			continue;
+		}
+		y2.push_back(0);
+		y3.push_back(1);
+	}
+	// Concatenate y1, y2, and y3 to create Y
+	std::vector<std::vector<int>> Y;
+	Y.push_back(y1);
+	Y.push_back(y2);
+	Y.push_back(y3);
+
+	// Initialize weight (w) and bias (b) matrices for the neural network
+	//n_weights = 20; n_biases = 6;
+	int n_weights = H * (M + 1);
+	int n_biases = H + 1;
+
+	const double trainFraction = 0.85;
+
+	// Calculate Ntrain as described in MATLAB
+	int Ntrain = static_cast<int>(round(3 * N * trainFraction));
+	// Vector of 0-3000 shuffled
+	std::vector<int> index = randsample(3 * N, 3 * N);
+
+	// Reorder X, Y, and ytrue according to the shuffled index
+	// X_reordered = 3000x3; Y_reordered = 3000x3; ytrue = 3000x1;
+	std::vector<std::vector<double>> X_reordered(3 * N, std::vector<double>(M));
+	std::vector<std::vector<int>> Y_reordered(3 * N, std::vector<int>(C));
+	std::vector<int> ytrue_reordered(3 * N);
+
+	// Randomize the order of X_re and Y_re
+	for (int i = 0; i < 3 * N; ++i) {
+		X_reordered[i] = X[index[i] - 1];
+		for (int c = 0; c < C; ++c) {
+			// Probably breaks because Y.size() = 3;
+			Y_reordered[i][c] = Y[index[i] - 1][c];
+		}
+		// random pick 1,2 or 3
+		ytrue_reordered[i] = ytrue[index[i] - 1];
+	}
+
+	// Separate the data into training and testing sets
+	// 2550
+	//int Ntrain = static_cast<int>(round(3 * N * trainFraction));
+	// 450
+	int Ntest = 3 * N - Ntrain;
+	//2550x3; 2550x3; 450x3; 450x3;
+	std::vector<std::vector<double>> Xtrain(Ntrain, std::vector<double>(M));
+	std::vector<std::vector<int>> Ytrain(Ntrain, std::vector<int>(C));
+	std::vector<std::vector<double>> Xtest(Ntest, std::vector<double>(M));
+	std::vector<std::vector<int>> Ytest(Ntest, std::vector<int>(C));
+
+	// ytrue_train.size() = 2550; ytrue_test.size() = 450;
+	std::vector<int> ytrue_train(Ntrain);
+	std::vector<int> ytrue_test(Ntest);
+
+	//This is getting the random Training data
+	for (int i = 0; i < Ntrain; ++i) {
+		Xtrain[i] = X_reordered[i];
+		//Random row is gonna be 1
+		for (int c = 0; c < C; ++c) {
+			Ytrain[i][c] = Y_reordered[i][c];
+		}
+		// Reorders y_true with the same index that it reordered other matrices
+		ytrue_train[i] = ytrue_reordered[i];
+	}
+
+	// This is getting the test data
+	for (int i = 0; i < Ntest; ++i) {
+		Xtest[i] = X_reordered[Ntrain + i];
+		for (int c = 0; c < C; ++c) {
+			Ytest[i][c] = Y_reordered[Ntrain + i][c];
+		}
+		ytrue_test[i] = ytrue_reordered[Ntrain + i];
+	}
+	// 0 -> 2550 Maybe a little bit redundant ??
+	/*
+	for (int i = 0; i < Ntrain; ++i) {
+		Xtrain[i] = X[index[i]];
+	}
+	for (int i = Ntrain; i < 3 * N; ++i) {
+		Xtest[i - Ntrain] = X[index[i]];
+	}
+
+	// Define Ytrain and Ytest
+	std::vector<std::vector<double>> Ytrain(Ntrain, std::vector<double>(C));
+	std::vector<std::vector<double>> Ytest(Ntest, std::vector<double>(C));
+
+	// Define ytrue for the training data
+	std::vector<int> ytrue_train(Ntrain);
+	for (int i = 0; i < Ntrain; ++i) {
+		ytrue_train[i] = ytrue[index[i]];
+	}
+	*/
+
+	// 1x60, 1x18
+	std::vector<double> w(C * n_weights);
+	std::vector<double> b(C * n_biases);
+
+	// Looks like matlab code ?? 
+	for (int i = 0; i < C * n_weights; ++i) {
+		w[i] = 0.2 * static_cast<double>(std::rand()) / RAND_MAX - 0.1;
+	}
+
+	for (int i = 0; i < C * n_biases; ++i) {
+		b[i] = 0.2 * static_cast<double>(std::rand()) / RAND_MAX - 0.1;
+	}
+
+	// Calculates spe_old
+	double spe_old = 0.0;
+	for (int c = 0; c < C; ++c) {
+		for (int i = 0; i < Ntest; ++i) {
+			spe_old += std::pow(Ytest[i][c], 2);
+		}
+	}
+	// Might just be 1/3
+	spe_old /= N;
+
+	// Initialize MIN and other variables
+	double MIN = 1e7;
+	//double eta = 1e-1 / train;
+
+	// 450x3 matrix of 0's
+	std::vector<std::vector<double>> yhat0(Ntest, std::vector<double>(C, 0.0));
+	//Need to fix
+	/*
+	// Initialize some variables for tracking training progress
+	double spe_old = sum_squared_error(ytrue, Ytest);
+	*/
+
+	// Create variables for Yhat0 and delta0
+	// These are both 450x3 uninitialized matrices
+	std::vector<std::vector<double>> Yhat0(Ntest, std::vector<double>(C));
+	std::vector<std::vector<double>> delta0(Ntest, std::vector<double>(C));
+
+	// Iterate through 200000 times
+	for (int epoch = 1; epoch <= n_epochs; ++epoch) {
+		double spe_new = 0.0;
+		// Iterate through three times
+		for (int c = 0; c < C; ++c) {
+			//Draw 20 random numbers from 0-2550
+			std::vector<int> index = randsample(Ntrain, train);
+			// Random numbers from w and b somehow
+			std::vector<double> weights(w.begin() + c * n_weights, w.begin() + (c + 1) * n_weights);
+			std::vector<double> biases(b.begin() + c * n_biases, b.begin() + (c + 1) * n_biases);
+
+			// Get network predictions for the training data
+			//CString version;
+			//version.Append(L"classification");
+			//What is F and yhat
+			// F = 1000x5
+			std::vector<std::vector<double>> F = std::vector<std::vector<double>>(train, std::vector<double>(H, 0.0));
+			std::vector<double> yhat = std::vector<double>(N, 0.0);
+			GetNetworkPrediction(Xtrain, H, weights, biases, F, yhat);
+
+			// Compute the error (d) for the current class
+			std::vector<double> d(train, 0.0);
+			for (int i = 0; i < train; ++i) {
+				d[i] = Ytrain[i][c] - yhat[i];
+			}
+
+			// Update weights and biases
+			int pos = c * n_weights + M * H;
+			std::vector<double> dphi_t(train, 0.0);
+			for (int i = 0; i < train; ++i) {
+				dphi_t[i] = yhat[i] * (1.0 - yhat[i]);
+			}
+
+			// Update weights connecting the hidden to the output layer
+			for (int h = 0; h < H; ++h) {
+				weights[pos + h] += eta * std::inner_product(d.begin(), d.end(), dphi_t.begin(), 0.0);
+			}
+
+			// Update bias term connecting hidden to output layer
+			b[c * n_biases + H] += eta * std::inner_product(d.begin(), d.end(), dphi_t.begin(), 0.0);
+
+			// Update weights connecting the input to the hidden layer
+			for (int h = 0; h < H; ++h) {
+				std::vector<double> dphi_fh(train, 0.0);
+				for (int i = 0; i < train; ++i) {
+					dphi_fh[i] = F[i][h] * (1.0 - F[i][h]);
+				}
+
+				for (int j = 0; j < M; ++j) {
+					for (int i = 0; i < train; ++i) {
+						pos = c * n_weights + (j - 1) * H + h;
+						weights[pos] += eta * weights[c * n_weights + M * H + h] * d[i] * (dphi_t[i] * dphi_fh[i] * Xtrain[i][j]);
+					}
+				}
+
+				pos = c * n_biases + h;
+				b[pos] += eta * weights[c * n_weights + M * H + h] * std::inner_product(d.begin(), d.end(), dphi_t.begin(), 0.0);
+			}
+
+			// Update yhat0 for the current class (TODO: Implement GetNetworkPrediction)
+			std::vector<double> yhat0(Ntest, 0.0); // Placeholder
+
+			// Compute delta0 for the current class
+			std::vector<double> delta0(Ntest, 0.0);
+			for (int i = 0; i < Ntest; ++i) {
+				delta0[i] = Ytest[i][c] - yhat0[i];
+			}
+
+			// Update spe_new for the current class
+			spe_new += std::inner_product(delta0.begin(), delta0.end(), delta0.begin(), 0.0) / Ntest;
+		}
+
+		// Check if spe_new is smaller than MIN and update wopt, bopt, and Yhat0 accordingly
+		if (spe_new < MIN) {
+			std::vector<double> wopt;
+			wopt.empty();
+			wopt = w;
+			std::vector<double> bopt;
+			bopt.empty();
+			bopt = b;
+			MIN = spe_new;
+			Yhat0 = yhat0;
+		}
+
+		// Print the current epoch and spe_new
+		std::cout << epoch << "\t" << spe_new << std::endl;
+	}
+
+	// Main training loop
+	/*
+	for (int epoch = 1; epoch <= n_epochs; ++epoch) {
+		double spe_new = 0.0;
+		for (int c = 0; c < C; ++c) {
+			std::vector<int> index = randsample(Ntrain, train);
+			std::vector<double> weights(w.begin() + c * n_weights, w.begin() + (c + 1) * n_weights);
+			std::vector<double> biases(b.begin() + c * n_biases, b.begin() + (c + 1) * n_biases);
+
+			// Get network predictions for the training data
+			std::vector<std::vector<double>> F = std::vector<std::vector<double>>(N, std::vector<double>(H, 0.0));
+			std::vector<double>yhat = std::vector<double>(N, 0.0);
+			CString version_two;
+			version_two.Append(L"classification");
+			std::vector<double> yhat = GetNetworkPrediction(Xtrain, H, weights, biases, F, yhat, version_two);
+
+			// Compute the error (d) for the current class
+			std::vector<double> d;
+			for (int i = 0; i < train; ++i) {
+				d[i] = Ytrain[i][c] - yhat[i];
+			}
+
+			// Update weights and biases
+			int pos = c * n_weights + M * H;
+			std::vector<double> dphi_t(train, 0.0);
+			for (int i = 0; i < train; ++i) {
+				dphi_t[i] = yhat[i] * (1.0 - yhat[i]);
+			}
+
+			// Update weights connecting the hidden to the output layer
+			for (int h = 0; h < H; ++h) {
+				weights[pos + h] += eta * std::inner_product(d.begin(), d.end(), dphi_t.begin(), 0.0);
+			}
+
+			// Update bias term connecting hidden to output layer
+			b[c * n_biases + H] += eta * std::inner_product(d.begin(), d.end(), dphi_t.begin(), 0.0);
+
+			// Update weights connecting the input to the hidden layer
+			for (int h = 0; h < H; ++h) {
+				std::vector<double> dphi_fh(train, 0.0);
+				for (int i = 0; i < train; ++i) {
+					dphi_fh[i] = F[i][h] * (1.0 - F[i][h]);
+				}
+
+				for (int j = 0; j < M; ++j) {
+					for (int i = 0; i < train; ++i) {
+						pos = c * n_weights + (j - 1) * H + h;
+						weights[pos] += eta * weights[c * n_weights + M * H + h] * d[i] * (dphi_t[i] * dphi_fh[i] * Xtrain[i][j]);
+					}
+				}
+
+				pos = c * n_biases + h;
+				b[pos] += eta * weights[c * n_weights + M * H + h] * std::inner_product(d.begin(), d.end(), dphi_t.begin(), 0.0);
+			}
+
+
+			// Compute delta0 for the current class
+			std::vector<double> delta0(Ntest, 0.0);
+			for (int i = 0; i < Ntest; ++i) {
+				delta0[i] = Ytest[i][c] - yhat0[i];
+			}
+
+			// Update spe_new for the current class
+			spe_new += std::inner_product(delta0.begin(), delta0.end(), delta0.begin(), 0.0) / Ntest;
+		}
+
+		// Check if spe_new is smaller than MIN and update wopt, bopt, and Yhat0 accordingly
+		if (spe_new < MIN) {
+			std::vector<double> wopt;
+			wopt.empty();
+			wopt = w;
+			std::vector<double> bopt;
+			bopt.empty();
+			bopt = b;
+			MIN = spe_new;
+			Yhat0 = yhat0;
+		}
+
+		// Print the current epoch and spe_new
+		std::cout << epoch << "\t" << spe_new << std::endl;
+	}
+	*/
+}
+
+void CModelingandAnalysisofUncertaintyDoc::GetNetworkPrediction(const std::vector<std::vector<double>>& X, const int H,
+	const std::vector<double>& w, const std::vector<double>& b,
+	std::vector<std::vector<double>>& F, std::vector<double>& yhat) {
+
+	int N = X.size();
+	int M = X[0].size();
+
+	for (int h = 0; h < H; ++h) {
+		std::vector<double> z(N, 0.0);
+		for (int j = 0; j < M; ++j) {
+			int pos = j * H + h;
+			for (int i = 0; i < N; ++i) {
+				z[i] += w[pos] * X[i][j];
+			}
+		}
+
+		for (int i = 0; i < N; ++i) {
+			z[i] += b[h];
+			F[i][h] = 1.0 / (1.0 + exp(-z[i]));
+		}
+
+		int pos = M * H + h;
+		for (int i = 0; i < N; ++i) {
+			yhat[i] += w[pos] * F[i][h];
+		}
+	}
+	/*
+	if (task == "regression") {
+		int pos = M * H + H;
+		for (int i = 0; i < N; ++i) {
+			yhat[i] += b[H];
+		}
+	}
+	else {
+		for (int i = 0; i < N; ++i) {
+			yhat[i] = 1.0 / (1.0 + exp(-yhat[i]));
+		}
+	}
+	*/
+	for (int i = 0; i < N; ++i) {
+		yhat[i] = 1.0 / (1.0 + exp(-yhat[i]));
+	}
+}
 // Enablers for modeling methods after datafile was read
 void CModelingandAnalysisofUncertaintyDoc::OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI) {
 	pCmdUI->Enable(FileOpen);

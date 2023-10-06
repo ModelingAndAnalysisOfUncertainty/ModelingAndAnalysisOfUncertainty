@@ -3,14 +3,15 @@
 #include <fstream>
 #include <ctime>
 #include "ProbabilityDistributions.h"
+#include <vector>
 
 #pragma once
 
-class CModelingandAnalysisofUncertaintyDoc : public CDocument{
+class CModelingandAnalysisofUncertaintyDoc : public CDocument {
 protected: // create from serialization only
 	CModelingandAnalysisofUncertaintyDoc() noexcept;
 	DECLARE_DYNCREATE(CModelingandAnalysisofUncertaintyDoc)
-// Attributes
+	// Attributes
 public:
 	double xbar1 = 0.0, xbar2 = 0.0;
 	int show_nObs1;
@@ -171,7 +172,7 @@ public:
 	void GetLargestElement(CArray <double>&, CArray <int>&, double&);
 public:
 
-// Overrides
+	// Overrides
 public:
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);	// called when document is opened, used to read in data
 	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
@@ -180,7 +181,7 @@ public:
 	virtual void OnDrawThumbnail(CDC& dc, LPRECT lprcBounds);
 #endif // SHARED_HANDLERS
 
-// Implementation
+	// Implementation
 public:
 	virtual ~CModelingandAnalysisofUncertaintyDoc();
 #ifdef _DEBUG
@@ -245,7 +246,7 @@ protected:
 	// *** Multivariate Statistical Operations ***
 	// *******************************************
 	void StandardizeDataMatrix(CArray <double>&, CArray <double>&, CArray <double>&);
-	void GetCorrelationMatrix(CArray <double>&, CArray <int>& ,CArray <double>&, CArray <int>&, bool);
+	void GetCorrelationMatrix(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, bool);
 	void VPC(CArray <double>&, CArray <int>&, int&);
 	void VRE(CArray <double>&, CArray <int>&, int&);
 	// *** Additional functions
@@ -262,9 +263,16 @@ protected:
 	void GetRegressionVector(CArray <double>&, CArray <int>&, CArray <double>&, CArray <double>&, bool);
 	void GetStatisticalRegressorAnalysis(CArray <double>&);
 	void GetRegressionMetrics(CArray <double>&, CArray <double>&, CArray <double>&);
+	//Neural Network Functions
+	std::vector<int> CModelingandAnalysisofUncertaintyDoc::randsample(int n, int k);
+	void CModelingandAnalysisofUncertaintyDoc::GetNetworkPrediction(const std::vector<std::vector<double>>& X, const int H,
+		const std::vector<double>& w, const std::vector<double>& b,
+		std::vector<std::vector<double>>& F, std::vector<double>& yhat);
+	std::vector<std::vector<double>> CModelingandAnalysisofUncertaintyDoc::zscore(const std::vector<std::vector<double>>& data);
+	double CModelingandAnalysisofUncertaintyDoc::sum_squared_error(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2);
 
 
-// Generated message map functions
+	// Generated message map functions
 protected:
 	DECLARE_MESSAGE_MAP()
 
@@ -272,7 +280,7 @@ protected:
 	// Helper function that sets search content for a Search Handler
 	void SetSearchContent(const CString& value);
 #endif // SHARED_HANDLERS
-public:	
+public:
 	afx_msg void OnDescriptiveStatistics();
 	afx_msg void OnOneSample();
 	afx_msg void OnTwoSample();
@@ -296,6 +304,7 @@ public:
 	afx_msg void OnL2_Regularization();
 	afx_msg void OnKPLS();
 	afx_msg void OnANN();
+	afx_msg void OnANN_MFC();
 
 	afx_msg void OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateOnesample(CCmdUI* pCmdUI);
