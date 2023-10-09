@@ -820,7 +820,7 @@ void CModelingandAnalysisofUncertaintyDoc::AddingMatrices(CArray <double>& A, CA
 	}
 }
 
-// Adding two matrices : A - B = C
+// Subtracting two matrices : A - B = C
 void CModelingandAnalysisofUncertaintyDoc::SubtractingMatrices(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
 	if ((A_spec.GetAt(0) == B_spec.GetAt(0)) && (A_spec.GetAt(1) == B_spec.GetAt(1))) {
 		int row = A_spec.GetAt(0), col = A_spec.GetAt(1);
@@ -872,35 +872,29 @@ void CModelingandAnalysisofUncertaintyDoc::MatrixVectorProduct(CArray <double>& 
 		y.SetSize(A_spec.GetAt(0));
 		int pos_A;
 		double temp;
-		if ((A_spec.GetAt(2) == 0) || (A_spec.GetAt(2) == 1)) {
-			for (int i = 0; i < A_spec.GetAt(0); i++) {
-				temp = 0;
+
+		#pragma omp parallel for private(pos_A, temp)
+		for (int i = 0; i < A_spec.GetAt(0); i++) {
+			temp = 0;
+			if ((A_spec.GetAt(2) == 0) || (A_spec.GetAt(2) == 1)) {
 				for (int j = 0; j < A_spec.GetAt(1); j++) {
 					pos_A = GetPosition(i, j, A_spec);
 					temp += A.GetAt(pos_A) * x.GetAt(j);
 				}
-				y.SetAt(i, temp);
 			}
-		}
-		else if (A_spec.GetAt(2) == 2) {
-			for (int i = 0; i < A_spec.GetAt(0); i++) {
-				temp = 0;
+			else if (A_spec.GetAt(2) == 2) {
 				for (int j = 0; j <= i; j++) {
 					pos_A = GetPosition(i, j, A_spec);
 					temp += A.GetAt(pos_A) * x.GetAt(j);
 				}
-				y.SetAt(i, temp);
 			}
-		}
-		else if (A_spec.GetAt(2) == 3) {
-			for (int i = 0; i < A_spec.GetAt(0); i++) {
-				temp = 0;
+			else if (A_spec.GetAt(2) == 3) {
 				for (int j = i; j < A_spec.GetAt(1); j++) {
 					pos_A = GetPosition(i, j, A_spec);
 					temp += A.GetAt(pos_A) * x.GetAt(j);
 				}
-				y.SetAt(i, temp);
 			}
+			y.SetAt(i, temp);
 		}
 	}
 }
@@ -914,11 +908,12 @@ void CModelingandAnalysisofUncertaintyDoc::MatrixProduct(CArray <double>& A, CAr
 		C_spec.SetAt(0, row);
 		C_spec.SetAt(1, col);
 		C_spec.SetAt(2, 0);
-		int dim = B_spec.GetAt(1);
-		int64_t space = static_cast<int64_t>(A_spec.GetAt(0)) * dim;
+		int64_t space = static_cast<int64_t>(A_spec.GetAt(0)) * col;
 		C.SetSize(space);
 		int pos_A, pos_B, pos_C;
 		double temp;
+
+		#pragma omp parallel for private(pos_A, pos_B, pos_C, temp) collapse(2)
 		for (int i = 0; i < row; i++) {
 			for (int j = 0; j < col; j++) {
 				temp = 0;
@@ -934,7 +929,7 @@ void CModelingandAnalysisofUncertaintyDoc::MatrixProduct(CArray <double>& A, CAr
 	}
 }
 
-// Computing matrix product : X_tr_X = X' · X   
+// Computing transpose of matrix product : X_tr_X = X' · X   
 void CModelingandAnalysisofUncertaintyDoc::X_tr_X(CArray <double>& X, CArray <int>& X_spec, CArray <double>& X_tr_X, CArray <int>& X_tr_X_spec) {
 	int dim = X_spec.GetAt(1) + 1, pos_X1, pos_X2;
 	int64_t space = static_cast<int64_t>(X_spec.GetAt(1)) * dim;
@@ -944,6 +939,8 @@ void CModelingandAnalysisofUncertaintyDoc::X_tr_X(CArray <double>& X, CArray <in
 	X_tr_X_spec.SetAt(1, X_spec.GetAt(1));
 	X_tr_X_spec.SetAt(2, 1);
 	double temp;
+
+	#pragma omp parallel for private(pos_X1, pos_X2, temp) collapse(2)
 	for (int i = 0; i < X_spec.GetAt(1); i++) {
 		for (int j = 0; j <= i; j++) {
 			temp = (double)0;
@@ -968,6 +965,8 @@ void CModelingandAnalysisofUncertaintyDoc::X_tr_Y(CArray <double>& A, CArray <in
 		C_spec.SetAt(1, B_spec.GetAt(1));
 		C_spec.SetAt(2, 0);
 		double temp;
+
+		#pragma omp parallel for private(pos_A, pos_B, temp) collapse(2)
 		for (int i = 0; i < A_spec.GetAt(1); i++) {
 			for (int j = 0; j < B_spec.GetAt(1); j++) {
 				temp = (double)0;
@@ -986,13 +985,15 @@ void CModelingandAnalysisofUncertaintyDoc::X_tr_Y(CArray <double>& A, CArray <in
 void CModelingandAnalysisofUncertaintyDoc::X_Y_tr(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
 	if (A_spec.GetAt(1) == B_spec.GetAt(1)) {
 		int dim = A_spec.GetAt(0), pos_A, pos_B;
-		int64_t space = static_cast <int64_t>(B_spec.GetAt(0)) * dim;
+		int64_t space = static_cast<int64_t>(B_spec.GetAt(0)) * dim;
 		C.SetSize(space);
 		C_spec.SetSize(3);
 		C_spec.SetAt(0, A_spec.GetAt(0));
 		C_spec.SetAt(1, B_spec.GetAt(0));
 		C_spec.SetAt(2, 0);
 		double temp;
+
+		#pragma omp parallel for private(pos_A, pos_B, temp) collapse(2)
 		for (int i = 0; i < A_spec.GetAt(0); i++) {
 			for (int j = 0; j < B_spec.GetAt(0); j++) {
 				temp = (double)0;
@@ -1014,6 +1015,8 @@ void CModelingandAnalysisofUncertaintyDoc::X_X_tr(CArray <double>& A, CArray <in
 	B.RemoveAll(), B_spec.RemoveAll(), B_spec.SetSize(3);
 	B_spec.SetAt(0, row), B_spec.SetAt(1, row), B_spec.SetAt(2, 1);
 	B.SetSize(static_cast <int64_t>(row * (row + 1) / 2));
+
+	#pragma omp parallel for private(value_1, value_2, temp) collapse(2)
 	for (int i = 0; i < row; i++) {
 		for (int j = 0; j <= i; j++) {
 			temp = 0.0;
