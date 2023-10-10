@@ -783,7 +783,245 @@ void CModelingandAnalysisofUncertaintyDoc::AddingMatrices(CArray <double>& A, CA
 		if (A_spec.GetAt(2) == B_spec.GetAt(2)) C_spec.SetAt(2, A_spec.GetAt(2));
 		if (A_spec.GetAt(2) == 0) C.SetSize(static_cast <int64_t>(row * col));
 		else C.SetSize(static_cast <int64_t>(row * (row + 1) / 2));
-		omp_set_num_threads(row);
+		if ((A_spec.GetAt(2) == 1) || (A_spec.GetAt(2) == 2)) {
+			for (int i = 0; i < row; i++) {
+				for (int j = 0; j <= i; j++) {
+					value_1 = A.GetAt(GetPosition(i, j, A_spec));
+					value_2 = B.GetAt(GetPosition(i, j, B_spec));
+					C.SetAt(GetPosition(i, j, C_spec), value_1 + value_2);
+				}
+			}
+		}
+		else if (A_spec.GetAt(2) == 3) {
+			for (int i = 0; i < row; i++) {
+				for (int j = i; j < col; j++) {
+					value_1 = A.GetAt(GetPosition(i, j, A_spec));
+					value_2 = B.GetAt(GetPosition(i, j, B_spec));
+					C.SetAt(GetPosition(i, j, C_spec), value_1 + value_2);
+				}
+			}
+		}
+		else {
+			for (int i = 0; i < row; i++) {
+				for (int j = 0; j < col; j++) {
+					value_1 = A.GetAt(GetPosition(i, j, A_spec));
+					value_2 = B.GetAt(GetPosition(i, j, B_spec));
+					C.SetAt(GetPosition(i, j, C_spec), value_1 + value_2);
+				}
+			}
+		}
+	}
+}
+
+// Adding two matrices : A - B = C
+void CModelingandAnalysisofUncertaintyDoc::SubtractingMatrices(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
+	if ((A_spec.GetAt(0) == B_spec.GetAt(0)) && (A_spec.GetAt(1) == B_spec.GetAt(1))) {
+		int row = A_spec.GetAt(0), col = A_spec.GetAt(1);
+		double value_1, value_2;
+		C_spec.SetSize(3), C_spec.SetAt(0, row), C_spec.SetAt(1, col);
+		if (A_spec.GetAt(2) == B_spec.GetAt(2)) C_spec.SetAt(2, A_spec.GetAt(2));
+		if (A_spec.GetAt(2) == 0) C.SetSize(static_cast <int64_t>(row * col));
+		else C.SetSize(static_cast <int64_t>(row * (row + 1) / 2));
+		if ((A_spec.GetAt(2) == 1) || (A_spec.GetAt(2) == 2)) {
+			for (int i = 0; i < row; i++) {
+				for (int j = 0; j <= i; j++) {
+					value_1 = A.GetAt(GetPosition(i, j, A_spec));
+					value_2 = B.GetAt(GetPosition(i, j, B_spec));
+					C.SetAt(GetPosition(i, j, C_spec), value_1 - value_2);
+				}
+			}
+		}
+		else if (A_spec.GetAt(2) == 3) {
+			for (int i = 0; i < row; i++) {
+				for (int j = i; j < col; j++) {
+					value_1 = A.GetAt(GetPosition(i, j, A_spec));
+					value_2 = B.GetAt(GetPosition(i, j, B_spec));
+					C.SetAt(GetPosition(i, j, C_spec), value_1 - value_2);
+				}
+			}
+		}
+		else {
+			for (int i = 0; i < row; i++) {
+				for (int j = 0; j < col; j++) {
+					value_1 = A.GetAt(GetPosition(i, j, A_spec));
+					value_2 = B.GetAt(GetPosition(i, j, B_spec));
+					C.SetAt(GetPosition(i, j, C_spec), value_1 - value_2);
+				}
+			}
+		}
+	}
+}
+
+// Computing matrix-vector product :  y = A · x 
+void CModelingandAnalysisofUncertaintyDoc::MatrixVectorProduct(CArray <double>& A, CArray <int>& A_spec, CArray <double>& x, CArray <double>& y) {
+	if (x.GetSize() == A_spec.GetAt(1)) {
+		y.SetSize(A_spec.GetAt(0));
+		int pos_A;
+		double temp;
+		if ((A_spec.GetAt(2) == 0) || (A_spec.GetAt(2) == 1)) {
+			for (int i = 0; i < A_spec.GetAt(0); i++) {
+				temp = 0;
+				for (int j = 0; j < A_spec.GetAt(1); j++) {
+					pos_A = GetPosition(i, j, A_spec);
+					temp += A.GetAt(pos_A) * x.GetAt(j);
+				}
+				y.SetAt(i, temp);
+			}
+		}
+		else if (A_spec.GetAt(2) == 2) {
+			for (int i = 0; i < A_spec.GetAt(0); i++) {
+				temp = 0;
+				for (int j = 0; j <= i; j++) {
+					pos_A = GetPosition(i, j, A_spec);
+					temp += A.GetAt(pos_A) * x.GetAt(j);
+				}
+				y.SetAt(i, temp);
+			}
+		}
+		else if (A_spec.GetAt(2) == 3) {
+			for (int i = 0; i < A_spec.GetAt(0); i++) {
+				temp = 0;
+				for (int j = i; j < A_spec.GetAt(1); j++) {
+					pos_A = GetPosition(i, j, A_spec);
+					temp += A.GetAt(pos_A) * x.GetAt(j);
+				}
+				y.SetAt(i, temp);
+			}
+		}
+	}
+}
+
+// Computing matrix product : C = A · B 
+void CModelingandAnalysisofUncertaintyDoc::MatrixProduct(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
+	if (A_spec.GetAt(1) == B_spec.GetAt(0)) {
+		int row = A_spec.GetAt(0);
+		int col = B_spec.GetAt(1);
+		C_spec.SetSize(3);
+		C_spec.SetAt(0, row);
+		C_spec.SetAt(1, col);
+		C_spec.SetAt(2, 0);
+		int dim = B_spec.GetAt(1);
+		int64_t space = static_cast<int64_t>(A_spec.GetAt(0)) * dim;
+		C.SetSize(space);
+		int pos_A, pos_B, pos_C;
+		double temp;
+		for (int i = 0; i < row; i++) {
+			for (int j = 0; j < col; j++) {
+				temp = 0;
+				for (int k = 0; k < A_spec.GetAt(1); k++) {
+					pos_A = GetPosition(i, k, A_spec);
+					pos_B = GetPosition(k, j, B_spec);
+					temp += A.GetAt(pos_A) * B.GetAt(pos_B);
+				}
+				pos_C = GetPosition(i, j, C_spec);
+				C.SetAt(pos_C, temp);
+			}
+		}
+	}
+}
+
+// Computing matrix product : X_tr_X = X' · X   
+void CModelingandAnalysisofUncertaintyDoc::X_tr_X(CArray <double>& X, CArray <int>& X_spec, CArray <double>& X_tr_X, CArray <int>& X_tr_X_spec) {
+	int dim = X_spec.GetAt(1) + 1, pos_X1, pos_X2;
+	int64_t space = static_cast<int64_t>(X_spec.GetAt(1)) * dim;
+	X_tr_X.SetSize((int)(space / 2));
+	X_tr_X_spec.SetSize(3);
+	X_tr_X_spec.SetAt(0, X_spec.GetAt(1));
+	X_tr_X_spec.SetAt(1, X_spec.GetAt(1));
+	X_tr_X_spec.SetAt(2, 1);
+	double temp;
+	for (int i = 0; i < X_spec.GetAt(1); i++) {
+		for (int j = 0; j <= i; j++) {
+			temp = (double)0;
+			for (int k = 0; k < X_spec.GetAt(0); k++) {
+				pos_X1 = GetPosition(k, i, X_spec);
+				pos_X2 = GetPosition(k, j, X_spec);
+				temp += X.GetAt(pos_X1) * X.GetAt(pos_X2);
+			}
+			X_tr_X.SetAt(GetPosition(i, j, X_tr_X_spec), temp);
+		}
+	}
+}
+
+// Computing matrix product : X_tr_Y = X' · Y        
+void CModelingandAnalysisofUncertaintyDoc::X_tr_Y(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
+	if (A_spec.GetAt(0) == B_spec.GetAt(0)) {
+		int dim = A_spec.GetAt(1), pos_A, pos_B;
+		int64_t space = static_cast<int64_t>(B_spec.GetAt(1)) * dim;
+		C.SetSize(space);
+		C_spec.SetSize(3);
+		C_spec.SetAt(0, A_spec.GetAt(1));
+		C_spec.SetAt(1, B_spec.GetAt(1));
+		C_spec.SetAt(2, 0);
+		double temp;
+		for (int i = 0; i < A_spec.GetAt(1); i++) {
+			for (int j = 0; j < B_spec.GetAt(1); j++) {
+				temp = (double)0;
+				for (int k = 0; k < A_spec.GetAt(0); k++) {
+					pos_A = GetPosition(k, i, A_spec);
+					pos_B = GetPosition(k, j, B_spec);
+					temp += A.GetAt(pos_A) * B.GetAt(pos_B);
+				}
+				C.SetAt(GetPosition(i, j, C_spec), temp);
+			}
+		}
+	}
+}
+
+// Computing matrix product : X_Y_tr = X · Y'
+void CModelingandAnalysisofUncertaintyDoc::X_Y_tr(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
+	if (A_spec.GetAt(1) == B_spec.GetAt(1)) {
+		int dim = A_spec.GetAt(0), pos_A, pos_B;
+		int64_t space = static_cast <int64_t>(B_spec.GetAt(0)) * dim;
+		C.SetSize(space);
+		C_spec.SetSize(3);
+		C_spec.SetAt(0, A_spec.GetAt(0));
+		C_spec.SetAt(1, B_spec.GetAt(0));
+		C_spec.SetAt(2, 0);
+		double temp;
+		for (int i = 0; i < A_spec.GetAt(0); i++) {
+			for (int j = 0; j < B_spec.GetAt(0); j++) {
+				temp = (double)0;
+				for (int k = 0; k < A_spec.GetAt(1); k++) {
+					pos_A = GetPosition(i, k, A_spec);
+					pos_B = GetPosition(j, k, B_spec);
+					temp += A.GetAt(pos_A) * B.GetAt(pos_B);
+				}
+				C.SetAt(GetPosition(i, j, C_spec), temp);
+			}
+		}
+	}
+}
+
+// Computing matrix product : X_X_tr = X · X'
+void CModelingandAnalysisofUncertaintyDoc::X_X_tr(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec) {
+	int col = A_spec.GetAt(1), row = A_spec.GetAt(0);
+	double temp, value_1, value_2;
+	B.RemoveAll(), B_spec.RemoveAll(), B_spec.SetSize(3);
+	B_spec.SetAt(0, row), B_spec.SetAt(1, row), B_spec.SetAt(2, 1);
+	B.SetSize(static_cast <int64_t>(row * (row + 1) / 2));
+	for (int i = 0; i < row; i++) {
+		for (int j = 0; j <= i; j++) {
+			temp = 0.0;
+			for (int k = 0; k < col; k++) {
+				value_1 = A.GetAt(GetPosition(i, k, A_spec));
+				value_2 = A.GetAt(GetPosition(j, k, A_spec));
+				temp += value_1 * value_2;
+			}
+			B.SetAt(GetPosition(i, j, B_spec), temp);
+		}
+	}
+}
+
+// Adding two matrices using multithreading : A + B = C
+void CModelingandAnalysisofUncertaintyDoc::AddingMatricesParallel(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
+	if ((A_spec.GetAt(0) == B_spec.GetAt(0)) && (A_spec.GetAt(1) == B_spec.GetAt(1))) {
+		int row = A_spec.GetAt(0), col = A_spec.GetAt(1);
+		double value_1, value_2;
+		C_spec.SetSize(3), C_spec.SetAt(0, row), C_spec.SetAt(1, col);
+		if (A_spec.GetAt(2) == B_spec.GetAt(2)) C_spec.SetAt(2, A_spec.GetAt(2));
+		if (A_spec.GetAt(2) == 0) C.SetSize(static_cast <int64_t>(row * col));
+		else C.SetSize(static_cast <int64_t>(row * (row + 1) / 2));
 		if ((A_spec.GetAt(2) == 1) || (A_spec.GetAt(2) == 2)) {
 			#pragma omp parallel for private(value_1, value_2) collapse(2)
 			for (int i = 0; i < row; i++)
@@ -820,8 +1058,8 @@ void CModelingandAnalysisofUncertaintyDoc::AddingMatrices(CArray <double>& A, CA
 	}
 }
 
-// Subtracting two matrices : A - B = C
-void CModelingandAnalysisofUncertaintyDoc::SubtractingMatrices(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
+// Subtracting two matrices using multithreading : A - B = C
+void CModelingandAnalysisofUncertaintyDoc::SubtractingMatricesParallel(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
 	if ((A_spec.GetAt(0) == B_spec.GetAt(0)) && (A_spec.GetAt(1) == B_spec.GetAt(1))) {
 		int row = A_spec.GetAt(0), col = A_spec.GetAt(1);
 		double value_1, value_2;
@@ -865,8 +1103,8 @@ void CModelingandAnalysisofUncertaintyDoc::SubtractingMatrices(CArray <double>& 
 	}
 }
 
-// Computing matrix-vector product :  y = A · x 
-void CModelingandAnalysisofUncertaintyDoc::MatrixVectorProduct(CArray <double>& A, CArray <int>& A_spec, CArray <double>& x, CArray <double>& y) {
+// Computing matrix-vector product using multithreading :  y = A · x 
+void CModelingandAnalysisofUncertaintyDoc::MatrixVectorProductParallel(CArray <double>& A, CArray <int>& A_spec, CArray <double>& x, CArray <double>& y) {
 	if (x.GetSize() == A_spec.GetAt(1)) {
 		y.SetSize(A_spec.GetAt(0));
 		int pos_A;
@@ -898,8 +1136,8 @@ void CModelingandAnalysisofUncertaintyDoc::MatrixVectorProduct(CArray <double>& 
 	}
 }
 
-// Computing matrix product : C = A · B 
-void CModelingandAnalysisofUncertaintyDoc::MatrixProduct(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
+// Computing matrix product using multithreading : C = A · B 
+void CModelingandAnalysisofUncertaintyDoc::MatrixProductParallel(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
 	if (A_spec.GetAt(1) == B_spec.GetAt(0)) {
 		int row = A_spec.GetAt(0);
 		int col = B_spec.GetAt(1);
@@ -928,8 +1166,8 @@ void CModelingandAnalysisofUncertaintyDoc::MatrixProduct(CArray <double>& A, CAr
 	}
 }
 
-// Computing transpose of matrix product : X_tr_X = X' · X   
-void CModelingandAnalysisofUncertaintyDoc::X_tr_X(CArray <double>& X, CArray <int>& X_spec, CArray <double>& X_tr_X, CArray <int>& X_tr_X_spec) {
+// Computing transpose of matrix product using multithreading : X_tr_X = X' · X   
+void CModelingandAnalysisofUncertaintyDoc::X_tr_X_Parallel(CArray <double>& X, CArray <int>& X_spec, CArray <double>& X_tr_X, CArray <int>& X_tr_X_spec) {
 	int dim = X_spec.GetAt(1) + 1, pos_X1, pos_X2;
 	int64_t space = static_cast<int64_t>(X_spec.GetAt(1)) * dim;
 	X_tr_X.SetSize((int)(space / 2));
@@ -953,8 +1191,8 @@ void CModelingandAnalysisofUncertaintyDoc::X_tr_X(CArray <double>& X, CArray <in
 	}
 }
 
-// Computing matrix product : X_tr_Y = X' · Y        
-void CModelingandAnalysisofUncertaintyDoc::X_tr_Y(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
+// Computing matrix product using multithreading : X_tr_Y = X' · Y        
+void CModelingandAnalysisofUncertaintyDoc::X_tr_Y_Parallel(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
 	if (A_spec.GetAt(0) == B_spec.GetAt(0)) {
 		int dim = A_spec.GetAt(1), pos_A, pos_B;
 		int64_t space = static_cast<int64_t>(B_spec.GetAt(1)) * dim;
@@ -980,8 +1218,8 @@ void CModelingandAnalysisofUncertaintyDoc::X_tr_Y(CArray <double>& A, CArray <in
 	}
 }
 
-// Computing matrix product : X_Y_tr = X · Y'
-void CModelingandAnalysisofUncertaintyDoc::X_Y_tr(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
+// Computing matrix product using multithreading : X_Y_tr = X · Y'
+void CModelingandAnalysisofUncertaintyDoc::X_Y_tr_Parallel(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
 	if (A_spec.GetAt(1) == B_spec.GetAt(1)) {
 		int dim = A_spec.GetAt(0), pos_A, pos_B;
 		int64_t space = static_cast<int64_t>(B_spec.GetAt(0)) * dim;
@@ -1007,8 +1245,8 @@ void CModelingandAnalysisofUncertaintyDoc::X_Y_tr(CArray <double>& A, CArray <in
 	}
 }
 
-// Computing matrix product : X_X_tr = X · X'
-void CModelingandAnalysisofUncertaintyDoc::X_X_tr(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec) {
+// Computing matrix product using multithreading : X_X_tr = X · X'
+void CModelingandAnalysisofUncertaintyDoc::X_X_tr_Parallel(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec) {
 	int col = A_spec.GetAt(1), row = A_spec.GetAt(0);
 	double temp, value_1, value_2;
 	B.RemoveAll(), B_spec.RemoveAll(), B_spec.SetSize(3);
