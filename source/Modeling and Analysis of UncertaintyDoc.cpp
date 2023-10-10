@@ -6491,7 +6491,23 @@ void CModelingandAnalysisofUncertaintyDoc::VecTranspose(std::vector<std::vector<
 
     b = trans_vec;    // <--- reassign here
 }
+void CModelingandAnalysisofUncertaintyDoc::VecTransposeInt(std::vector<std::vector<int> >& b)
+{
+	if (b.size() == 0)
+		return;
 
+	std::vector<std::vector<int> > trans_vec(b[0].size(), std::vector<int>());
+
+	for (int i = 0; i < b.size(); i++)
+	{
+		for (int j = 0; j < b[i].size(); j++)
+		{
+			trans_vec[j].push_back(b[i][j]);
+		}
+	}
+
+	b = trans_vec;    // <--- reassign here
+}
 
 void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	// Define constants
@@ -6525,16 +6541,10 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	X = zscore(X);
 
 
-	std::ofstream FILE;
+	/*std::ofstream FILE;
 	FILE.open("outfile.txt");
+	VecTranspose(X);*/
 	VecTranspose(X);
-
-	for (int i = 0; i < X.size(); i++) {
-		for (int j = 0; j < X[i].size(); j++) {
-			FILE << X[i][j] << " ";
-		}
-		FILE << std::endl;
-	}
 
 	// Generate ytrue as described in MATLAB
 	std::vector<int> ytrue;
@@ -6545,13 +6555,13 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	}
 
 	// Generate y1, y2, and y3
-	std::vector<int> y1(N, 1);
-	std::vector<int> y2(N, 0);
-	std::vector<int> y3(N, 0);
+	std::vector<double> y1(N, 1.0);
+	std::vector<double> y2(N, 0.0);
+	std::vector<double> y3(N, 0.0);
 
 
 	for (int i = 0; i < 2000; i++) {
-		y1.push_back(0);
+		y1.push_back(0.0);
 		if (i < 1000) {
 			y2.push_back(1);
 			y3.push_back(0);
@@ -6561,10 +6571,12 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 		y3.push_back(1);
 	}
 	// Concatenate y1, y2, and y3 to create Y
-	std::vector<std::vector<int>> Y;
+	std::vector<std::vector<double>> Y;
 	Y.push_back(y1);
 	Y.push_back(y2);
 	Y.push_back(y3);
+
+	VecTranspose(Y);
 
 	// Initialize weight (w) and bias (b) matrices for the neural network
 	//n_weights = 20; n_biases = 6;
@@ -6689,12 +6701,27 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			// F = 1000x5
 			std::vector<std::vector<double>> F = std::vector<std::vector<double>>(train, std::vector<double>(H, 0.0));
 			std::vector<double> yhat = std::vector<double>(N, 0.0);
-			GetNetworkPrediction(Xtrain, H, weights, biases, F, yhat);
+			/*FILE << "WEIGHTS:\n";
+			for (int i = 0; i < weights.size(); i++)
+				FILE << weights[i] << ",";
+
+			FILE << "\nBIASES:\n";
+			for (int i = 0; i < biases.size(); i++)
+				FILE << biases[i];
+			FILE.close();*/
+			std::vector<std::vector<double> > Xslice;
+			for (int i = 0; i < train; i++)
+				Xslice.push_back(Xtrain[index[i]]);
+
+			GetNetworkPrediction(Xslice, H, weights, biases, F, yhat);
+			/*for (int i = 0; i < N; i++)
+				FILE << yhat[i];
+			FILE << "\n"*/
 
 			// Compute the error (d) for the current class
 			std::vector<double> d(train, 0.0);
 			for (int i = 0; i < train; ++i) {
-				d[i] = Ytrain[i][c] - yhat[i];
+				d[i] = Ytrain[index[i]][c] - yhat[i];
 			}
 
 			// Update weights and biases
@@ -6706,11 +6733,20 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 
 			// Update weights connecting the hidden to the output layer
 			for (int h = 0; h < H; ++h) {
-				weights[pos + h] += eta * std::inner_product(d.begin(), d.end(), dphi_t.begin(), 0.0);
+				/*w[pos + h] += eta * std::inner_product(d.begin(), d.end(), dphi_t.begin(), 0.0);*/
+				double sum = 0.0;
+				for (int i = 0; i < d.size(); i++) {
+					sum += dphi_t[i] * F[i][h] * d[i] * eta;
+				}
+				w[pos + h] += sum;
 			}
 
 			// Update bias term connecting hidden to output layer
-			b[c * n_biases + H] += eta * std::inner_product(d.begin(), d.end(), dphi_t.begin(), 0.0);
+			int posB = c * H + (H + 1);
+			double sumB = 0.0;
+			for (int i = 0; i < train; i++)
+				sumB += dphi_t[i] * d[i] * eta;
+			b[posB] += sumB;
 
 			// Update weights connecting the input to the hidden layer
 			for (int h = 0; h < H; ++h) {
@@ -6720,14 +6756,21 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 				}
 
 				for (int j = 0; j < M; ++j) {
+					double sumDphi = 0;
+					int posW = c * n_weights + j * H + h;
 					for (int i = 0; i < train; ++i) {
-						pos = c * n_weights + (j - 1) * H + h;
-						weights[pos] += eta * weights[c * n_weights + M * H + h] * d[i] * (dphi_t[i] * dphi_fh[i] * Xtrain[i][j]);
+						//w[pos] += eta * w[c * n_weights + M * H + h] * d[i] * (dphi_t[i] * dphi_fh[i] * Xslice[i][j]);
+						sumDphi += d[i] * (dphi_t[i] * dphi_fh[i] * Xslice[i][j]);
 					}
+					w[posW] += eta * w[c * n_weights + M * H + h] * sumDphi;
 				}
 
-				pos = c * n_biases + h;
-				b[pos] += eta * weights[c * n_weights + M * H + h] * std::inner_product(d.begin(), d.end(), dphi_t.begin(), 0.0);
+				int posB = c * n_biases + h;
+				double sumB = 0;
+				for (int i = 0; i < train; i++) {
+					sumB += d[i] * (dphi_t[i] * dphi_fh[i]);
+				}
+				b[posB] += eta * w[c * n_weights + M * H + h] * sumB;
 			}
 
 			// Update yhat0 for the current class (TODO: Implement GetNetworkPrediction)
@@ -6760,12 +6803,19 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	}
 }
 
+//GetNetworkPrediction(Xtrain, H, weights, biases, F, yhat);
 void CModelingandAnalysisofUncertaintyDoc::GetNetworkPrediction(const std::vector<std::vector<double>>& X, const int H,
 	const std::vector<double>& w, const std::vector<double>& b,
 	std::vector<std::vector<double>>& F, std::vector<double>& yhat) {
 
 	int N = X.size();
 	int M = X[0].size();
+	/*std::ofstream FILE;
+	FILE.open("outfile.txt");
+
+	FILE << "N: " << N << "\nM: " << M << "\n";
+	FILE.close();*/
+
 
 	for (int h = 0; h < H; ++h) {
 		std::vector<double> z(N, 0.0);
