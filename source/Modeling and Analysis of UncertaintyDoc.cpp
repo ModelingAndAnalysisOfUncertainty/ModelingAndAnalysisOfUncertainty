@@ -785,9 +785,9 @@ void CModelingandAnalysisofUncertaintyDoc::AddingMatrices(CArray <double>& A, CA
 		else C.SetSize(static_cast <int64_t>(row * (row + 1) / 2));
 		omp_set_num_threads(row);
 		if ((A_spec.GetAt(2) == 1) || (A_spec.GetAt(2) == 2)) {
-			#pragma omp parallel private(value_1, value_2)
+			#pragma omp parallel for private(value_1, value_2) collapse(2)
+			for (int i = 0; i < row; i++)
 			{
-				int i = omp_get_thread_num();
 				for (int j = 0; j <= i; j++) {
 					value_1 = A.GetAt(GetPosition(i, j, A_spec));
 					value_2 = B.GetAt(GetPosition(i, j, B_spec));
@@ -796,9 +796,9 @@ void CModelingandAnalysisofUncertaintyDoc::AddingMatrices(CArray <double>& A, CA
 			}
 		}
 		else if (A_spec.GetAt(2) == 3) {
-			#pragma omp parallel private(value_1, value_2)
+			#pragma omp parallel for private(value_1, value_2) collapse(2)
+			for (int i = 0; i < row; i++)
 			{
-				int i = omp_get_thread_num();
 				for (int j = i; j < col; j++) {
 					value_1 = A.GetAt(GetPosition(i, j, A_spec));
 					value_2 = B.GetAt(GetPosition(i, j, B_spec));
@@ -807,9 +807,9 @@ void CModelingandAnalysisofUncertaintyDoc::AddingMatrices(CArray <double>& A, CA
 			}
 		}
 		else {
-			#pragma omp parallel private(value_1, value_2)
+			#pragma omp parallel for private(value_1, value_2) collapse(2)
+			for (int i = 0; i < row; i++)
 			{
-				int i = omp_get_thread_num();
 				for (int j = 0; j < col; j++) {
 					value_1 = A.GetAt(GetPosition(i, j, A_spec));
 					value_2 = B.GetAt(GetPosition(i, j, B_spec));
@@ -829,11 +829,10 @@ void CModelingandAnalysisofUncertaintyDoc::SubtractingMatrices(CArray <double>& 
 		if (A_spec.GetAt(2) == B_spec.GetAt(2)) C_spec.SetAt(2, A_spec.GetAt(2));
 		if (A_spec.GetAt(2) == 0) C.SetSize(static_cast <int64_t>(row * col));
 		else C.SetSize(static_cast <int64_t>(row * (row + 1) / 2));
-		omp_set_num_threads(row);
 		if ((A_spec.GetAt(2) == 1) || (A_spec.GetAt(2) == 2)) {
-			#pragma omp parallel private(value_1, value_2)
+			#pragma omp parallel for private(value_1, value_2) collapse(2)
+			for (int i = 0; i < row; i++)
 			{
-				int i = omp_get_thread_num();
 				for (int j = 0; j <= i; j++) {
 					value_1 = A.GetAt(GetPosition(i, j, A_spec));
 					value_2 = B.GetAt(GetPosition(i, j, B_spec));
@@ -842,9 +841,9 @@ void CModelingandAnalysisofUncertaintyDoc::SubtractingMatrices(CArray <double>& 
 			}
 		}
 		else if (A_spec.GetAt(2) == 3) {
-			#pragma omp parallel private(value_1, value_2)
+			#pragma omp parallel for private(value_1, value_2) collapse(2)
+			for (int i = 0; i < row; i++)
 			{
-				int i = omp_get_thread_num();
 				for (int j = i; j < col; j++) {
 					value_1 = A.GetAt(GetPosition(i, j, A_spec));
 					value_2 = B.GetAt(GetPosition(i, j, B_spec));
@@ -853,9 +852,9 @@ void CModelingandAnalysisofUncertaintyDoc::SubtractingMatrices(CArray <double>& 
 			}
 		}
 		else {
-			#pragma omp parallel private(value_1, value_2)
+			#pragma omp parallel for private(value_1, value_2) collapse(2)
+			for (int i = 0; i < row; i++)
 			{
-				int i = omp_get_thread_num();
 				for (int j = 0; j < col; j++) {
 					value_1 = A.GetAt(GetPosition(i, j, A_spec));
 					value_2 = B.GetAt(GetPosition(i, j, B_spec));
