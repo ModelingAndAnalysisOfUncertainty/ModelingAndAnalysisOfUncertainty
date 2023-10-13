@@ -81,7 +81,6 @@ protected:
 	afx_msg void On_Display_Factor_Scores();
 	afx_msg void On_Display_Factor_Matrices();
 
-	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 
 	DECLARE_MESSAGE_MAP()
 public:
@@ -130,9 +129,7 @@ private:
 	void ShowModelPrediction(CModelingandAnalysisofUncertaintyDoc*, CDC*, CPoint&, CPoint&);
 	void ShowPredictionError(CModelingandAnalysisofUncertaintyDoc*, CDC*, CArray <double>&, CPoint&, CPoint&);
 	//----------------------------------
-	int startX, startY, endX, endY;
-	double scaleX, scaleY;
-	std::vector<double> training_accuracies;
+
 public:
 	CButton Next_Variable;
 	CButton Previous_Variable;

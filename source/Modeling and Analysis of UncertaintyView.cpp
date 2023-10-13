@@ -9445,7 +9445,7 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 	int endY = startY - graphHeight;
 
 	double scaleX = static_cast<double>(graphWidth) / losses.size();
-	double scaleY = static_cast<double>(graphHeight);  
+	double scaleY = static_cast<double>(graphHeight);
 
 	if (!losses.empty()) {
 		double maxLoss = *std::max_element(losses.begin(), losses.end());
@@ -9506,19 +9506,15 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 		dc.TextOutW(startX - 40, endY - 25, L"Loss Value");
 
 
-		DrawGrid(dc, startX, startY, endX, endY, xTickInterval, yTickInterval, numXTicks, numYTicks)
+		DrawGrid(dc, startX, startY, endX, endY, xTickInterval, yTickInterval, numXTicks, numYTicks);
+	}
+}
+
 
 
 // After ANN training call this view function to plot the accuracy curve
 void CModelingandAnalysisofUncertaintyView::PlotAccuraciesCurve() {
 
-	this->startX = startX;
-	this->startY = startY;
-	this->endX = endX;
-	this->endY = endY;
-	this->scaleX = scaleX;
-	this->scaleY = scaleY;
-	this->training_accuracies = training_accuracies;
 	// read in txtx log file data
 	std::vector<double> training_accuracies, testing_accuracies;
 	std::ifstream file("ANN_Update/training_acc.txt");
@@ -9637,20 +9633,3 @@ void CModelingandAnalysisofUncertaintyView::PlotAccuraciesCurve() {
 	dc.TextOutW(legendStartX + 50, legendStartY - 5, L"Testing");
 }
 
-void CModelingandAnalysisofUncertaintyView::OnMouseMove(UINT nFlags, CPoint point)
-{
-	if (point.x >= startX && point.x <= endX && point.y >= endY && point.y <= startY)
-	{
-		int iteration = static_cast<int>((point.x - startX) / scaleX);
-		if (iteration >= 0 && iteration < training_accuracies.size()) {
-			double accuracy = training_accuracies[iteration];
-
-			// Display the values
-			CString title;
-			title.Format(_T("Iteration: %d, Accuracy: %.2f"), iteration, accuracy);
-			AfxGetMainWnd()->SetWindowText(title);
-		}
-	}
-
-	CView::OnMouseMove(nFlags, point);
-}
