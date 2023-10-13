@@ -6474,22 +6474,22 @@ std::vector<int> CModelingandAnalysisofUncertaintyDoc::randsample(int n, int k) 
 	return indices;
 }
 
-void CModelingandAnalysisofUncertaintyDoc::VecTranspose(std::vector<std::vector<double> > &b)
+void CModelingandAnalysisofUncertaintyDoc::VecTranspose(std::vector<std::vector<double> >& b)
 {
-    if (b.size() == 0)
-        return;
+	if (b.size() == 0)
+		return;
 
 	std::vector<std::vector<double> > trans_vec(b[0].size(), std::vector<double>());
 
-    for (int i = 0; i < b.size(); i++)
-    {
-        for (int j = 0; j < b[i].size(); j++)
-        {
-            trans_vec[j].push_back(b[i][j]);
-        }
-    }
+	for (int i = 0; i < b.size(); i++)
+	{
+		for (int j = 0; j < b[i].size(); j++)
+		{
+			trans_vec[j].push_back(b[i][j]);
+		}
+	}
 
-    b = trans_vec;    // <--- reassign here
+	b = trans_vec;    // <--- reassign here
 }
 void CModelingandAnalysisofUncertaintyDoc::VecTransposeInt(std::vector<std::vector<int> >& b)
 {
@@ -6515,7 +6515,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	const int M = 3;
 	const int C = 3;
 	const int H = 5;
-	const int n_epochs = 200000;
+	const int n_epochs = 10000;
 	const int train = 20;
 	const double eta = 1e-1 / train;
 	// Initialize random number generator seed
@@ -6683,6 +6683,8 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	std::vector<std::vector<double>> Yhat0(Ntest, std::vector<double>(C));
 	std::vector<std::vector<double>> delta0(Ntest, std::vector<double>(C));
 
+	std::ofstream FILE;
+	FILE.open("outfile.txt");
 	// Iterate through 200000 times
 	for (int epoch = 1; epoch <= n_epochs; ++epoch) {
 		double spe_new = 0.0;
@@ -6700,7 +6702,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			//What is F and yhat
 			// F = 1000x5
 			std::vector<std::vector<double>> F = std::vector<std::vector<double>>(train, std::vector<double>(H, 0.0));
-			std::vector<double> yhat = std::vector<double>(N, 0.0);
+			std::vector<double> yhat = std::vector<double>(train, 0.0);
 			/*FILE << "WEIGHTS:\n";
 			for (int i = 0; i < weights.size(); i++)
 				FILE << weights[i] << ",";
@@ -6714,6 +6716,12 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 				Xslice.push_back(Xtrain[index[i]]);
 
 			GetNetworkPrediction(Xslice, H, weights, biases, F, yhat);
+
+			/*FILE << "yhat: \n";
+			for (int i = 0; i < yhat.size(); i++) {
+				FILE << yhat[i] << " ";
+			}
+			FILE << "\n";*/
 			/*for (int i = 0; i < N; i++)
 				FILE << yhat[i];
 			FILE << "\n"*/
@@ -6774,16 +6782,22 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			}
 
 			// Update yhat0 for the current class (TODO: Implement GetNetworkPrediction)
-			std::vector<double> yhat0(Ntest, 0.0); // Placeholder
+			std::vector<double> yhat0(Ntest, 0.0);
+			std::vector<std::vector<double> > Ftemp = std::vector<std::vector<double>>(Ntest, std::vector<double>(H, 0.0));
+			//GetNetworkPrediction(Xslice, H, weights, biases, F, yhat);
+			GetNetworkPrediction(Xtest, H, weights, biases, Ftemp, yhat0);
 
 			// Compute delta0 for the current class
 			std::vector<double> delta0(Ntest, 0.0);
+			double sumDelta = 0;
 			for (int i = 0; i < Ntest; ++i) {
 				delta0[i] = Ytest[i][c] - yhat0[i];
+				sumDelta += delta0[i] * delta0[i];
+				//FILE << "Delta: " << delta0[i] << " ";
 			}
-
+			//FILE << "\n";
 			// Update spe_new for the current class
-			spe_new += std::inner_product(delta0.begin(), delta0.end(), delta0.begin(), 0.0) / Ntest;
+			spe_new += sumDelta / Ntest;
 		}
 
 		// Check if spe_new is smaller than MIN and update wopt, bopt, and Yhat0 accordingly
@@ -6799,8 +6813,11 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 		}
 
 		// Print the current epoch and spe_new
-		std::cout << epoch << "\t" << spe_new << std::endl;
+
+
+		FILE << epoch << "\t" << spe_new << "\n";
 	}
+	FILE.close();
 }
 
 //GetNetworkPrediction(Xtrain, H, weights, biases, F, yhat);
