@@ -216,6 +216,7 @@ protected:
 	void InsertColumn(CArray <double>&, CArray <int>&, CArray <double>&, int);
 	double Determinant(CArray <double>&, CArray <int>&);
 	void Transpose(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
+	void TransposeParallel(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
 	void Inverse(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
 	void AddingMatrices(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
 	void AddingMatricesParallel(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);

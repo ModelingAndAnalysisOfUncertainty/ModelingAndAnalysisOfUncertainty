@@ -1013,6 +1013,58 @@ void CModelingandAnalysisofUncertaintyDoc::X_X_tr(CArray <double>& A, CArray <in
 	}
 }
 
+// Determining transpose of a matrix A -> A' using multithreading
+void CModelingandAnalysisofUncertaintyDoc::TransposeParallel(CArray <double>& A, CArray <int>& A_spec, CArray <double>& Atrans, CArray <int>& Atrans_spec) {
+	int row = A_spec.GetAt(0), col = A_spec.GetAt(1), pos_1, pos_2;
+	Atrans.RemoveAll(), Atrans_spec.RemoveAll();
+	Atrans.SetSize(A.GetSize()), Atrans_spec.SetSize(3);
+
+	if (A_spec.GetAt(2) == 1) {
+		Atrans_spec.SetAt(0, col), Atrans_spec.SetAt(1, row), Atrans_spec.SetAt(2, 1);
+		#pragma omp parallel for private(pos_1) collapse(2)
+		for (int i = 0; i < row; i++) {
+			for (int j = 0; j <= i; j++) {
+				pos_1 = GetPosition(i, j, A_spec);
+				Atrans.SetAt(pos_1, A.GetAt(pos_1));
+			}
+		}
+	}
+	else if (A_spec.GetAt(2) == 2) {
+		Atrans_spec.SetAt(0, col), Atrans_spec.SetAt(1, row), Atrans_spec.SetAt(2, 3);
+		#pragma omp parallel for private(pos_1, pos_2) collapse(2)
+		for (int i = 0; i < row; i++) {
+			for (int j = 0; j <= i; j++) {
+				pos_1 = GetPosition(j, i, Atrans_spec);
+				pos_2 = GetPosition(i, j, A_spec);
+				Atrans.SetAt(pos_1, A.GetAt(pos_2));
+			}
+		}
+	}
+	else if (A_spec.GetAt(2) == 3) {
+		Atrans_spec.SetAt(0, col), Atrans_spec.SetAt(1, row), Atrans_spec.SetAt(2, 2);
+		#pragma omp parallel for private(pos_1, pos_2) collapse(2)
+		for (int i = 0; i < row; i++) {
+			for (int j = i; j < col; j++) {
+				pos_1 = GetPosition(j, i, Atrans_spec);
+				pos_2 = GetPosition(i, j, A_spec);
+				Atrans.SetAt(pos_1, A.GetAt(pos_2));
+			}
+		}
+	}
+	else {
+		Atrans_spec.SetAt(0, col), Atrans_spec.SetAt(1, row), Atrans_spec.SetAt(2, 0);
+		#pragma omp parallel for private(pos_1, pos_2) collapse(2)
+		for (int i = 0; i < row; i++) {
+			for (int j = 0; j < col; j++) {
+				pos_1 = GetPosition(j, i, A_spec);
+				pos_2 = GetPosition(i, j, A_spec);
+				Atrans.SetAt(pos_1, A.GetAt(pos_2));
+			}
+		}
+	}
+}
+
+
 // Adding two matrices using multithreading : A + B = C
 void CModelingandAnalysisofUncertaintyDoc::AddingMatricesParallel(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
 	if ((A_spec.GetAt(0) == B_spec.GetAt(0)) && (A_spec.GetAt(1) == B_spec.GetAt(1))) {
