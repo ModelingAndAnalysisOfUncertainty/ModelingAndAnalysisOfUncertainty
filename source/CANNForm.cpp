@@ -22,6 +22,17 @@ CANNForm::CANNForm(CWnd* pParent /*=nullptr*/)
     batch_size = 128;
 }
 
+BOOL CANNForm::OnInitDialog()
+{
+    CDialogEx::OnInitDialog();
+
+    // Set the first radio button to be selected by default
+    m_selectedTask = 1;
+    task1.SetCheck(BST_CHECKED);
+
+    return TRUE;  // return TRUE unless you set the focus to a control
+}
+
 CANNForm::~CANNForm()
 {
 }
