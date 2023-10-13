@@ -1,4 +1,4 @@
-14,506,1/24/2023,11:13:24,10/10/2023,17:26:13,Boston housing data
+14,506,1/24/2023,11:13:24,10/13/2023,17:13:15,Boston housing data
 x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,y
 CRIM,ZN,INDUS,CHAS,NOX,RM,AGE,DIS,RAD,TAX,PTRATIO,PM,LSTAT,Medium house price
 per capita crime rate,%,%,,ppm,# rooms,%,weigted distance,,,pupil teacher ratio,,%,$1000

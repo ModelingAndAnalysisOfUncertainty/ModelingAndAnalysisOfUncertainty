@@ -4273,6 +4273,30 @@ int CModelingandAnalysisofUncertaintyView::OnCreate(LPCREATESTRUCT lpCreateStruc
 	Settings_Descriptive_Statistics.Create(_T("Settings"), BS_PUSHBUTTON, CRect(375, 20, 500, 58), this, IDC_SETTINGS_DESCRIPTIVE_STATISTICS);
 	Settings_Descriptive_Statistics.ShowWindow(SW_HIDE);
 	// Buttons for principal component analysis
+
+	int btnWidth = 150;
+	int btnHeight = 38;
+	int spacing = 20;
+	int topMargin = 20;
+	int rightMargin = 20;
+
+	int firstButtonRight = nWt - rightMargin;
+	DisplayPCA.Create(_T("Model overview"), BS_PUSHBUTTON, CRect(firstButtonRight - btnWidth, topMargin, firstButtonRight, topMargin + btnHeight), this, IDC_DISPLAY_PCA);
+	DisplayPCA.ShowWindow(SW_HIDE);
+
+	int secondButtonRight = firstButtonRight - btnWidth - spacing;
+	DisplayLoadingPlots.Create(_T("Loading plots"), BS_PUSHBUTTON, CRect(secondButtonRight - btnWidth, topMargin, secondButtonRight, topMargin + btnHeight), this, IDC_LOADING_PLOTS);
+	DisplayLoadingPlots.ShowWindow(SW_HIDE);
+
+	int thirdButtonRight = secondButtonRight - btnWidth - spacing;
+	DisplayScorePlots.Create(_T("Score plots"), BS_PUSHBUTTON, CRect(thirdButtonRight - btnWidth, topMargin, thirdButtonRight, topMargin + btnHeight), this, IDC_SCORE_PLOTS);
+	DisplayScorePlots.ShowWindow(SW_HIDE);
+
+	int fourthButtonRight = thirdButtonRight - btnWidth - spacing;
+	SelectScatterPlots.Create(_T("Select plots"), BS_PUSHBUTTON, CRect(fourthButtonRight - btnWidth, topMargin, fourthButtonRight, topMargin + btnHeight), this, IDC_SELECT_SCATTER_PLOTS);
+	SelectScatterPlots.ShowWindow(SW_HIDE);
+
+	/* previous one, 
 	DisplayPCA.Create(_T("Model overview"), BS_PUSHBUTTON, CRect((int)(nWt / 2 - 300), 20, (int)(nWt / 2 - 150), 58), this, IDC_DISPLAY_PCA);
 	DisplayPCA.ShowWindow(SW_HIDE);
 	DisplayLoadingPlots.Create(_T("Loading plots"), BS_PUSHBUTTON, CRect((int)(nWt / 2 - 75), 20, (int)(nWt / 2 + 75), 58), this, IDC_LOADING_PLOTS);
@@ -4280,7 +4304,9 @@ int CModelingandAnalysisofUncertaintyView::OnCreate(LPCREATESTRUCT lpCreateStruc
 	DisplayScorePlots.Create(_T("Score plots"), BS_PUSHBUTTON, CRect((int)(nWt / 2 + 150), 20, (int)(nWt / 2 + 300), 58), this, IDC_SCORE_PLOTS);
 	DisplayScorePlots.ShowWindow(SW_HIDE);
 	SelectScatterPlots.Create(_T("Select plots"), BS_PUSHBUTTON, CRect((int)(nWt / 2 + 375), 20, (int)(nWt / 2 + 525), 58), this, IDC_SELECT_SCATTER_PLOTS);
-	SelectScatterPlots.ShowWindow(SW_HIDE);
+	SelectScatterPlots.ShowWindow(SW_HIDE);*/
+
+
 	// Buttons for factor analysis
 	DisplayFA.Create(_T("Model overview"), BS_PUSHBUTTON, CRect((int)(nWt / 2 - 300), 20, (int)(nWt / 2 -150), 58), this, IDC_DISPLAY_FA);
 	DisplayFA.ShowWindow(SW_HIDE);
