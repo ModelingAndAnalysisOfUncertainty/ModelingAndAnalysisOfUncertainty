@@ -1156,8 +1156,9 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 	else if (pDoc->ANN_Training) {
 		CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
 		// plot the loss and accuracy curve
+		DisplayFileAndDataSetInformation(pDoc, pDC, true);
 		PlotLossCurve();
-		PlotAccuraciesCurve();
+		//PlotAccuraciesCurve();
 	}
 }
 
@@ -9363,6 +9364,10 @@ void CModelingandAnalysisofUncertaintyView::TwoSampleBoxPlot(CModelingandAnalysi
 	
 }
 
+
+
+
+
 // Helper function to draw grid
 void DrawGrid(CDC& dc, int startX, int startY, int endX, int endY, double xTickInterval, double yTickInterval, int numXTicks, int numYTicks) {
 	CPen gridPen(PS_DOT, 1, RGB(200, 200, 200));  // Light gray color for grid
@@ -9403,13 +9408,17 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 	GetClientRect(&rc);
 
 	int margin = 70;  // Increased margin for more space
-	int spacingBetweenGraphs = 50;
-	int graphHeight = (rc.Height() - 3 * margin - spacingBetweenGraphs) / 2;  // Fill the client window height
-	int graphWidth = rc.Width() - 2 * margin;  // Fill the client window width
+	int spacingBetweenGraphs = 50;  // spacing between graphs
+	int graphHeight = (rc.Height() - 3 * margin - spacingBetweenGraphs) / 2;
+	int graphWidth = rc.Width() - 2 * margin;
+
 	int startX = margin;
-	int startY = graphHeight + margin;
+	int startY = (2 * graphHeight) + (2 * margin) + spacingBetweenGraphs;
 	int endX = startX + graphWidth;
-	int endY = margin;
+	int endY = startY - graphHeight;
+
+	double scaleX = static_cast<double>(graphWidth) / losses.size();
+	double scaleY = static_cast<double>(graphHeight);  
 
 	if (!losses.empty()) {
 		double maxLoss = *std::max_element(losses.begin(), losses.end());
@@ -9441,7 +9450,7 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 		dc.MoveTo(startX, startY);
 		dc.LineTo(endX, startY);
 		dc.MoveTo(startX, startY);
-		dc.LineTo(endY, startX);
+		dc.LineTo(startX, endY);
 
 		// Draw X-axis ticks and labels
 		for (int i = 1; i <= numXTicks; ++i) {
