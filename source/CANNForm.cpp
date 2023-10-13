@@ -17,7 +17,9 @@ CANNForm::CANNForm(CWnd* pParent /*=nullptr*/)
     , total_epoch(0)
     , batch_size(0)
 {
-
+    learning_rate = 0.01;
+    total_epoch = 5;
+    batch_size = 128;
 }
 
 CANNForm::~CANNForm()
