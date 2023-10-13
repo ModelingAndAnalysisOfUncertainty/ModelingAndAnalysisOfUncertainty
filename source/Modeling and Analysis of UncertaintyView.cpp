@@ -47,6 +47,7 @@ BEGIN_MESSAGE_MAP(CModelingandAnalysisofUncertaintyView, CView)
 	ON_BN_CLICKED(IDC_FACTOR_LOADINGS, On_Display_Factor_Loadings)
 	ON_BN_CLICKED(IDC_FACTOR_SCORES, On_Display_Factor_Scores)
 	ON_BN_CLICKED(IDC_FACTOR_MATRICES, On_Display_Factor_Matrices)
+	ON_WM_MOUSEMOVE()
 END_MESSAGE_MAP()
 
 // CModelingandAnalysisofUncertaintyView construction/destruction
@@ -177,7 +178,7 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		pDC->Rectangle(0, 0, 2200, 2200);
 		pDC->SetTextAlign(TA_LEFT | TA_TOP);
 		pDC->TextOutW(160, 30, _T("Descriptive Statistics"));
-		pDC->MoveTo(10, 50), pDC->LineTo(500, 50), Text.Format(L"%d", pDoc->n_Obs);
+		pDC->MoveTo(10, 50), pDC->LineTo(500, 50), Text.Format(L"%d", pDoc->n_Obs); 
 
 
 
@@ -9505,15 +9506,19 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 		dc.TextOutW(startX - 40, endY - 25, L"Loss Value");
 
 
-		DrawGrid(dc, startX, startY, endX, endY, xTickInterval, yTickInterval, numXTicks, numYTicks);
-
-
-	}
-}
+		DrawGrid(dc, startX, startY, endX, endY, xTickInterval, yTickInterval, numXTicks, numYTicks)
 
 
 // After ANN training call this view function to plot the accuracy curve
 void CModelingandAnalysisofUncertaintyView::PlotAccuraciesCurve() {
+
+	this->startX = startX;
+	this->startY = startY;
+	this->endX = endX;
+	this->endY = endY;
+	this->scaleX = scaleX;
+	this->scaleY = scaleY;
+	this->training_accuracies = training_accuracies;
 	// read in txtx log file data
 	std::vector<double> training_accuracies, testing_accuracies;
 	std::ifstream file("ANN_Update/training_acc.txt");
@@ -9617,6 +9622,35 @@ void CModelingandAnalysisofUncertaintyView::PlotAccuraciesCurve() {
 	}
 	DrawGrid(dc, startX, startY, endX, endY, xTickInterval, yTickInterval, numXTicks, numYTicks);
 
+	int legendStartX = endX - 150; // Position 150 pixels left from the right edge
+	int legendStartY = startY - graphHeight - 20; // Start 20 pixels below the top of the accuracy graph 
+	dc.SelectObject(&penTraining);
+	dc.MoveTo(legendStartX, legendStartY);
+	dc.LineTo(legendStartX + 40, legendStartY);
+	dc.TextOutW(legendStartX + 50, legendStartY - 5, L"Training");
 
+	// Testing data
+	legendStartY += 20; // Position 20 pixels below the training label
+	dc.SelectObject(&penTesting);
+	dc.MoveTo(legendStartX, legendStartY);
+	dc.LineTo(legendStartX + 40, legendStartY);
+	dc.TextOutW(legendStartX + 50, legendStartY - 5, L"Testing");
+}
 
+void CModelingandAnalysisofUncertaintyView::OnMouseMove(UINT nFlags, CPoint point)
+{
+	if (point.x >= startX && point.x <= endX && point.y >= endY && point.y <= startY)
+	{
+		int iteration = static_cast<int>((point.x - startX) / scaleX);
+		if (iteration >= 0 && iteration < training_accuracies.size()) {
+			double accuracy = training_accuracies[iteration];
+
+			// Display the values
+			CString title;
+			title.Format(_T("Iteration: %d, Accuracy: %.2f"), iteration, accuracy);
+			AfxGetMainWnd()->SetWindowText(title);
+		}
+	}
+
+	CView::OnMouseMove(nFlags, point);
 }
