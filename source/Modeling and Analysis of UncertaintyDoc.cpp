@@ -4497,6 +4497,25 @@ void CModelingandAnalysisofUncertaintyDoc::SetUpFDAMatrices(CArray <double>& Sb,
 
 void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	AfxMessageBox(L"Now we are working on establishing an linear classification model");
+
+	CArray<double> x0;
+	CArray<double> y0;
+
+	//Parameters for the matrix {Width, Height, Type}
+	CArray<int> x0_spec;
+	x0_spec.SetSize(3);
+	x0_spec.SetAt(0, n_Var), x0_spec.SetAt(1, n_Obs), x0_spec.SetAt(2, 0);
+
+	x0.SetSize(static_cast <int64_t>(n_Obs) * (n_Var+1));
+	y0.SetSize(static_cast <int64_t>(n_Obs));
+
+	CArray<double> w;
+	CArray<double> sww;
+
+	//Changes w and sww (gives us the values we want)
+	GetStandardRegressionModel(x0, x0_spec, y0, w, sww);
+	//set Xvalues to the # of rows * n_var (which is the size of each row in the matrix)
+	
 }
 
 //*****************************************************************
