@@ -238,6 +238,7 @@ protected:
 	void ManipulateRowForwardPath(CArray<double>&, CArray<int>&, int, int);
 	void ManipulateRowBackwardPath(CArray<double>&, CArray<int>&, int, int);
 	void GaussJordanElimination(CArray<double>&, CArray<int>&, CArray<double>&, CArray<double>&);
+	void MatrixParallelTest();
 	// *******************************************
 	// ***      Matrix     Decompositions      ***
 	// *******************************************

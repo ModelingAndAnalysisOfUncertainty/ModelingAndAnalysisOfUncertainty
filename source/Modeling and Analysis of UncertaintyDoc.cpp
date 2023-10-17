@@ -813,7 +813,7 @@ void CModelingandAnalysisofUncertaintyDoc::AddingMatrices(CArray <double>& A, CA
 	}
 }
 
-// Adding two matrices : A - B = C
+// Subtracting two matrices : A - B = C
 void CModelingandAnalysisofUncertaintyDoc::SubtractingMatrices(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
 	if ((A_spec.GetAt(0) == B_spec.GetAt(0)) && (A_spec.GetAt(1) == B_spec.GetAt(1))) {
 		int row = A_spec.GetAt(0), col = A_spec.GetAt(1);
@@ -1317,6 +1317,69 @@ void CModelingandAnalysisofUncertaintyDoc::X_X_tr_Parallel(CArray <double>& A, C
 			B.SetAt(GetPosition(i, j, B_spec), temp);
 		}
 	}
+}
+
+//Computes the time taken for normal and parallel functions and outputs the speed up of the parallel
+void CModelingandAnalysisofUncertaintyDoc::MatrixParallelTest() {
+	//Setup
+	std::ofstream FILE;
+	FILE.open("matrix_Test.txt");
+	int size = 110;
+	FILE << "Matrix Size: " << size << "\n";
+	CArray <double> A, B, C, D, x, y;
+	CArray <int> A_Spec, B_Spec, C_Spec, D_Spec;
+	A_Spec.SetSize(3), A_Spec.SetAt(0, size), A_Spec.SetAt(1, size), A_Spec.SetAt(2, 0);
+	B_Spec.SetSize(3), B_Spec.SetAt(0, size), B_Spec.SetAt(1, size), B_Spec.SetAt(2, 0);
+
+	A.SetSize(static_cast <int64_t>(size * size));
+	B.SetSize(static_cast <int64_t>(size * size));
+	x.SetSize(size);
+
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size; j++) {
+			A.SetAt(GetPosition(i, j, A_Spec), i);
+			B.SetAt(GetPosition(i, j, B_Spec), i);
+		}
+		x.SetAt(i, i);
+	}
+
+	//Normal
+	auto t_start = std::chrono::high_resolution_clock::now();
+	std::clock_t c_start = std::clock();
+	//AddingMatrices(A, A_Spec, B, B_Spec, C, C_Spec);
+	//SubtractingMatrices(A, A_Spec, B, B_Spec, C, C_Spec);
+	MatrixProduct(A, A_Spec, B, B_Spec, C, C_Spec);
+	//MatrixVectorProduct(A, A_Spec, x, y);
+	//X_tr_X(A, A_Spec, C, C_Spec);
+	//X_tr_Y(A, A_Spec, B, B_Spec, C, C_Spec);
+	//X_Y_tr(A, A_Spec, B, B_Spec, C, C_Spec);
+	//X_X_tr(A, A_Spec, B, B_Spec);
+	auto t_end = std::chrono::high_resolution_clock::now();
+	std::clock_t c_end = std::clock();
+	auto elapsed_time_ms_normal = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
+	FILE << "Finished time of normal clock: " << elapsed_time_ms_normal << "ms" << std::endl;
+	FILE << "Finished time of normal CPU: " << 1000.0 * (c_end - c_start) / CLOCKS_PER_SEC << "ms\n\n";
+
+	//Parallel
+	t_start = std::chrono::high_resolution_clock::now();
+	c_start = std::clock();
+	//AddingMatricesParallel(A, A_Spec, B, B_Spec, C, C_Spec);
+	//SubtractingMatricesParallel(A, A_Spec, B, B_Spec, D, D_Spec);
+	MatrixProductParallel(A, A_Spec, B, B_Spec, C, C_Spec);
+	//MatrixVectorProductParallel(A, A_Spec, x, y);
+	//X_tr_X_Parallel(A, A_Spec, D, D_Spec);
+	//X_tr_Y_Parallel(A, A_Spec, B, B_Spec, D, D_Spec);
+	//X_Y_tr_Parallel(A, A_Spec, B, B_Spec, D, D_Spec);
+	//X_X_tr_Parallel(A, A_Spec, B, B_Spec);
+	t_end = std::chrono::high_resolution_clock::now();
+	c_end = std::clock();
+	auto elapsed_time_ms_parallel = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
+
+	//Speed up
+	double difference = double(elapsed_time_ms_normal) / double(elapsed_time_ms_parallel);
+	FILE << "Finished time of parallel clock: " << elapsed_time_ms_parallel << "ms" << std::endl;
+	FILE << "Finished time of parallel CPU: " << 1000.0 * (c_end - c_start) / CLOCKS_PER_SEC << "ms\n\n";
+	FILE << "Parallel is " << std::fixed << std::setprecision(2) << difference << " times faster" << "\n";
 }
 
 // *** Gauss-Jordan elimination : A·x=y (x unknown)
