@@ -6712,8 +6712,9 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 				FILE << biases[i];
 			FILE.close();*/
 			std::vector<std::vector<double> > Xslice;
+			std::vector<int> index_new = randsample(train, Ntrain);
 			for (int i = 0; i < train; i++)
-				Xslice.push_back(Xtrain[index[i]]);
+				Xslice.push_back(Xtrain[index_new[i]]);
 
 			GetNetworkPrediction(Xslice, H, weights, biases, F, yhat);
 
@@ -6727,9 +6728,10 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			FILE << "\n"*/
 
 			// Compute the error (d) for the current class
+			//If we replaced Ytrain with Y slice we would be chilling
 			std::vector<double> d(train, 0.0);
 			for (int i = 0; i < train; ++i) {
-				d[i] = Ytrain[index[i]][c] - yhat[i];
+				d[i] = Ytrain[index_new[i]][c] - yhat[i];
 			}
 
 			// Update weights and biases
@@ -6810,12 +6812,10 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			bopt = b;
 			MIN = spe_new;
 			Yhat0 = yhat0;
+			FILE << epoch << "\t" << spe_new << "\n";
 		}
-
 		// Print the current epoch and spe_new
 
-
-		FILE << epoch << "\t" << spe_new << "\n";
 	}
 	FILE.close();
 }
