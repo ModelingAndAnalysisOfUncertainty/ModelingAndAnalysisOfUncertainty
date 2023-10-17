@@ -6588,61 +6588,26 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	// Calculate Ntrain as described in MATLAB
 	int Ntrain = static_cast<int>(round(3 * N * trainFraction));
 	// Vector of 0-3000 shuffled
-	std::vector<int> index = randsample(3 * N, 3 * N);
 
-	// Reorder X, Y, and ytrue according to the shuffled index
-	// X_reordered = 3000x3; Y_reordered = 3000x3; ytrue = 3000x1;
-	std::vector<std::vector<double>> X_reordered(3 * N, std::vector<double>(M));
-	std::vector<std::vector<int>> Y_reordered(3 * N, std::vector<int>(C));
-	std::vector<int> ytrue_reordered(3 * N);
-
-	// Randomize the order of X_re and Y_re
-	for (int i = 0; i < 3 * N; ++i) {
-		X_reordered[i] = X[index[i]];
-		for (int c = 0; c < C; ++c) {
-			// Probably breaks because Y.size() = 3;
-			Y_reordered[i][c] = Y[index[i]][c];
-		}
-		// random pick 1,2 or 3
-		ytrue_reordered[i] = ytrue[index[i]];
-	}
-
-	// Separate the data into training and testing sets
-	// 2550
-	//int Ntrain = static_cast<int>(round(3 * N * trainFraction));
-	// 450
 	int Ntest = 3 * N - Ntrain;
-	//2550x3; 2550x3; 450x3; 450x3;
 	std::vector<std::vector<double>> Xtrain(Ntrain, std::vector<double>(M));
 	std::vector<std::vector<int>> Ytrain(Ntrain, std::vector<int>(C));
 	std::vector<std::vector<double>> Xtest(Ntest, std::vector<double>(M));
 	std::vector<std::vector<int>> Ytest(Ntest, std::vector<int>(C));
+	std::vector<int> index = randsample(3 * N, 3 * N);
 
-	// ytrue_train.size() = 2550; ytrue_test.size() = 450;
-	std::vector<int> ytrue_train(Ntrain);
-	std::vector<int> ytrue_test(Ntest);
-
-	//This is getting the random Training data
-	for (int i = 0; i < Ntrain; ++i) {
-		Xtrain[i] = X_reordered[i];
-		//Random row is gonna be 1
-		for (int c = 0; c < C; ++c) {
-			Ytrain[i][c] = Y_reordered[i][c];
+	for (int i = 0; i < Ntest; i++) {
+		Xtrain[i] = X[index[i]];
+		for (int c = 0; c < C; c++) {
+			Ytrain[i][c] = Y[index[i]][c];
 		}
-		// Reorders y_true with the same index that it reordered other matrices
-		ytrue_train[i] = ytrue_reordered[i];
 	}
-
-	// This is getting the test data
-	for (int i = 0; i < Ntest; ++i) {
-		Xtest[i] = X_reordered[Ntrain + i];
-		for (int c = 0; c < C; ++c) {
-			Ytest[i][c] = Y_reordered[Ntrain + i][c];
+	for (int i = Ntrain; i < N; i++) {
+		Xtest[i] = X[index[i]];
+		for (int c = 0; c < C; c++) {
+			Ytest[i][c] = Y[index[i]][c];
 		}
-		ytrue_test[i] = ytrue_reordered[Ntrain + i];
 	}
-
-
 	// 1x60, 1x18
 	std::vector<double> w(C * n_weights);
 	std::vector<double> b(C * n_biases);
@@ -6712,9 +6677,8 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 				FILE << biases[i];
 			FILE.close();*/
 			std::vector<std::vector<double> > Xslice;
-			std::vector<int> index_new = randsample(train, Ntrain);
 			for (int i = 0; i < train; i++)
-				Xslice.push_back(Xtrain[index_new[i]]);
+				Xslice.push_back(Xtrain[index[i]]);
 
 			GetNetworkPrediction(Xslice, H, weights, biases, F, yhat);
 
@@ -6731,7 +6695,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			//If we replaced Ytrain with Y slice we would be chilling
 			std::vector<double> d(train, 0.0);
 			for (int i = 0; i < train; ++i) {
-				d[i] = Ytrain[index_new[i]][c] - yhat[i];
+				d[i] = Ytrain[index[i]][c] - yhat[i];
 			}
 
 			// Update weights and biases
