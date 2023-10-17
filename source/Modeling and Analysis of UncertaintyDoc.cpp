@@ -6517,7 +6517,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	const int H = 5;
 	const int n_epochs = 10000;
 	const int train = 20;
-	const double eta = 1e-1 / train;
+	const double eta = 1e-1 / train;  
 	int batch_size = 5;
 	// Initialize random number generator seed
 	std::srand(1);
@@ -6541,10 +6541,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	//Normalize data
 	X = zscore(X);
 
-
-	/*std::ofstream FILE;
-	FILE.open("outfile.txt");
-	VecTranspose(X);*/
 	VecTranspose(X);
 
 	// Generate ytrue as described in MATLAB
@@ -6641,7 +6637,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	//Need to fix
 	/*
 	// Initialize some variables for tracking training progress
-	double spe_old = sum_squared_error(ytrue, Ytest);
 	*/
 
 	// Create variables for Yhat0 and delta0
@@ -6692,7 +6687,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 
 			// Update weights connecting the hidden to the output layer
 			for (int h = 0; h < H; ++h) {
-				/*w[pos + h] += eta * std::inner_product(d.begin(), d.end(), dphi_t.begin(), 0.0);*/
 				double sum = 0.0;
 				for (int i = 0; i < d.size(); i++) {
 					sum += dphi_t[i] * F[i][h] * d[i] * eta;
@@ -6718,7 +6712,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 					double sumDphi = 0;
 					int posW = c * n_weights + j * H + h;
 					for (int i = 0; i < train; ++i) {
-						//w[pos] += eta * w[c * n_weights + M * H + h] * d[i] * (dphi_t[i] * dphi_fh[i] * Xslice[i][j]);
 						sumDphi += d[i] * (dphi_t[i] * dphi_fh[i] * Xslice[i][j]);
 					}
 					w[posW] += eta * w[c * n_weights + M * H + h] * sumDphi;
@@ -6735,7 +6728,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			// Update yhat0 for the current class (TODO: Implement GetNetworkPrediction)
 			std::vector<double> yhat0(Ntest, 0.0);
 			std::vector<std::vector<double> > Ftemp = std::vector<std::vector<double>>(Ntest, std::vector<double>(H, 0.0));
-			//GetNetworkPrediction(Xslice, H, weights, biases, F, yhat);
 			GetNetworkPrediction(Xtest, H, weights, biases, Ftemp, yhat0);
 
 			// Compute delta0 for the current class
@@ -6744,9 +6736,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			for (int i = 0; i < Ntest; ++i) {
 				delta0[i] = Ytest[i][c] - yhat0[i];
 				sumDelta += delta0[i] * delta0[i];
-				//FILE << "Delta: " << delta0[i] << " ";
 			}
-			//FILE << "\n";
 			// Update spe_new for the current class
 			spe_new += sumDelta / Ntest;
 		}
@@ -6777,11 +6767,6 @@ void CModelingandAnalysisofUncertaintyDoc::GetNetworkPrediction(const std::vecto
 
 	int N = X.size();
 	int M = X[0].size();
-	/*std::ofstream FILE;
-	FILE.open("outfile.txt");
-
-	FILE << "N: " << N << "\nM: " << M << "\n";
-	FILE.close();*/
 
 
 	for (int h = 0; h < H; ++h) {
@@ -6803,19 +6788,6 @@ void CModelingandAnalysisofUncertaintyDoc::GetNetworkPrediction(const std::vecto
 			yhat[i] += w[pos] * F[i][h];
 		}
 	}
-	/*
-	if (task == "regression") {
-		int pos = M * H + H;
-		for (int i = 0; i < N; ++i) {
-			yhat[i] += b[H];
-		}
-	}
-	else {
-		for (int i = 0; i < N; ++i) {
-			yhat[i] = 1.0 / (1.0 + exp(-yhat[i]));
-		}
-	}
-	*/
 	for (int i = 0; i < N; ++i) {
 		yhat[i] = 1.0 / (1.0 + exp(-yhat[i]));
 	}
