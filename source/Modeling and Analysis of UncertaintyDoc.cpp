@@ -5177,6 +5177,39 @@ void CModelingandAnalysisofUncertaintyDoc::OnKPCA() {
 
 void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	AfxMessageBox(L"Now we are working on establishing logistic regression model");
+<<<<<<< Updated upstream
+=======
+	CArray <double> X; 
+	X.Add(1.0);
+	X.Add(2.0);
+	X.Add(3.0);
+	X.Add(4.0);
+	CArray <int> X_spec; 
+	X_spec.SetSize(3);
+	X_spec.SetAt(0, 2);
+	X_spec.SetAt(1, 2);
+	X_spec.SetAt(2, 0);
+	
+	CArray <double> X_inverse;
+	CArray <int> X_Inverse_spec;
+	X_Inverse_spec.SetSize(3);
+	X_Inverse_spec.SetAt(0, 2);
+	X_Inverse_spec.SetAt(1, 2);
+	X_Inverse_spec.SetAt(2, 0);
+	Inverse(X, X_spec, X_inverse, X_Inverse_spec);
+	SaveMatrix("example.txt", X_inverse, X_Inverse_spec);
+	/*for (int i = 0;; i++) {
+		double f1 = pow(std::sin(x), 1) + pow(x, 1) + pow(-1, 1);
+		double deriv = pow(std::cos(x), 1) + pow(1, 1);
+		x = x - f1 / deriv;
+		if (abs(f1) < 0.001) {
+			std::cout << "The x is " << x << "\n";
+			break;
+		}
+
+	}*/
+
+>>>>>>> Stashed changes
 }
 
 //*****************************************************************
