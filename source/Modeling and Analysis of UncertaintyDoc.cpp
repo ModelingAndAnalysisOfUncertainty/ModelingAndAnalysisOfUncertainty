@@ -6668,28 +6668,12 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			// F = 1000x5
 			std::vector<std::vector<double>> F = std::vector<std::vector<double>>(train, std::vector<double>(H, 0.0));
 			std::vector<double> yhat = std::vector<double>(train, 0.0);
-			/*FILE << "WEIGHTS:\n";
-			for (int i = 0; i < weights.size(); i++)
-				FILE << weights[i] << ",";
 
-			FILE << "\nBIASES:\n";
-			for (int i = 0; i < biases.size(); i++)
-				FILE << biases[i];
-			FILE.close();*/
 			std::vector<std::vector<double> > Xslice;
 			for (int i = 0; i < train; i++)
 				Xslice.push_back(Xtrain[index[i]]);
 
 			GetNetworkPrediction(Xslice, H, weights, biases, F, yhat);
-
-			/*FILE << "yhat: \n";
-			for (int i = 0; i < yhat.size(); i++) {
-				FILE << yhat[i] << " ";
-			}
-			FILE << "\n";*/
-			/*for (int i = 0; i < N; i++)
-				FILE << yhat[i];
-			FILE << "\n"*/
 
 			// Compute the error (d) for the current class
 			//If we replaced Ytrain with Y slice we would be chilling
