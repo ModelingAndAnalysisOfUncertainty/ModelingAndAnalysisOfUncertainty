@@ -6518,6 +6518,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	const int n_epochs = 10000;
 	const int train = 20;
 	const double eta = 1e-1 / train;
+	int batch_size = 5;
 	// Initialize random number generator seed
 	std::srand(1);
 
@@ -6760,10 +6761,11 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			bopt = b;
 			MIN = spe_new;
 			Yhat0 = yhat0;
-			FILE << epoch << "\t" << spe_new << "\n";
 		}
 		// Print the current epoch and spe_new
-
+		if (epoch % batch_size == 0) {
+			FILE << epoch << "\t" << spe_new << "\n";
+		}
 	}
 	FILE.close();
 }
