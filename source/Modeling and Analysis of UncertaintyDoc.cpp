@@ -1435,11 +1435,44 @@ void CModelingandAnalysisofUncertaintyDoc::ManipulateRowForwardPath(CArray <doub
 	C.SetAt(pos_C, (double)0);
 }
 
+// Converts the matrix A in the Gauss-Jordan scheme 'C' into a upper triangular form in multithreading
+void CModelingandAnalysisofUncertaintyDoc::ManipulateRowForwardPathParallel(CArray <double>& C, CArray <int>& C_spec, int row, int col) {
+	CArray <double> c;
+	int pos_C = GetPosition(row, col, C_spec);
+	double Cji = C.GetAt(pos_C), temp;
+	GetRow(C, C_spec, c, col);
+	#pragma omp parallel for private(temp, pos_C)
+	for (int i = col + 1; i < C_spec.GetAt(1); i++) {
+		pos_C = GetPosition(row, i, C_spec);
+		temp = C.GetAt(pos_C) - Cji * c.GetAt(i);
+		C.SetAt(pos_C, temp);
+	}
+	pos_C = GetPosition(row, col, C_spec);
+	C.SetAt(pos_C, (double)0);
+}
+
 // Converts the upper triangular form of A in C to the identity matrix
 void CModelingandAnalysisofUncertaintyDoc::ManipulateRowBackwardPath(CArray <double>& C, CArray <int>& C_spec, int row, int col) {
 	int pos_C = GetPosition(row, col, C_spec), pos;
 	double Cij = C.GetAt(pos_C), temp = 0;
 	int dim = C_spec.GetAt(1) - C_spec.GetAt(0);
+	for (int i = 0; i < dim; i++) {
+		pos_C = GetPosition(row, C_spec.GetAt(0) + i, C_spec);
+		pos = GetPosition(col, C_spec.GetAt(0) + i, C_spec);
+		temp = C.GetAt(pos_C) - Cij * C.GetAt(pos);
+		pos = GetPosition(row, C_spec.GetAt(0) + i, C_spec);
+		C.SetAt(pos, temp);
+	}
+	pos_C = GetPosition(row, col, C_spec);
+	C.SetAt(pos_C, (double)0);
+}
+
+// Converts the upper triangular form of A in C to the identity matrix in multithreading
+void CModelingandAnalysisofUncertaintyDoc::ManipulateRowBackwardPathParallel(CArray <double>& C, CArray <int>& C_spec, int row, int col) {
+	int pos_C = GetPosition(row, col, C_spec), pos;
+	double Cij = C.GetAt(pos_C), temp = 0;
+	int dim = C_spec.GetAt(1) - C_spec.GetAt(0);
+	#pragma omp parallel for private(temp, pos_C, pos)
 	for (int i = 0; i < dim; i++) {
 		pos_C = GetPosition(row, C_spec.GetAt(0) + i, C_spec);
 		pos = GetPosition(col, C_spec.GetAt(0) + i, C_spec);
@@ -1550,6 +1583,114 @@ void CModelingandAnalysisofUncertaintyDoc::GaussJordanElimination(CArray<double>
 					C.SetAt(pos_C, C.GetAt(pos_C) / Cii);
 				}
 				for (int j = i - 1; j >= 0; j--) ManipulateRowBackwardPath(C, C_spec, j, i);
+			}
+			for (int i = 0; i < row; i++) {
+				pos_C = GetPosition(i, row, C_spec);
+				x.SetAt(i, C.GetAt(pos_C));
+			}
+		}
+	}
+}
+
+// Computes the Gauss-Jordan elimination with multithreading
+void CModelingandAnalysisofUncertaintyDoc::GaussJordanEliminationParallel(CArray<double>& A, CArray<int>& A_spec, CArray<double>& x, CArray<double>& y) {
+	if ((A_spec.GetAt(0) == A_spec.GetAt(1)) && (y.GetSize() == A_spec.GetAt(0))) {
+		x.SetSize(A_spec.GetAt(1));
+		CArray <double> C;
+		int dim = A_spec.GetAt(1) + 1;
+		int64_t space = static_cast<int64_t>(A_spec.GetAt(0)) * dim;
+		C.SetSize(space);
+		CArray <int> C_spec;
+		C_spec.SetSize(3);
+		C_spec.SetAt(0, A_spec.GetAt(0));
+		C_spec.SetAt(1, A_spec.GetAt(1) + 1);
+		C_spec.SetAt(2, 0);
+		int row = A_spec.GetAt(0);
+		int col = A_spec.GetAt(1);
+		int pos_C, pos_A;
+		if ((A_spec.GetAt(2) == 0) || (A_spec.GetAt(2) == 1)) {
+			// unspecified or symmetric matrix
+			for (int i = 0; i < row; i++) {
+				for (int j = 0; j < col; j++) {
+					pos_C = GetPosition(i, j, C_spec);
+					pos_A = GetPosition(i, j, A_spec);
+					C.SetAt(pos_C, A.GetAt(pos_A));
+				}
+				pos_C = GetPosition(i, row, C_spec);
+				C.SetAt(pos_C, y.GetAt(i));
+			}
+			for (int i = 0; i < row; i++) {
+				SetUpPivot(C, C_spec, i);
+				for (int j = i + 1; j < row; j++) ManipulateRowForwardPathParallel(C, C_spec, j, i);
+			}
+			for (int i = row - 1; i > 0; i--) {
+				for (int j = i - 1; j >= 0; j--) ManipulateRowBackwardPathParallel(C, C_spec, j, i);
+			}
+			for (int i = 0; i < row; i++) {
+				pos_C = GetPosition(i, row, C_spec);
+				x.SetAt(i, C.GetAt(pos_C));
+			}
+			for (int i = 0; i < row; i++) {
+				for (int j = 0; j <= col; j++) {
+					pos_C = GetPosition(i, j, C_spec);
+				}
+			}
+		}
+		else if (A_spec.GetAt(2) == 2) {
+			// lower triangular matrix
+			for (int i = 0; i < row; i++) {
+				for (int j = 0; j < col; j++) {
+					if (j <= i) {
+						pos_C = GetPosition(i, j, C_spec);
+						pos_A = GetPosition(i, j, A_spec);
+						C.SetAt(pos_C, A.GetAt(pos_A));
+					}
+					else {
+						pos_C = GetPosition(i, j, C_spec);
+						C.SetAt(pos_C, (double)0);
+					}
+				}
+				pos_C = GetPosition(i, row, C_spec);
+				C.SetAt(pos_C, y.GetAt(i));
+			}
+			for (int i = 0; i < row; i++) {
+				pos_C = GetPosition(i, i, C_spec);
+				double Cii = C.GetAt(pos_C);
+				C.SetAt(pos_C, (double)1);
+				pos_C = GetPosition(i, row, C_spec);
+				C.SetAt(pos_C, C.GetAt(pos_C) / Cii);
+				for (int j = i + 1; j < row; j++) ManipulateRowForwardPathParallel(C, C_spec, j, i);
+			}
+			for (int i = 0; i < row; i++) {
+				pos_C = GetPosition(i, row, C_spec);
+				x.SetAt(i, C.GetAt(pos_C));
+			}
+		}
+		else {
+			// upper triangular matrix
+			for (int i = 0; i < row; i++) {
+				for (int j = 0; j < col; j++) {
+					if (j >= i) {
+						pos_C = GetPosition(i, j, C_spec);
+						pos_A = GetPosition(i, j, A_spec);
+						C.SetAt(pos_C, A.GetAt(pos_A));
+					}
+					else {
+						pos_C = GetPosition(i, j, C_spec);
+						C.SetAt(pos_C, (double)0);
+					}
+				}
+				pos_C = GetPosition(i, row, C_spec);
+				C.SetAt(pos_C, y.GetAt(i));
+			}
+			for (int i = row - 1; i >= 0; i--) {
+				pos_C = GetPosition(i, i, C_spec);
+				double Cii = C.GetAt(pos_C);
+				for (int j = i; j < col + 1; j++) {
+					pos_C = GetPosition(i, j, C_spec);
+					C.SetAt(pos_C, C.GetAt(pos_C) / Cii);
+				}
+				for (int j = i - 1; j >= 0; j--) ManipulateRowBackwardPathParallel(C, C_spec, j, i);
 			}
 			for (int i = 0; i < row; i++) {
 				pos_C = GetPosition(i, row, C_spec);

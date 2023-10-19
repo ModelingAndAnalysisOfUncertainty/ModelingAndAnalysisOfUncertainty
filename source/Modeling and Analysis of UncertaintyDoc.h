@@ -236,8 +236,11 @@ protected:
 	void X_X_tr_Parallel(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
 	void SetUpPivot(CArray <double>&, CArray <int>&, int);
 	void ManipulateRowForwardPath(CArray<double>&, CArray<int>&, int, int);
+	void ManipulateRowForwardPathParallel(CArray <double>&, CArray <int>&, int, int);
 	void ManipulateRowBackwardPath(CArray<double>&, CArray<int>&, int, int);
+	void ManipulateRowBackwardPathParallel(CArray <double>&, CArray <int>&, int, int);
 	void GaussJordanElimination(CArray<double>&, CArray<int>&, CArray<double>&, CArray<double>&);
+	void GaussJordanEliminationParallel(CArray<double>&, CArray<int>&, CArray<double>&, CArray<double>&);
 	void MatrixParallelTest();
 	// *******************************************
 	// ***      Matrix     Decompositions      ***
