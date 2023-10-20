@@ -73,7 +73,9 @@ private:
 
 public:
 	// VARIABLES FOR DATA INFO
+	//number of x
 	int n_Var = 0;
+	//number of y data
 	int n_Obs = 0;
 	CString PathAndFileName;
 	bool FileOpen = false;

@@ -4495,28 +4495,71 @@ void CModelingandAnalysisofUncertaintyDoc::SetUpFDAMatrices(CArray <double>& Sb,
 //***            Compute linear classification model            ***
 //*****************************************************************
 
+
 void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
+	CArray <double> ypred;
+	ypred.SetSize(n_Obs);
 	AfxMessageBox(L"Now we are working on establishing an linear classification model");
+	if (Problem == L"Classification problem, ") {
+		//curent data 
+		//get data to parse through
 
-	CArray<double> x0;
-	CArray<double> y0;
+		/// CArray <double>& Data_0, CArray <double>& bar, CArray <double>& std
+		CArray <double> Data_0;
+		CArray <double> x_variables, std;
+		StandardizeDataMatrix(Data_0, x_variables, std);
 
-	//Parameters for the matrix {Width, Height, Type}
-	CArray<int> x0_spec;
-	x0_spec.SetSize(3);
-	x0_spec.SetAt(0, n_Var), x0_spec.SetAt(1, n_Obs), x0_spec.SetAt(2, 0);
+		CArray <double> PredictorMatrix;
+		CArray <double> ResponseVector;
+		CArray <int> PredictorMatrix_spec;
+		PredictorMatrix.SetSize(static_cast <int64_t>(n_Obs) * n_predictor);
+		ResponseVector.SetSize(static_cast <int64_t>(n_Obs));
+		PredictorMatrix_spec.SetSize(3);
+		PredictorMatrix_spec.SetAt(0, n_Obs), PredictorMatrix_spec.SetAt(1, n_predictor), PredictorMatrix_spec.SetAt(2, 0);
+		double value;
 
-	x0.SetSize(static_cast <int64_t>(n_Obs) * (n_Var+1));
-	y0.SetSize(static_cast <int64_t>(n_Obs));
 
-	CArray<double> w;
-	CArray<double> sww;
 
-	//Changes w and sww (gives us the values we want)
-	GetStandardRegressionModel(x0, x0_spec, y0, w, sww);
-	//set Xvalues to the # of rows * n_var (which is the size of each row in the matrix)
-	
-}
+
+		int predictor, n_predictor = (int)RegressionModel.SelectedPredictors.GetSize();
+		SelectedPredictors.RemoveAll();
+		for (int i = 0; i < n_predictor; i++) SelectedPredictors.Add(RegressionModel.SelectedPredictors.GetAt(i));
+		CArray <double> PredictorMatrix;
+		CArray <double> ResponseVector;
+		CArray <int> PredictorMatrix_spec;
+		PredictorMatrix.SetSize(static_cast <int64_t>(n_Obs) * n_predictor);
+		ResponseVector.SetSize(static_cast <int64_t>(n_Obs));
+		PredictorMatrix_spec.SetSize(3);
+		PredictorMatrix_spec.SetAt(0, n_Obs), PredictorMatrix_spec.SetAt(1, n_predictor), PredictorMatrix_spec.SetAt(2, 0);
+		double value;
+		for (int i = 0; i < n_predictor; i++) {
+			predictor = RegressionModel.SelectedPredictors.GetAt(i);
+			for (int j = 0; j < n_Obs; j++) {
+				value = Data.GetAt(GetPosition(j, predictor, Data_spec));
+				if (value != 1) value = -1;
+				//y classifier is 1 or -1
+				PredictorMatrix.SetAt(GetPosition(j, i, PredictorMatrix_spec), value);
+			}
+		}
+		for (int i = 0; i < n_Obs; i++) {
+			value = Data.GetAt(static_cast <int64_t>(GetPosition(i, n_Var - 1, Data_spec)));
+			ResponseVector.SetAt(i, value);
+		}
+
+		CArray <double> w;
+		CArray <double> Sww;
+		GetStandardRegressionModel(PredictorMatrix, PredictorMatrix_spec, ResponseVector, w, Sww);
+		//if w is the matci
+		// 
+		//w matrix for coefficent 
+		//Response vector is x w coefficient  and b multiplied by the input data araay to get the coreesponsing clasifcatuin 
+		//if y i 1 or0 in ebtwenn round
+
+
+	}
+	//CArray <double>& X, CArray <int>& X_spec, CArray <double>& y
+} //insert data thw iwll have x muTIple by w to get y value remebet for x array to add 1 at ebd bases on predictir decide class 1 or ,-1 
+
 
 //*****************************************************************
 //***              Compute linear regression model              ***
@@ -4549,6 +4592,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnMultivariateRegression() {
 			CArray <double> ResponseVector;
 			CArray <int> PredictorMatrix_spec;
 			PredictorMatrix.SetSize(static_cast <int64_t>(n_Obs) * n_predictor);
+			//x 
 			ResponseVector.SetSize(static_cast <int64_t>(n_Obs));
 			PredictorMatrix_spec.SetSize(3);
 			PredictorMatrix_spec.SetAt(0, n_Obs), PredictorMatrix_spec.SetAt(1, n_predictor), PredictorMatrix_spec.SetAt(2, 0);
