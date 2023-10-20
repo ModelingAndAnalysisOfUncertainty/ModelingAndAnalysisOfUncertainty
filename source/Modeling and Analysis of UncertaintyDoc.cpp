@@ -5178,6 +5178,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnKPCA() {
 void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	AfxMessageBox(L"Now we are working on establishing logistic regression model");
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 	CArray <double> X; 
 	X.Add(1.0);
@@ -5209,6 +5210,42 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 
 	}*/
 
+>>>>>>> Stashed changes
+=======
+	CArray<double> y, j, f, w;
+	CArray<int> y_spec, j_spec, f_spec, w_spec;
+	w.SetSize(2);
+	j.SetSize(4);
+	f.SetSize(2);
+	//////
+	w.SetAt(0, 1);
+	w.SetAt(1, 1);
+	j_spec.SetAt(0, 2);
+	j_spec.SetAt(1, 2);
+	j_spec.SetAt(2, 0);
+	f_spec.SetAt(0, 2);
+	f_spec.SetAt(1, 2);
+	f_spec.SetAt(2, 0);
+	//////
+	int i = 0;
+	double error = 1;
+	while (error > 0.0001) {
+		j.SetAt(0, cos(w.GetAt(0)));
+		j.SetAt(1, 2 * w.GetAt(0));
+		j.SetAt(2, 1);
+		j.SetAt(3, -1 * sin(w.GetAt(1)));
+		f.SetAt(0, sin(w.GetAt(0)) + w.GetAt(1));
+		f.SetAt(1, cos(w.GetAt(1)) + pow(w.GetAt(0), 2));
+		CArray<double> j_inverse;
+		CArray<int> j_inv_specs;
+		j_inv_specs.SetAt(0, 2);
+		j_inv_specs.SetAt(1, 2);
+		j_inv_specs.SetAt(2, 0);
+		Inverse(j,j_spec, j_inverse, j_inv_specs);
+		MatrixVectorProduct(j_inverse,j_inv_specs,f,y);
+		w.SetAt(i, w.GetAt(i) - y.GetAt(i));
+		i += 1;
+	}
 >>>>>>> Stashed changes
 }
 
