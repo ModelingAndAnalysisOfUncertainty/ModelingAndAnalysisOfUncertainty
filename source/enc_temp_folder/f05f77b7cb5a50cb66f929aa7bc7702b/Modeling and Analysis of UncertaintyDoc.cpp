@@ -2080,7 +2080,12 @@ void CModelingandAnalysisofUncertaintyDoc::GEVD(CArray <double>& A, CArray <int>
 
 void CModelingandAnalysisofUncertaintyDoc::StandardizeDataMatrix(CArray <double>& Data_0, CArray <double>& bar, CArray <double>& std) {
 	Data_0.SetSize(Data.GetSize());
+	CString tmp;
+	tmp.Format(L"%d", Data.GetSize());
+	AfxMessageBox(tmp);
 	bar.SetSize(n_Var);
+	tmp.Format(L"%d", n_Var);
+	AfxMessageBox(tmp);
 	std.SetSize(n_Var);
 	double sum, sum_sqr, element, scale;
 	int j, pos_Data;
@@ -4507,8 +4512,8 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 
 	CArray<double> y;
 	y.SetSize(n_Obs);
-	for (int i = 0; i < n_Obs; i++) {
-		y.SetAt(i, Data.GetAt((n_Var)*i));
+	for (int i = n_Var*n_Obs-n_Obs; i < n_Var * n_Obs; i++) {
+		y.SetAt(i, Data.GetAt(i));
 	}
 	CString tmp;
 	tmp.Format(L"%lf", y[0]);
