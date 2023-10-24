@@ -5198,14 +5198,14 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	std::ofstream FILE;
 	FILE.open("example.txt");
 	double error = 1;
-	while (error > 0.001) {
+	while (error > 0.00001) {
 		
 		j.SetAt(0, cos(w.GetAt(0)));
 		j.SetAt(1, 2 * w.GetAt(0));
 		j.SetAt(2, 1);
-		j.SetAt(3, -1 * sin(w.GetAt(1)));
+		j.SetAt(3, sin(w.GetAt(1)));
 		f.SetAt(0, sin(w.GetAt(0)) + w.GetAt(1));
-		f.SetAt(1, cos(w.GetAt(1)) + pow(w.GetAt(0), 2));
+		f.SetAt(1, -cos(w.GetAt(1)) + pow(w.GetAt(0), 2));
 		CArray<double> j_inverse;
 		j_inverse.SetSize(4);
 		CArray<int> j_inv_specs;
