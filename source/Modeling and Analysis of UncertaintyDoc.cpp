@@ -6511,9 +6511,9 @@ void CModelingandAnalysisofUncertaintyDoc::VecTransposeInt(std::vector<std::vect
 
 void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	// Define constants
-	const int N = 1000;
-	const int M = 3;
-	const int C = 3;
+	const int N = n_Obs;
+	const int M = n_Var - 1;
+	const int C = n_classes;
 	const int H = 5;
 	const int n_epochs = 10000;
 	const int train = 20;
@@ -6572,6 +6572,39 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	Y.push_back(y1);
 	Y.push_back(y2);
 	Y.push_back(y3);
+
+	CArray<double> Data0, bar, std;
+	Data0.RemoveAll();
+	bar.RemoveAll();
+	std.RemoveAll();
+	StandardizeDataMatrix(Data0, bar, std);
+	std::ofstream FILE_CHECK;
+	FILE_CHECK.open("check_file.txt");
+
+	std::vector<std::vector<double>> Input_X(n_Obs, std::vector<double>(n_Var-1));
+	std::vector<double> Input_Y(n_Obs);
+
+	for (int i = 0; i < n_Obs * (n_Var-1); i++) {
+		int row = i % n_Obs;
+		int col = i / n_Obs;
+		Input_X[row][col] = Data0[i];
+	}
+	for (int i = 0; i < n_Obs; i++) {
+		Input_Y[i] = Data[n_Obs * (n_Var - 1) + i];
+	}
+
+	std::vector<std::vector<int>> Y_Temp(n_Obs, std::vector<int>(C));
+	for (int i = 0; i < n_Obs; i++) {
+		Y_Temp[i][(Input_Y[i] - 1)] = 1;
+	}
+	for (int i = 0; i < n_Obs; i++) {
+		for (int c = 0; c < C; c++) {
+			FILE_CHECK << Y_Temp[i][c] << ", ";
+		}
+		FILE_CHECK << "\n";
+	}
+	FILE_CHECK.close();
+
 
 	VecTranspose(Y);
 
