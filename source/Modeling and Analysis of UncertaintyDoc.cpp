@@ -5185,16 +5185,21 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	//////
 	w.SetAt(0, 1);
 	w.SetAt(1, 1);
+	j_spec.SetSize(3);
 	j_spec.SetAt(0, 2);
 	j_spec.SetAt(1, 2);
 	j_spec.SetAt(2, 0);
+	f_spec.SetSize(3);
 	f_spec.SetAt(0, 2);
 	f_spec.SetAt(1, 2);
 	f_spec.SetAt(2, 0);
 	//////
-	int i = 0;
+	//int i = 0;
+	std::ofstream FILE;
+	FILE.open("example.txt");
 	double error = 1;
-	while (error > 0.0001) {
+	while (error > 0.001) {
+		
 		j.SetAt(0, cos(w.GetAt(0)));
 		j.SetAt(1, 2 * w.GetAt(0));
 		j.SetAt(2, 1);
@@ -5202,14 +5207,32 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 		f.SetAt(0, sin(w.GetAt(0)) + w.GetAt(1));
 		f.SetAt(1, cos(w.GetAt(1)) + pow(w.GetAt(0), 2));
 		CArray<double> j_inverse;
+		j_inverse.SetSize(4);
 		CArray<int> j_inv_specs;
+		j_inv_specs.SetSize(3);
 		j_inv_specs.SetAt(0, 2);
 		j_inv_specs.SetAt(1, 2);
 		j_inv_specs.SetAt(2, 0);
 		Inverse(j, j_spec, j_inverse, j_inv_specs);
+		
 		MatrixVectorProduct(j_inverse, j_inv_specs, f, y);
-		w.SetAt(i, w.GetAt(i) - y.GetAt(i));
-		i += 1;
+		
+	
+		
+		CArray<double> temp_w;
+		temp_w.SetSize(2);
+		temp_w.SetAt(0, w.GetAt(0));
+		temp_w.SetAt(1, w.GetAt(1));
+		w.SetAt(0, w.GetAt(0) - y.GetAt(0));
+		w.SetAt(1, w.GetAt(1) - y.GetAt(1));
+		error = sqrt(pow(w.GetAt(0)-temp_w.GetAt(0), 2)+pow(w.GetAt(1)-temp_w.GetAt(1), 2));
+		FILE << "sqrt[(" << w.GetAt(0) << " - " << temp_w.GetAt(0) << ")^2 + (" << w.GetAt(1) << " - " << temp_w.GetAt(1) << " )^2]= " << error << std::endl;
+		//i += 1;
+	}
+	AfxMessageBox(L"Finished");
+	
+	for (int j = 0; j < w.GetSize(); j++) {
+		FILE << w.GetAt(j) << ", ";
 	}
 }
 
