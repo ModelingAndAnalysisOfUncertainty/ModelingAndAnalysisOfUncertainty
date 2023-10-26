@@ -1324,7 +1324,7 @@ void CModelingandAnalysisofUncertaintyDoc::MatrixParallelTest() {
 	//Setup
 	std::ofstream FILE;
 	FILE.open("matrix_Test.txt");
-	int size = 110;
+	int size = 1000;
 	FILE << "Matrix Size: " << size << "\n";
 	CArray <double> A, B, C, D, x, y;
 	CArray <int> A_Spec, B_Spec, C_Spec, D_Spec;
@@ -1333,8 +1333,7 @@ void CModelingandAnalysisofUncertaintyDoc::MatrixParallelTest() {
 
 	A.SetSize(static_cast <int64_t>(size * size));
 	B.SetSize(static_cast <int64_t>(size * size));
-	x.SetSize(size);
-
+	x.SetSize(static_cast <int64_t>(size));
 	for (int i = 0; i < size; i++) {
 		for (int j = 0; j < size; j++) {
 			A.SetAt(GetPosition(i, j, A_Spec), i);
@@ -1348,12 +1347,15 @@ void CModelingandAnalysisofUncertaintyDoc::MatrixParallelTest() {
 	std::clock_t c_start = std::clock();
 	//AddingMatrices(A, A_Spec, B, B_Spec, C, C_Spec);
 	//SubtractingMatrices(A, A_Spec, B, B_Spec, C, C_Spec);
-	MatrixProduct(A, A_Spec, B, B_Spec, C, C_Spec);
+	//MatrixProduct(A, A_Spec, B, B_Spec, C, C_Spec);
 	//MatrixVectorProduct(A, A_Spec, x, y);
 	//X_tr_X(A, A_Spec, C, C_Spec);
 	//X_tr_Y(A, A_Spec, B, B_Spec, C, C_Spec);
 	//X_Y_tr(A, A_Spec, B, B_Spec, C, C_Spec);
 	//X_X_tr(A, A_Spec, B, B_Spec);
+	//ManipulateRowForwardPath(A, A_Spec, 500, 500);
+	//ManipulateRowBackwardPath(A, A_Spec, 500, 500);
+	GaussJordanElimination(A, A_Spec, y, x);
 	auto t_end = std::chrono::high_resolution_clock::now();
 	std::clock_t c_end = std::clock();
 	auto elapsed_time_ms_normal = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
@@ -1365,12 +1367,15 @@ void CModelingandAnalysisofUncertaintyDoc::MatrixParallelTest() {
 	c_start = std::clock();
 	//AddingMatricesParallel(A, A_Spec, B, B_Spec, C, C_Spec);
 	//SubtractingMatricesParallel(A, A_Spec, B, B_Spec, D, D_Spec);
-	MatrixProductParallel(A, A_Spec, B, B_Spec, C, C_Spec);
+	//MatrixProductParallel(A, A_Spec, B, B_Spec, C, C_Spec);
 	//MatrixVectorProductParallel(A, A_Spec, x, y);
 	//X_tr_X_Parallel(A, A_Spec, D, D_Spec);
 	//X_tr_Y_Parallel(A, A_Spec, B, B_Spec, D, D_Spec);
 	//X_Y_tr_Parallel(A, A_Spec, B, B_Spec, D, D_Spec);
 	//X_X_tr_Parallel(A, A_Spec, B, B_Spec);
+	//ManipulateRowForwardPathParallel(B, B_Spec, 500, 500);
+	//ManipulateRowBackwardPathParallel(A, A_Spec, 500, 500);
+	GaussJordanEliminationParallel(A, A_Spec, y, x);
 	t_end = std::chrono::high_resolution_clock::now();
 	c_end = std::clock();
 	auto elapsed_time_ms_parallel = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
