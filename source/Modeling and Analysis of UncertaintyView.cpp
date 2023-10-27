@@ -47,6 +47,7 @@ BEGIN_MESSAGE_MAP(CModelingandAnalysisofUncertaintyView, CView)
 	ON_BN_CLICKED(IDC_FACTOR_LOADINGS, On_Display_Factor_Loadings)
 	ON_BN_CLICKED(IDC_FACTOR_SCORES, On_Display_Factor_Scores)
 	ON_BN_CLICKED(IDC_FACTOR_MATRICES, On_Display_Factor_Matrices)
+	ON_WM_MOUSEMOVE()
 END_MESSAGE_MAP()
 
 // CModelingandAnalysisofUncertaintyView construction/destruction
@@ -177,7 +178,7 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		pDC->Rectangle(0, 0, 2200, 2200);
 		pDC->SetTextAlign(TA_LEFT | TA_TOP);
 		pDC->TextOutW(160, 30, _T("Descriptive Statistics"));
-		pDC->MoveTo(10, 50), pDC->LineTo(500, 50), Text.Format(L"%d", pDoc->n_Obs);
+		pDC->MoveTo(10, 50), pDC->LineTo(500, 50), Text.Format(L"%d", pDoc->n_Obs); 
 
 
 
@@ -1156,8 +1157,9 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 	else if (pDoc->ANN_Training) {
 		CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
 		// plot the loss and accuracy curve
+		DisplayFileAndDataSetInformation(pDoc, pDC, true);
 		PlotLossCurve();
-		PlotAccuraciesCurve();
+		//PlotAccuraciesCurve();
 	}
 }
 
@@ -4272,6 +4274,30 @@ int CModelingandAnalysisofUncertaintyView::OnCreate(LPCREATESTRUCT lpCreateStruc
 	Settings_Descriptive_Statistics.Create(_T("Settings"), BS_PUSHBUTTON, CRect(375, 20, 500, 58), this, IDC_SETTINGS_DESCRIPTIVE_STATISTICS);
 	Settings_Descriptive_Statistics.ShowWindow(SW_HIDE);
 	// Buttons for principal component analysis
+
+	int btnWidth = 150;
+	int btnHeight = 38;
+	int spacing = 20;
+	int topMargin = 20;
+	int rightMargin = 20;
+
+	int firstButtonRight = nWt - rightMargin;
+	DisplayPCA.Create(_T("Model overview"), BS_PUSHBUTTON, CRect(firstButtonRight - btnWidth, topMargin, firstButtonRight, topMargin + btnHeight), this, IDC_DISPLAY_PCA);
+	DisplayPCA.ShowWindow(SW_HIDE);
+
+	int secondButtonRight = firstButtonRight - btnWidth - spacing;
+	DisplayLoadingPlots.Create(_T("Loading plots"), BS_PUSHBUTTON, CRect(secondButtonRight - btnWidth, topMargin, secondButtonRight, topMargin + btnHeight), this, IDC_LOADING_PLOTS);
+	DisplayLoadingPlots.ShowWindow(SW_HIDE);
+
+	int thirdButtonRight = secondButtonRight - btnWidth - spacing;
+	DisplayScorePlots.Create(_T("Score plots"), BS_PUSHBUTTON, CRect(thirdButtonRight - btnWidth, topMargin, thirdButtonRight, topMargin + btnHeight), this, IDC_SCORE_PLOTS);
+	DisplayScorePlots.ShowWindow(SW_HIDE);
+
+	int fourthButtonRight = thirdButtonRight - btnWidth - spacing;
+	SelectScatterPlots.Create(_T("Select plots"), BS_PUSHBUTTON, CRect(fourthButtonRight - btnWidth, topMargin, fourthButtonRight, topMargin + btnHeight), this, IDC_SELECT_SCATTER_PLOTS);
+	SelectScatterPlots.ShowWindow(SW_HIDE);
+
+	/* previous one, 
 	DisplayPCA.Create(_T("Model overview"), BS_PUSHBUTTON, CRect((int)(nWt / 2 - 300), 20, (int)(nWt / 2 - 150), 58), this, IDC_DISPLAY_PCA);
 	DisplayPCA.ShowWindow(SW_HIDE);
 	DisplayLoadingPlots.Create(_T("Loading plots"), BS_PUSHBUTTON, CRect((int)(nWt / 2 - 75), 20, (int)(nWt / 2 + 75), 58), this, IDC_LOADING_PLOTS);
@@ -4279,7 +4305,9 @@ int CModelingandAnalysisofUncertaintyView::OnCreate(LPCREATESTRUCT lpCreateStruc
 	DisplayScorePlots.Create(_T("Score plots"), BS_PUSHBUTTON, CRect((int)(nWt / 2 + 150), 20, (int)(nWt / 2 + 300), 58), this, IDC_SCORE_PLOTS);
 	DisplayScorePlots.ShowWindow(SW_HIDE);
 	SelectScatterPlots.Create(_T("Select plots"), BS_PUSHBUTTON, CRect((int)(nWt / 2 + 375), 20, (int)(nWt / 2 + 525), 58), this, IDC_SELECT_SCATTER_PLOTS);
-	SelectScatterPlots.ShowWindow(SW_HIDE);
+	SelectScatterPlots.ShowWindow(SW_HIDE);*/
+
+
 	// Buttons for factor analysis
 	DisplayFA.Create(_T("Model overview"), BS_PUSHBUTTON, CRect((int)(nWt / 2 - 300), 20, (int)(nWt / 2 -150), 58), this, IDC_DISPLAY_FA);
 	DisplayFA.ShowWindow(SW_HIDE);
@@ -9363,6 +9391,31 @@ void CModelingandAnalysisofUncertaintyView::TwoSampleBoxPlot(CModelingandAnalysi
 	
 }
 
+
+
+
+
+// Helper function to draw grid
+void DrawGrid(CDC& dc, int startX, int startY, int endX, int endY, double xTickInterval, double yTickInterval, int numXTicks, int numYTicks) {
+	CPen gridPen(PS_DOT, 1, RGB(200, 200, 200));  // Light gray color for grid
+	dc.SelectObject(&gridPen);
+
+	// Draw vertical grid lines
+	for (int i = 1; i <= numXTicks; ++i) {
+		int x = startX + static_cast<int>(i * xTickInterval);
+		dc.MoveTo(x, startY);
+		dc.LineTo(x, endY);
+	}
+
+	// Draw horizontal grid lines
+	for (int i = 1; i <= numYTicks; ++i) {
+		int y = startY - static_cast<int>(i * yTickInterval);
+		dc.MoveTo(startX, y);
+		dc.LineTo(endX, y);
+	}
+}
+
+
 // After ANN training call this view function to plot the loss curve
 void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 	// read in data from txt log file
@@ -9382,42 +9435,86 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 	GetClientRect(&rc);
 
 	int margin = 70;  // Increased margin for more space
-	int graphHeight = rc.Height() / 4;
-	int graphWidth = rc.Width() / 4;
+	int spacingBetweenGraphs = 50;  // spacing between graphs
+	int graphHeight = (rc.Height() - 3 * margin - spacingBetweenGraphs) / 2;
+	int graphWidth = rc.Width() - 2 * margin;
+
 	int startX = margin;
-	int startY = graphHeight + margin;
+	int startY = (2 * graphHeight) + (2 * margin) + spacingBetweenGraphs;
 	int endX = startX + graphWidth;
-	int endY = margin;
+	int endY = startY - graphHeight;
+
+	double scaleX = static_cast<double>(graphWidth) / losses.size();
+	double scaleY = static_cast<double>(graphHeight);
 
 	if (!losses.empty()) {
 		double maxLoss = *std::max_element(losses.begin(), losses.end());
 		double scaleX = static_cast<double>(graphWidth) / losses.size();
 		double scaleY = static_cast<double>(graphHeight) / maxLoss;
 
+
+
+
 		CPen penLine(PS_SOLID, 2, RGB(255, 0, 0));  // Red color for curve
 		dc.SelectObject(&penLine);
 
-		dc.MoveTo(startX, startY);
+		dc.MoveTo(startX, startY - static_cast<int>(losses[0] * scaleY));
 		for (int i = 0; i < losses.size(); ++i) {
 			int x = startX + static_cast<int>(i * scaleX);
 			int y = startY - static_cast<int>(losses[i] * scaleY);
 			dc.LineTo(x, y);
 		}
 
+		int numXTicks = 10;
+		int numYTicks = 10;
+
+		double xTickInterval = static_cast<double>(graphWidth) / numXTicks;
+		double yTickInterval = static_cast<double>(graphHeight) / numYTicks;
+
 		// Explicitly draw the X-axis for the loss curve
 		CPen penAxis(PS_SOLID, 2, RGB(0, 0, 0));  // Black color for axis
 		dc.SelectObject(&penAxis);
 		dc.MoveTo(startX, startY);
 		dc.LineTo(endX, startY);
+		dc.MoveTo(startX, startY);
+		dc.LineTo(startX, endY);
 
-		// Drawing the X and Y axis labels
-		dc.TextOutW(startX, startY + 20, L"Iterations");
-		dc.TextOutW(10, margin / 2, L"Loss Value");
+		// Draw X-axis ticks and labels
+		for (int i = 1; i <= numXTicks; ++i) {
+			int x = startX + static_cast<int>(i * xTickInterval);
+			dc.MoveTo(x, startY);
+			dc.LineTo(x, startY - 5);
+			int labelValue = static_cast<int>(i * losses.size() / numXTicks);
+			CString label;
+			label.Format(_T("%d"), labelValue);
+			dc.TextOutW(x - 10, startY + 10, label);
+		}
+
+		// Draw Y-axis ticks and labels
+		for (int i = 1; i <= numYTicks; ++i) {
+			int y = startY - static_cast<int>(i * yTickInterval);
+			dc.MoveTo(startX, y);
+			dc.LineTo(startX + 5, y);
+			double labelValue = static_cast<double>(i * maxLoss / numYTicks);
+			CString label;
+			label.Format(_T("%.2f"), labelValue);
+			dc.TextOutW(startX - 40, y - 5, label);
+		}
+
+		// Draw the X and Y axis labels at more appropriate locations
+		dc.TextOutW(startX, startY + 10, L"Iterations");
+		dc.TextOutW(startX - 40, endY - 25, L"Loss Value");
+
+
+		DrawGrid(dc, startX, startY, endX, endY, xTickInterval, yTickInterval, numXTicks, numYTicks);
 	}
 }
 
+
+
 // After ANN training call this view function to plot the accuracy curve
 void CModelingandAnalysisofUncertaintyView::PlotAccuraciesCurve() {
+
 	// read in txtx log file data
 	std::vector<double> training_accuracies, testing_accuracies;
 	std::ifstream file("ANN_Update/training_acc.txt");
@@ -9440,9 +9537,10 @@ void CModelingandAnalysisofUncertaintyView::PlotAccuraciesCurve() {
 	GetClientRect(&rc);
 
 	int margin = 70;  // Increased margin for more space
-	int graphHeight = rc.Height() / 4;
-	int graphWidth = rc.Width() / 4;
-	int spacingBetweenGraphs = 100;  // spacing between graphs
+	int spacingBetweenGraphs = 50;  // spacing between graphs
+	int graphHeight = (rc.Height() - 3 * margin - spacingBetweenGraphs) / 2;
+	int graphWidth = rc.Width() - 2 * margin;
+
 	int startX = margin;
 	int startY = (2 * graphHeight) + (2 * margin) + spacingBetweenGraphs;
 	int endX = startX + graphWidth;
@@ -9454,21 +9552,29 @@ void CModelingandAnalysisofUncertaintyView::PlotAccuraciesCurve() {
 	// Plotting Training Accuracies
 	CPen penTraining(PS_SOLID, 2, RGB(0, 0, 255));  // Blue color for training curve
 	dc.SelectObject(&penTraining);
-	dc.MoveTo(startX, startY);
-	for (int i = 0; i < training_accuracies.size(); ++i) {
-		int x = startX + static_cast<int>(i * scaleX);
-		int y = startY - static_cast<int>(training_accuracies[i] * scaleY);
-		dc.LineTo(x, y);
+	if (!training_accuracies.empty()) {
+		int firstX = startX;
+		int firstY = startY - static_cast<int>(training_accuracies[0] * scaleY);
+		dc.MoveTo(firstX, firstY);
+		for (int i = 1; i < training_accuracies.size(); ++i) {
+			int x = startX + static_cast<int>((i + 1) * scaleX);
+			int y = startY - static_cast<int>(training_accuracies[i] * scaleY);
+			dc.LineTo(x, y);
+		}
 	}
 
 	// Plotting Testing Accuracies
 	CPen penTesting(PS_SOLID, 2, RGB(0, 255, 0));  // Green color for testing curve
 	dc.SelectObject(&penTesting);
-	dc.MoveTo(startX, startY);
-	for (int i = 0; i < testing_accuracies.size(); ++i) {
-		int x = startX + static_cast<int>(i * scaleX);
-		int y = startY - static_cast<int>(testing_accuracies[i] * scaleY);
-		dc.LineTo(x, y);
+	if (!testing_accuracies.empty()) {
+		int firstX = startX;
+		int firstY = startY - static_cast<int>(testing_accuracies[0] * scaleY);
+		dc.MoveTo(firstX, firstY);
+		for (int i = 1; i < testing_accuracies.size(); ++i) {
+			int x = startX + static_cast<int>((i + 1) * scaleX);
+			int y = startY - static_cast<int>(testing_accuracies[i] * scaleY);
+			dc.LineTo(x, y);
+		}
 	}
 
 	// Explicitly draw the X and Y axes for the accuracy curve
@@ -9478,8 +9584,52 @@ void CModelingandAnalysisofUncertaintyView::PlotAccuraciesCurve() {
 	dc.LineTo(endX, startY);
 	dc.MoveTo(startX, startY);
 	dc.LineTo(startX, endY);
-
 	// Drawing the X and Y axis labels
-	dc.TextOutW(startX, startY + 20, L"Iterations");
-	dc.TextOutW(10, startY - (graphHeight / 2), L"Accuracy");
+	dc.TextOutW(startX, startY + 10, L"Epoch");
+	dc.TextOutW(startX - 40, endY - 25, L"Accuracy");
+
+
+	int numXTicks = 10;
+	if (training_accuracies.size() < 10) {
+		numXTicks = training_accuracies.size() - 1;
+	}
+	int numYTicks = 10;
+
+	// Draw X-axis ticks and labels
+	double xTickInterval = static_cast<double>(graphWidth) / numXTicks;
+	for (int i = 1; i <= numXTicks; ++i) {
+		int x = startX + static_cast<int>(i * xTickInterval);
+		dc.MoveTo(x, startY);
+		dc.LineTo(x, startY - 5); // Draw ticks upwards, not downwards
+		CString label;
+		label.Format(_T("%d"), static_cast<int>(i + 1));
+		dc.TextOutW(x - 10, startY + 10, label);
+	}
+	// Draw Y-axis ticks and labels
+	double yTickInterval = static_cast<double>(graphHeight) / numYTicks;
+	for (int i = 1; i <= numYTicks; ++i) {
+		int y = startY - static_cast<int>(i * yTickInterval);
+		dc.MoveTo(startX, y);
+		dc.LineTo(startX + 5, y);
+		double labelValue = static_cast<float>(1 / numYTicks);
+		CString label;
+		label.Format(_T("%.1f"), static_cast<float>(i) / numYTicks);
+		dc.TextOutW(startX - 40, y - 5, label);
+	}
+	DrawGrid(dc, startX, startY, endX, endY, xTickInterval, yTickInterval, numXTicks, numYTicks);
+
+	int legendStartX = endX - 150; // Position 150 pixels left from the right edge
+	int legendStartY = startY - graphHeight - 20; // Start 20 pixels below the top of the accuracy graph 
+	dc.SelectObject(&penTraining);
+	dc.MoveTo(legendStartX, legendStartY);
+	dc.LineTo(legendStartX + 40, legendStartY);
+	dc.TextOutW(legendStartX + 50, legendStartY - 5, L"Training");
+
+	// Testing data
+	legendStartY += 20; // Position 20 pixels below the training label
+	dc.SelectObject(&penTesting);
+	dc.MoveTo(legendStartX, legendStartY);
+	dc.LineTo(legendStartX + 40, legendStartY);
+	dc.TextOutW(legendStartX + 50, legendStartY - 5, L"Testing");
 }
+
