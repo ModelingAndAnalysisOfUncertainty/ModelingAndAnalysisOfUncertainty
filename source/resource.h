@@ -41,6 +41,7 @@
 #define IDD_DIALOG_TWOSAMPLE_HYPOTHESIS 331
 #define IDD_DIALOG_NEURALNETWORK        333
 #define IDD_ANN_TRAINSET                335
+#define IDD_NewANN                      337
 #define IDC_GET_NUMBER_PCS              1000
 #define IDC_EDIT_PC_2                   1003
 #define IDC_EDIT_PC_3                   1004
@@ -200,9 +201,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        337
+#define _APS_NEXT_RESOURCE_VALUE        339
 #define _APS_NEXT_COMMAND_VALUE         32809
-#define _APS_NEXT_CONTROL_VALUE         1111
+#define _APS_NEXT_CONTROL_VALUE         1113
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif
