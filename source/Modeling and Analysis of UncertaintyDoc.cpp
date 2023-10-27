@@ -4497,8 +4497,7 @@ void CModelingandAnalysisofUncertaintyDoc::SetUpFDAMatrices(CArray <double>& Sb,
 
 
 void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
-	CArray <double> ypred;
-	ypred.SetSize(n_Obs);
+	
 	AfxMessageBox(L"Now we are working on establishing an linear classification model");
 	//curent data 
 	//get data to parse through
@@ -4507,19 +4506,31 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 
 	CArray<double> y;
 	y.SetSize(n_Obs);
-	for (int i = 0; i < n_Obs; i++) {
+	CArray<double> value;
+	int y_train;
+	y_train = (int)floor(n_Obs * 0.85);
+	value.SetSize(y_train);
+
+	for (int i = 0; i < y_train; i++) {
 		y.SetAt(i, Data.GetAt((n_Var)*i));
+		double temp_1;
+		temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(i, n_Var - 1, Data_spec)));
+		if (temp_1 != 1) temp_1 = -1;
+		value.SetAt(i, temp_1);
 	}
 	CString tmp;
 	tmp.Format(L"%lf", y[0]);
 	SaveVector("test2.txt", y);
-		
+	SaveVector("test7.txt", value);
 
 	CArray <double> w;
 	CArray <double> Sww;
 	GetStandardRegressionModel(Data, Data_spec, y ,w, Sww);
 	SaveVector("test.txt", w);
+	SaveVector("test9.txt", Sww);
+
 	AfxMessageBox(L"I believe I have just saved a file!");
+
 	//if w is the matci
 	// 
 	//w matrix for coefficent 
