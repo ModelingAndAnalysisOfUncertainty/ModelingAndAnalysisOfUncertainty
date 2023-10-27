@@ -5179,12 +5179,14 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	AfxMessageBox(L"Now we are working on establishing logistic regression model");
 	CArray<double> y, j, f, w;
 	CArray<int> y_spec, j_spec, f_spec, w_spec;
-	w.SetSize(2);
+	int w_size = 2;
+	w.SetSize(w_size);
 	j.SetSize(4);
 	f.SetSize(2);
 	//////
-	w.SetAt(0, 1);
-	w.SetAt(1, 1);
+	for (int i = 0; i < w_size; i++) {
+		w.SetAt(i, 1);
+	}
 	j_spec.SetSize(3);
 	j_spec.SetAt(0, 2);
 	j_spec.SetAt(1, 2);
@@ -5195,15 +5197,27 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	f_spec.SetAt(2, 0);
 	//////
 	//int i = 0;
+	
 	std::ofstream FILE;
 	FILE.open("example.txt");
 	double error = 1;
+	double lambda = 1;
 	while (error > 0.00001) {
-		
+		///
+		///get position
+		///
 		j.SetAt(0, cos(w.GetAt(0)));
 		j.SetAt(1, 2 * w.GetAt(0));
 		j.SetAt(2, 1);
 		j.SetAt(3, sin(w.GetAt(1)));
+		for (int x = 0; x < j_spec.GetAt(0); x++) {
+			for (int y = 0; y < j_spec.GetAt(1); y++) {
+				if (x == y) {
+					j.SetAt(GetPosition(x, y, j_spec), j.GetAt(GetPosition(x, y, j_spec)) + lambda);
+				}
+			}
+		}
+		///
 		f.SetAt(0, sin(w.GetAt(0)) + w.GetAt(1));
 		f.SetAt(1, -cos(w.GetAt(1)) + pow(w.GetAt(0), 2));
 		CArray<double> j_inverse;
@@ -5220,12 +5234,19 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	
 		
 		CArray<double> temp_w;
-		temp_w.SetSize(2);
-		temp_w.SetAt(0, w.GetAt(0));
-		temp_w.SetAt(1, w.GetAt(1));
-		w.SetAt(0, w.GetAt(0) - y.GetAt(0));
-		w.SetAt(1, w.GetAt(1) - y.GetAt(1));
-		error = sqrt(pow(w.GetAt(0)-temp_w.GetAt(0), 2)+pow(w.GetAt(1)-temp_w.GetAt(1), 2));
+		temp_w.SetSize(w_size);
+		for (int i = 0; i < temp_w.GetSize(); i++) {
+			temp_w.SetAt(i, w.GetAt(i));
+		}
+		for (int i = 0; i < w.GetSize(); i++) {
+			w.SetAt(i, w.GetAt(i) - y.GetAt(i));
+		}
+		double hold = 0;
+		for (int i = 0; i < w.GetSize(); i++) {
+			hold += pow(w.GetAt(i) - temp_w.GetAt(i), 2);
+		}
+		error = sqrt(hold);
+		//error = sqrt(pow(w.GetAt(0)-temp_w.GetAt(0), 2)+pow(w.GetAt(1)-temp_w.GetAt(1), 2));
 		FILE << "sqrt[(" << w.GetAt(0) << " - " << temp_w.GetAt(0) << ")^2 + (" << w.GetAt(1) << " - " << temp_w.GetAt(1) << " )^2]= " << error << std::endl;
 		//i += 1;
 	}
