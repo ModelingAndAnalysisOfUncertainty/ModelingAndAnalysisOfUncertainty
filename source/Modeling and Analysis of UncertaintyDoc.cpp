@@ -4505,13 +4505,24 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 
 	/// CArray <double>& Data_0, CArray <double>& bar, CArray <double>& std
 
+	//Correctly sets the y values from the Data Array
 	CArray<double> y;
 	y.SetSize(n_Obs);
-	for (int i = 0; i < n_Obs; i++) {
-		y.SetAt(i, Data.GetAt((n_Var)*i));
+	for (int i = (n_Obs * n_Var) - n_Obs; i < n_Obs * n_Var; i++) {
+		y.SetAt(i - ((n_Obs * n_Var) - n_Obs), Data.GetAt(i));
 	}
+
+	for (int i = 0; i < n_Obs; i++) {
+		if (y.GetAt(i) == 2) {
+			y.SetAt(i, -1);
+		}
+	}
+
 	CString tmp;
-	tmp.Format(L"%lf", y[0]);
+	//206 25
+	tmp.Format(L"%d %d", n_Obs, n_Var);
+	AfxMessageBox(tmp);
+
 	SaveVector("test2.txt", y);
 		
 
@@ -4519,6 +4530,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	CArray <double> Sww;
 	GetStandardRegressionModel(Data, Data_spec, y ,w, Sww);
 	SaveVector("test.txt", w);
+	SaveVector("test3.txt", Sww);
 	AfxMessageBox(L"I believe I have just saved a file!");
 	//if w is the matci
 	// 
