@@ -1,10 +1,6 @@
-Epoch 1 training accuracy: 0.843747
-Epoch 1 testing accuracy: 0.846793
-Epoch 2 training accuracy: 0.875927
-Epoch 2 testing accuracy: 0.868943
-Epoch 3 training accuracy: 0.897923
-Epoch 3 testing accuracy: 0.889248
-Epoch 4 training accuracy: 0.907128
-Epoch 4 testing accuracy: 0.901246
-Epoch 5 training accuracy: 0.915845
-Epoch 5 testing accuracy: 0.912321
+Epoch 1 training accuracy: 0.844969
+Epoch 1 testing accuracy: 0.832487
+Epoch 2 training accuracy: 0.869654
+Epoch 2 testing accuracy: 0.855561
+Epoch 3 training accuracy: 0.891324
+Epoch 3 testing accuracy: 0.874942
