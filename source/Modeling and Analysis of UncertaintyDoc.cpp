@@ -4504,7 +4504,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 
 	/// CArray <double>& Data_0, CArray <double>& bar, CArray <double>& std
 
-	//Correctly sets the y values from the Data Array
 	CArray<double> y;
 	y.SetSize(n_Obs);
 	CArray<double> value;
@@ -4518,21 +4517,9 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 		temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(i, n_Var - 1, Data_spec)));
 		if (temp_1 != 1) temp_1 = -1;
 		value.SetAt(i, temp_1);
-	for (int i = (n_Obs * n_Var) - n_Obs; i < n_Obs * n_Var; i++) {
-		y.SetAt(i - ((n_Obs * n_Var) - n_Obs), Data.GetAt(i));
 	}
-
-	for (int i = 0; i < n_Obs; i++) {
-		if (y.GetAt(i) == 2) {
-			y.SetAt(i, -1);
-		}
-	}
-
 	CString tmp;
-	//206 25
-	tmp.Format(L"%d %d", n_Obs, n_Var);
-	AfxMessageBox(tmp);
-
+	tmp.Format(L"%lf", y[0]);
 	SaveVector("test2.txt", y);
 	SaveVector("test7.txt", value);
 
@@ -4540,10 +4527,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	CArray <double> Sww;
 	GetStandardRegressionModel(Data, Data_spec, y ,w, Sww);
 	SaveVector("test.txt", w);
-
 	SaveVector("test9.txt", Sww);
-
-	SaveVector("test3.txt", Sww);
 
 	AfxMessageBox(L"I believe I have just saved a file!");
 
