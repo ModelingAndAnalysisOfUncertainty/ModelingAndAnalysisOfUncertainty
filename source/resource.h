@@ -41,6 +41,7 @@
 #define IDD_DIALOG_TWOSAMPLE_HYPOTHESIS 331
 #define IDD_DIALOG_NEURALNETWORK        333
 #define IDD_ANN_TRAINSET                335
+#define IDD_NEWANN                      337
 #define IDC_GET_NUMBER_PCS              1000
 #define IDC_EDIT_PC_2                   1003
 #define IDC_EDIT_PC_3                   1004
@@ -109,6 +110,7 @@
 #define IDC_EDIT_SELECT_NUMBER_BINS     1077
 #define IDC_EDIT_KNOWNVARIANCEVALUE     1077
 #define IDC_EDIT_LEARNING_RATE          1077
+#define IDC_learning_rate               1077
 #define IDC_STATIC_NUMBER_RUNS          1078
 #define IDC_STATIC_PERCENTAGE_TESTING_DATA 1079
 #define IDC_COMBO_SELECT_DISTRIBUTION   1079
@@ -138,6 +140,7 @@
 #define IDC_EDIT2                       1093
 #define IDC_EDIT_VARIANCE_KNOWN         1093
 #define IDC_EDIT_BATCH_SIZE             1093
+#define IDC_batch_size                  1093
 #define IDC_EDIT3                       1094
 #define IDC_EDIT_SIGNIFICANCEVALUE      1094
 #define IDC_EDIT4                       1095
@@ -149,6 +152,7 @@
 #define IDC_COMBO_VARIABLE_SET          1097
 #define IDC_EDIT6                       1098
 #define IDC_EDIT4_HYPOTHESIZED          1098
+#define IDC_total_epoch                 1098
 #define IDC_RADIO5                      1099
 #define IDC_RADIO_TWO_SIDED             1099
 #define IDC_TASK5                       1099
@@ -195,14 +199,15 @@
 #define ID_MULTIVARIATESTATISTICS_LINEARFISHERDISCRIMINANTANALYSIS32806 32806
 #define ID_MULTIVARIATESTATISTICS_INDEPENDENTCOMPONENTANALYSIS 32807
 #define ID_MULTIVARIATESTATISTICS_INDEPENDENTCOMPONANTANALYSIS 32808
+#define ID_MACHINELEARNING_ARTIFICIALNEURALNETWORKWITHACCURACY 32809
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        337
-#define _APS_NEXT_COMMAND_VALUE         32809
-#define _APS_NEXT_CONTROL_VALUE         1111
+#define _APS_NEXT_RESOURCE_VALUE        339
+#define _APS_NEXT_COMMAND_VALUE         32810
+#define _APS_NEXT_CONTROL_VALUE         1116
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif

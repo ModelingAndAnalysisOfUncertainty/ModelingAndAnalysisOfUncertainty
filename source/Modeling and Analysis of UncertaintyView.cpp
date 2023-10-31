@@ -11,6 +11,7 @@
 #include "CDisplayPCs.h"
 #include "CSettingsDescriptiveStatistics.h"
 #include "CSelectScatterDiagrams.h"
+#include "NewANN.h"
 
 #include <vector>
 #include <iostream>
@@ -48,6 +49,7 @@ BEGIN_MESSAGE_MAP(CModelingandAnalysisofUncertaintyView, CView)
 	ON_BN_CLICKED(IDC_FACTOR_SCORES, On_Display_Factor_Scores)
 	ON_BN_CLICKED(IDC_FACTOR_MATRICES, On_Display_Factor_Matrices)
 	ON_WM_MOUSEMOVE()
+	ON_COMMAND(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORKWITHACCURACY, &CModelingandAnalysisofUncertaintyView::OnMachinelearningArtificialneuralnetworkwithaccuracy)
 END_MESSAGE_MAP()
 
 // CModelingandAnalysisofUncertaintyView construction/destruction
@@ -1161,6 +1163,7 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		PlotLossCurve();
 		//PlotAccuraciesCurve();
 	}
+	//else if (pDoc->)
 }
 
 // *************************************************************
@@ -9633,3 +9636,10 @@ void CModelingandAnalysisofUncertaintyView::PlotAccuraciesCurve() {
 	dc.TextOutW(legendStartX + 50, legendStartY - 5, L"Testing");
 }
 
+
+
+void CModelingandAnalysisofUncertaintyView::OnMachinelearningArtificialneuralnetworkwithaccuracy()
+{
+	NewANN New_ANN_Dlg;
+	New_ANN_Dlg.DoModal();
+}

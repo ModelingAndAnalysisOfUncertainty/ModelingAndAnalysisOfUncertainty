@@ -150,6 +150,7 @@ public:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	// Thread Messenger for ANN
 	afx_msg LRESULT OnTrainingComplete(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnMachinelearningArtificialneuralnetworkwithaccuracy();
 };
 #ifndef _DEBUG  // debug version in Modeling and Analysis of UncertaintyView.cpp
 inline CModelingandAnalysisofUncertaintyDoc* CModelingandAnalysisofUncertaintyView::GetDocument() const
