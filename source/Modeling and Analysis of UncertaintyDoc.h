@@ -3,6 +3,7 @@
 #include <fstream>
 #include <ctime>
 #include "ProbabilityDistributions.h"
+#include <omp.h>
 
 #pragma once
 
@@ -215,19 +216,32 @@ protected:
 	void InsertColumn(CArray <double>&, CArray <int>&, CArray <double>&, int);
 	double Determinant(CArray <double>&, CArray <int>&);
 	void Transpose(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
+	void TransposeParallel(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
 	void Inverse(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
 	void AddingMatrices(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
+	void AddingMatricesParallel(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
 	void SubtractingMatrices(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
+	void SubtractingMatricesParallel(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
 	void MatrixVectorProduct(CArray <double>&, CArray <int>&, CArray <double>&, CArray <double>&);
+	void MatrixVectorProductParallel(CArray <double>&, CArray <int>&, CArray <double>&, CArray <double>&);
 	void MatrixProduct(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
+	void MatrixProductParallel(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
 	void X_tr_X(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
+	void X_tr_X_Parallel(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
 	void X_tr_Y(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
+	void X_tr_Y_Parallel(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
 	void X_Y_tr(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
+	void X_Y_tr_Parallel(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
 	void X_X_tr(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
+	void X_X_tr_Parallel(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
 	void SetUpPivot(CArray <double>&, CArray <int>&, int);
 	void ManipulateRowForwardPath(CArray<double>&, CArray<int>&, int, int);
+	void ManipulateRowForwardPathParallel(CArray <double>&, CArray <int>&, int, int);
 	void ManipulateRowBackwardPath(CArray<double>&, CArray<int>&, int, int);
+	void ManipulateRowBackwardPathParallel(CArray <double>&, CArray <int>&, int, int);
 	void GaussJordanElimination(CArray<double>&, CArray<int>&, CArray<double>&, CArray<double>&);
+	void GaussJordanEliminationParallel(CArray<double>&, CArray<int>&, CArray<double>&, CArray<double>&);
+	void MatrixParallelTest();
 	// *******************************************
 	// ***      Matrix     Decompositions      ***
 	// *******************************************
