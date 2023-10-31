@@ -6515,7 +6515,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	const int M = n_Var - 1;
 	const int C = n_classes;
 	const int H = 5;
-	const int n_epochs = 10000;
+	const int n_epochs = 1000;
 	const int train = 20;
 	const double eta = 1e-1 / train;  
 	int batch_size = 5;
@@ -6578,8 +6578,9 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	bar.RemoveAll();
 	std.RemoveAll();
 	StandardizeDataMatrix(Data0, bar, std);
-	std::ofstream FILE_CHECK;
-	FILE_CHECK.open("check_file.txt");
+
+	//std::ofstream FILE_CHECK;
+	//FILE_CHECK.open("check_file.txt");
 
 	std::vector<std::vector<double>> X(n_Obs, std::vector<double>(n_Var-1));
 	std::vector<double> Input_Y(n_Obs);
@@ -6597,14 +6598,8 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	for (int i = 0; i < n_Obs; i++) {
 		Y[i][(Input_Y[i] - 1)] = 1;
 	}
-	/*for (int i = 0; i < n_Obs; i++) {
-		for (int c = 0; c < C; c++) {
-			FILE_CHECK << Y[i][c] << ", ";
-		}
-		FILE_CHECK << "\n";
-	}*/
-	FILE_CHECK << "n_Obs: " << n_Obs << "\nn_Var: " << n_Var << "\nn_Classes: " << n_classes << "\n";
-	FILE_CHECK.close();
+	//FILE_CHECK << "n_Obs: " << n_Obs << "\nn_Var: " << n_Var << "\nn_Classes: " << n_classes << "\n";
+	//FILE_CHECK.close();
 
 
 	//VecTranspose(Y);
@@ -6617,28 +6612,38 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	const double trainFraction = 0.85;
 
 	// Calculate Ntrain as described in MATLAB
-	int Ntrain = static_cast<int>(round(3 * N * trainFraction));
+	int Ntrain = static_cast<int>(round(N * trainFraction));
 	// Vector of 0-3000 shuffled
 
-	int Ntest = 3 * N - Ntrain;
+	int Ntest = N - Ntrain;
 	std::vector<std::vector<double>> Xtrain(Ntrain, std::vector<double>(M));
 	std::vector<std::vector<int>> Ytrain(Ntrain, std::vector<int>(C));
 	std::vector<std::vector<double>> Xtest(Ntest, std::vector<double>(M));
 	std::vector<std::vector<int>> Ytest(Ntest, std::vector<int>(C));
 	std::vector<int> index = randsample(N, N);
 
-	for (int i = 0; i < Ntest; i++) {
+	for (int i = 0; i < Ntrain; i++) {
 		Xtrain[i] = X[index[i]];
 		for (int c = 0; c < C; c++) {
 			Ytrain[i][c] = Y[index[i]][c];
 		}
 	}
 	for (int i = Ntrain; i < N; i++) {
-		Xtest[i] = X[index[i]];
+		Xtest[i - Ntrain] = X[index[i]];
 		for (int c = 0; c < C; c++) {
-			Ytest[i][c] = Y[index[i]][c];
+			Ytest[i - Ntrain][c] = Y[index[i]][c];
 		}
 	}
+	std::ofstream FILE_CHECK;
+	FILE_CHECK.open("check_file.txt");
+
+	for (int i = 0; i < Ytest.size(); i++) {
+		for (int j = 0; j < Ytest[i].size(); j++) {
+			FILE_CHECK << Ytest[i][j] << ", ";
+		}
+		FILE_CHECK << "\n";
+	}
+	FILE_CHECK.close();
 	// 1x60, 1x18
 	std::vector<double> w(C * n_weights);
 	std::vector<double> b(C * n_biases);
@@ -6714,7 +6719,10 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			}
 
 			GetNetworkPrediction(Xslice, H, weights, biases, F, yhat);
-
+			/*for (int i = 0; i < yhat.size(); i++) {
+				FILE << yhat[i] << ", ";
+			}
+			FILE << "\n";*/
 			// Compute the error (d) for the current class
 			//If we replaced Ytrain with Y slice we would be chilling
 			std::vector<double> d(train, 0.0);
@@ -6783,6 +6791,12 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			std::vector<double> yhat0(Ntest, 0.0);
 			std::vector<std::vector<double> > Ftemp = std::vector<std::vector<double>>(Ntest, std::vector<double>(H, 0.0));
 			GetNetworkPrediction(Xtest, H, weights, biases, Ftemp, yhat0);
+			
+
+			/*for (int i = 0; i < yhat0.size(); i++) {
+				FILE << yhat0[i] << ", ";
+			}
+			FILE << "\n";*/
 
 			// Compute delta0 for the current class
 			std::vector<double> delta0(Ntest, 0.0);
@@ -6793,6 +6807,11 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			}
 			// Update spe_new for the current class
 			spe_new += sumDelta / Ntest;
+			if (spe_new < MIN) {
+				for (int i = 0; i < yhat0.size(); i++) {
+					Yhat0[i][c] = yhat0[i];
+				}
+			}
 		}
 
 		// Check if spe_new is smaller than MIN and update wopt, bopt, and Yhat0 accordingly
@@ -6804,14 +6823,30 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			bopt.empty();
 			bopt = b;
 			MIN = spe_new;
-			Yhat0 = yhat0;
+			//Yhat0 = yhat0;
 		}
 		// Print the current epoch and spe_new
 		if (epoch % batch_size == 0) {
 			FILE << epoch << "\t" << spe_new << "\n";
 		}
 	}
+	FILE << "Yhat0 (Prediction):\n";
+	for (int i = 0; i < Yhat0.size(); i++) {
+		for (int j = 0; j < Yhat0[i].size(); j++) {
+			FILE << Yhat0[i][j] << ", ";
+		}
+		FILE << "\n";
+	}
+
+	FILE << "YTest:\n";
+	for (int i = 0; i < Ytest.size(); i++) {
+		for (int j = 0; j < Ytest[i].size(); j++) {
+			FILE << Ytest[i][j] << ", ";
+		}
+		FILE << "\n";
+	}
 	FILE.close();
+	
 }
 
 //GetNetworkPrediction(Xtrain, H, weights, biases, F, yhat);
@@ -6819,6 +6854,7 @@ void CModelingandAnalysisofUncertaintyDoc::GetNetworkPrediction(const std::vecto
 	const std::vector<double>& w, const std::vector<double>& b,
 	std::vector<std::vector<double>>& F, std::vector<double>& yhat) {
 
+	// 20, 
 	int N = X.size();
 	int M = X[0].size();
 
