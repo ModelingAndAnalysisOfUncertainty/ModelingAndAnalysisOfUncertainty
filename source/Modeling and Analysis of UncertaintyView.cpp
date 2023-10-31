@@ -1163,7 +1163,7 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		PlotLossCurve();
 		//PlotAccuraciesCurve();
 	}
-	//else if (pDoc->)
+	
 }
 
 // *************************************************************
