@@ -1326,7 +1326,7 @@ void CModelingandAnalysisofUncertaintyDoc::MatrixParallelTest() {
 	FILE.open("matrix_Test.txt");
 	int size = 1000;
 	FILE << "Matrix Size: " << size << "\n";
-	CArray <double> A, B, C, D, x, y;
+	CArray <double> A, B, C, D, x, y, z;
 	CArray <int> A_Spec, B_Spec, C_Spec, D_Spec;
 	A_Spec.SetSize(3), A_Spec.SetAt(0, size), A_Spec.SetAt(1, size), A_Spec.SetAt(2, 0);
 	B_Spec.SetSize(3), B_Spec.SetAt(0, size), B_Spec.SetAt(1, size), B_Spec.SetAt(2, 0);
@@ -1342,6 +1342,19 @@ void CModelingandAnalysisofUncertaintyDoc::MatrixParallelTest() {
 		x.SetAt(i, i);
 	}
 
+	//For GausJorden Testing with matrix of 3x3
+	/*
+	A.SetAt(GetPosition(0, 0, A_Spec), 1);
+	A.SetAt(GetPosition(0, 1, A_Spec), 0);
+	A.SetAt(GetPosition(0, 2, A_Spec), 0);
+	A.SetAt(GetPosition(1, 0, A_Spec), 0);
+	A.SetAt(GetPosition(1, 1, A_Spec), 1);
+	A.SetAt(GetPosition(1, 2, A_Spec), 0);
+	A.SetAt(GetPosition(2, 0, A_Spec), 0);
+	A.SetAt(GetPosition(2, 1, A_Spec), 0);
+	A.SetAt(GetPosition(2, 2, A_Spec), 1);
+	*/
+
 	//Normal
 	auto t_start = std::chrono::high_resolution_clock::now();
 	std::clock_t c_start = std::clock();
@@ -1352,10 +1365,10 @@ void CModelingandAnalysisofUncertaintyDoc::MatrixParallelTest() {
 	//X_tr_X(A, A_Spec, C, C_Spec);
 	//X_tr_Y(A, A_Spec, B, B_Spec, C, C_Spec);
 	//X_Y_tr(A, A_Spec, B, B_Spec, C, C_Spec);
-	//X_X_tr(A, A_Spec, B, B_Spec);
+	//X_X_tr(A, A_Spec, C, C_Spec);
 	//ManipulateRowForwardPath(A, A_Spec, 500, 500);
 	//ManipulateRowBackwardPath(A, A_Spec, 500, 500);
-	GaussJordanElimination(A, A_Spec, y, x);
+	//GaussJordanElimination(A, A_Spec, y, x);
 	auto t_end = std::chrono::high_resolution_clock::now();
 	std::clock_t c_end = std::clock();
 	auto elapsed_time_ms_normal = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
@@ -1365,17 +1378,17 @@ void CModelingandAnalysisofUncertaintyDoc::MatrixParallelTest() {
 	//Parallel
 	t_start = std::chrono::high_resolution_clock::now();
 	c_start = std::clock();
-	//AddingMatricesParallel(A, A_Spec, B, B_Spec, C, C_Spec);
+	//AddingMatricesParallel(A, A_Spec, B, B_Spec, D, D_Spec);
 	//SubtractingMatricesParallel(A, A_Spec, B, B_Spec, D, D_Spec);
-	//MatrixProductParallel(A, A_Spec, B, B_Spec, C, C_Spec);
-	//MatrixVectorProductParallel(A, A_Spec, x, y);
+	//MatrixProductParallel(A, A_Spec, B, B_Spec, D, D_Spec);
+	//MatrixVectorProductParallel(A, A_Spec, x, z);
 	//X_tr_X_Parallel(A, A_Spec, D, D_Spec);
 	//X_tr_Y_Parallel(A, A_Spec, B, B_Spec, D, D_Spec);
 	//X_Y_tr_Parallel(A, A_Spec, B, B_Spec, D, D_Spec);
-	//X_X_tr_Parallel(A, A_Spec, B, B_Spec);
+	//X_X_tr_Parallel(A, A_Spec, D, D_Spec);
 	//ManipulateRowForwardPathParallel(B, B_Spec, 500, 500);
-	//ManipulateRowBackwardPathParallel(A, A_Spec, 500, 500);
-	GaussJordanEliminationParallel(A, A_Spec, y, x);
+	//ManipulateRowBackwardPathParallel(B, B_Spec, 500, 500);
+	//GaussJordanEliminationParallel(A, A_Spec, z, x);
 	t_end = std::chrono::high_resolution_clock::now();
 	c_end = std::clock();
 	auto elapsed_time_ms_parallel = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
@@ -1385,6 +1398,15 @@ void CModelingandAnalysisofUncertaintyDoc::MatrixParallelTest() {
 	FILE << "Finished time of parallel clock: " << elapsed_time_ms_parallel << "ms" << std::endl;
 	FILE << "Finished time of parallel CPU: " << 1000.0 * (c_end - c_start) / CLOCKS_PER_SEC << "ms\n\n";
 	FILE << "Parallel is " << std::fixed << std::setprecision(2) << difference << " times faster" << "\n";
+
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size; j++) {
+			//assert(C.GetAt(GetPosition(i, j, C_Spec)) == D.GetAt(GetPosition(i, j, D_Spec)));
+			assert(A.GetAt(GetPosition(i, j, A_Spec)) == B.GetAt(GetPosition(i, j, B_Spec)));
+		}
+		//assert(y.GetAt(i) == z.GetAt(i));
+	}
+	FILE << "\nResults are the same\n";
 }
 
 // *** Gauss-Jordan elimination : A·x=y (x unknown)
