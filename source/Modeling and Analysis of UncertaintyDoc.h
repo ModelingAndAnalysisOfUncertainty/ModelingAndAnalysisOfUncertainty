@@ -4,6 +4,7 @@
 #include <ctime>
 #include "ProbabilityDistributions.h"
 
+
 #pragma once
 
 class CModelingandAnalysisofUncertaintyDoc : public CDocument{
@@ -249,6 +250,7 @@ protected:
 	void VPC(CArray <double>&, CArray <int>&, int&);
 	void VRE(CArray <double>&, CArray <int>&, int&);
 	// *** Additional functions
+	double QPPSolver(void);
 	double GetOptimalBandwidth(CArray <double>&);
 	double NumericalIntegration(CArray <double>&, double);
 	void SetUpFDAMatrices(CArray <double>&, CArray <double>&, CArray <int>&, CArray <double>&);
