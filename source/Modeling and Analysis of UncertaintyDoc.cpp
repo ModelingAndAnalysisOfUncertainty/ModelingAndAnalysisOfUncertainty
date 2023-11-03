@@ -7318,6 +7318,28 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 		}
 		FILE << "\n";
 	}
+	CArray<int> ConfusionMatrix;
+	ConfusionMatrix.SetSize(C* C);
+	for (int i = 0; i < Yhat0.size(); i++) {
+		double max_value = Yhat0[i][0];
+		int max_index = 0;
+		int actual_index = 0;
+		for (int j = 1; j < Yhat0[i].size(); j++) {
+			if (Yhat0[i][j] > max_value) {
+				max_value = Yhat0[i][j];
+				max_index = j;
+			}
+			if (Ytest[i][j] == 1) {
+				actual_index = j;
+			}
+		}
+		ConfusionMatrix[(C * max_index) + actual_index]++;
+	}
+	for (int i = 0; i < C * C; i++) {
+		if (i % 3 == 0)
+			FILE << "\n";
+		FILE << ConfusionMatrix[i] << ",";
+	}
 	FILE.close();
 	
 }
