@@ -6955,14 +6955,27 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN() {
 	CloseHandle(hEvent);
 }
 
-
-//Experimental Stuff
 // Function to calculate the sum of squared errors
 double CModelingandAnalysisofUncertaintyDoc::sum_squared_error(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2) {
 	double error = 0.0;
 	int numRows = Y1.size();
 	int numCols = Y1[0].size();
 
+	for (int i = 0; i < numRows; ++i) {
+		for (int j = 0; j < numCols; ++j) {
+			error += pow(Y1[i][j] - Y2[i][j], 2);
+		}
+	}
+	return error / (numRows * numCols);
+}
+
+// Function to calculate the sum of squared errors in parallel
+double CModelingandAnalysisofUncertaintyDoc::sum_squared_error_parallel(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2) {
+	double error = 0.0;
+	int numRows = Y1.size();
+	int numCols = Y1[0].size();
+
+	#pragma omp parallel for reduction(+:error)
 	for (int i = 0; i < numRows; ++i) {
 		for (int j = 0; j < numCols; ++j) {
 			error += pow(Y1[i][j] - Y2[i][j], 2);
@@ -7419,6 +7432,7 @@ void CModelingandAnalysisofUncertaintyDoc::GetNetworkPrediction(const std::vecto
 		yhat[i] = 1.0 / (1.0 + exp(-yhat[i]));
 	}
 }
+
 // Enablers for modeling methods after datafile was read
 void CModelingandAnalysisofUncertaintyDoc::OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI) {
 	pCmdUI->Enable(FileOpen);
