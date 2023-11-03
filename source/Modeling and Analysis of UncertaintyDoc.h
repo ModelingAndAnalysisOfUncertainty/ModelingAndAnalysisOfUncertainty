@@ -286,6 +286,10 @@ protected:
 	double CModelingandAnalysisofUncertaintyDoc::sum_squared_error(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2);
 	void CModelingandAnalysisofUncertaintyDoc::VecTranspose(std::vector<std::vector<double> >& b);
 	void CModelingandAnalysisofUncertaintyDoc::VecTransposeInt(std::vector<std::vector<int> >& b);
+	void CModelingandAnalysisofUncertaintyDoc::getTrainTestData(std::vector<std::vector<double> >& X,
+		std::vector<std::vector<double> >& Xtrain, std::vector<std::vector<double> >& Xtest,
+		std::vector<std::vector<int>>& Y, std::vector<std::vector<int>>& Ytrain,
+		std::vector<std::vector<int>>& Ytest, double trainFraction, const int M, const int C);
 
 	// Generated message map functions
 protected:

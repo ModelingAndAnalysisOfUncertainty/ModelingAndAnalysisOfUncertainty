@@ -7045,6 +7045,33 @@ void CModelingandAnalysisofUncertaintyDoc::VecTransposeInt(std::vector<std::vect
 
 	b = trans_vec;    // <--- reassign here
 }
+void CModelingandAnalysisofUncertaintyDoc::getTrainTestData(std::vector<std::vector<double> >& X,
+	std::vector<std::vector<double> >& Xtrain, std::vector<std::vector<double> >& Xtest,
+	std::vector<std::vector<int>>& Y, std::vector<std::vector<int>> &Ytrain, 
+	std::vector<std::vector<int>> & Ytest,	double trainFraction, const int M, const int C) {
+	int N = X.size();
+	int Ntrain = static_cast<int>(round(N * trainFraction));
+	int Ntest = N - Ntrain;
+
+	Xtrain.resize(Ntrain, std::vector<double>(M));
+	Xtest.resize(Ntest, std::vector<double>(M));
+	Ytrain.resize(Ntrain, std::vector<int>(C));
+	Ytest.resize(Ntest, std::vector<int>(C)); 
+	std::vector<int> index = randsample(N, N);
+
+	for (int i = 0; i < Ntrain; i++) {
+		Xtrain[i] = X[index[i]];
+		for (int c = 0; c < C; c++) {
+			Ytrain[i][c] = Y[index[i]][c];
+		}
+	}
+	for (int i = Ntrain; i < N; i++) {
+		Xtest[i - Ntrain] = X[index[i]];
+		for (int c = 0; c < C; c++) {
+			Ytest[i - Ntrain][c] = Y[index[i]][c];
+		}
+	}
+}
 
 void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	// Define constants
@@ -7058,57 +7085,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	int batch_size = 5;
 	// Initialize random number generator seed
 	std::srand(1);
-
-	// Generate random data for three classes
-	//std::vector<std::vector<double>> Xclass1(N, std::vector<double>(M));
-	//std::vector<std::vector<double>> Xclass2(N, std::vector<double>(M));
-	//std::vector<std::vector<double>> Xclass3(N, std::vector<double>(M));
-
-	//for (int i = 0; i < N; ++i) {
-	//	for (int j = 0; j < M; ++j) {
-	//		Xclass1[i][j] = static_cast<double>(std::rand()) / RAND_MAX + 1.0;
-	//		Xclass2[i][j] = static_cast<double>(std::rand()) / RAND_MAX;
-	//		Xclass3[i][j] = static_cast<double>(std::rand()) / RAND_MAX - 1.0;
-	//	}
-	//}
-	//// Combine data for all classes
-	//std::vector<std::vector<double>> X = Xclass1;
-	//X.insert(X.end(), Xclass2.begin(), Xclass2.end());
-	//X.insert(X.end(), Xclass3.begin(), Xclass3.end());
-	////Normalize data
-	//X = zscore(X);
-
-	//VecTranspose(X);
-
-	//// Generate ytrue as described in MATLAB
-	//std::vector<int> ytrue;
-	//for (int c = 0; c < C; ++c) {
-	//	for (int i = 0; i < N; ++i) {
-	//		ytrue.push_back(c + 1);
-	//	}
-	//}
-
-	//// Generate y1, y2, and y3
-	//std::vector<double> y1(N, 1.0);
-	//std::vector<double> y2(N, 0.0);
-	//std::vector<double> y3(N, 0.0);
-
-
-	//for (int i = 0; i < 2000; i++) {
-	//	y1.push_back(0.0);
-	//	if (i < 1000) {
-	//		y2.push_back(1);
-	//		y3.push_back(0);
-	//		continue;
-	//	}
-	//	y2.push_back(0);
-	//	y3.push_back(1);
-	//}
-	//// Concatenate y1, y2, and y3 to create Y
-	//std::vector<std::vector<double>> Y;
-	//Y.push_back(y1);
-	//Y.push_back(y2);
-	//Y.push_back(y3);
 
 	CArray<double> Data0, bar, std;
 	Data0.RemoveAll();
@@ -7135,14 +7111,8 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	for (int i = 0; i < n_Obs; i++) {
 		Y[i][(Input_Y[i] - 1)] = 1;
 	}
-	//FILE_CHECK << "n_Obs: " << n_Obs << "\nn_Var: " << n_Var << "\nn_Classes: " << n_classes << "\n";
-	//FILE_CHECK.close();
-
-
-	//VecTranspose(Y);
 
 	// Initialize weight (w) and bias (b) matrices for the neural network
-	//n_weights = 20; n_biases = 6;
 	int n_weights = H * (M + 1);
 	int n_biases = H + 1;
 
@@ -7153,24 +7123,13 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	// Vector of 0-3000 shuffled
 
 	int Ntest = N - Ntrain;
-	std::vector<std::vector<double>> Xtrain(Ntrain, std::vector<double>(M));
-	std::vector<std::vector<int>> Ytrain(Ntrain, std::vector<int>(C));
-	std::vector<std::vector<double>> Xtest(Ntest, std::vector<double>(M));
-	std::vector<std::vector<int>> Ytest(Ntest, std::vector<int>(C));
-	std::vector<int> index = randsample(N, N);
+	std::vector<std::vector<double>> Xtrain;
+	std::vector<std::vector<double>> Xtest;
+	std::vector<std::vector<int>> Ytrain;
+	std::vector<std::vector<int>> Ytest;
 
-	for (int i = 0; i < Ntrain; i++) {
-		Xtrain[i] = X[index[i]];
-		for (int c = 0; c < C; c++) {
-			Ytrain[i][c] = Y[index[i]][c];
-		}
-	}
-	for (int i = Ntrain; i < N; i++) {
-		Xtest[i - Ntrain] = X[index[i]];
-		for (int c = 0; c < C; c++) {
-			Ytest[i - Ntrain][c] = Y[index[i]][c];
-		}
-	}
+	getTrainTestData(X, Xtrain, Xtest, Y, Ytrain, Ytest, trainFraction, M, C);
+
 	std::ofstream FILE_CHECK;
 	FILE_CHECK.open("check_file.txt");
 
@@ -7210,10 +7169,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 
 	// 450x3 matrix of 0's
 	std::vector<std::vector<double>> yhat0(Ntest, std::vector<double>(C, 0.0));
-	//Need to fix
-	/*
-	// Initialize some variables for tracking training progress
-	*/
+
 
 	// Create variables for Yhat0 and delta0
 	// These are both 450x3 uninitialized matrices
@@ -7236,17 +7192,10 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			std::vector<double> weights(w.begin() + c * n_weights, w.begin() + (c + 1) * n_weights);
 			std::vector<double> biases(b.begin() + c * n_biases, b.begin() + (c + 1) * n_biases);
 
-			// Get network predictions for the training data
-			//CString version;
-			//version.Append(L"classification");
-			//What is F and yhat
-			// F = 1000x5
 			std::vector<std::vector<double>> F = std::vector<std::vector<double>>(train, std::vector<double>(H, 0.0));
 			std::vector<double> yhat = std::vector<double>(train, 0.0);
 
 			std::vector<std::vector<double> > Xslice;
-			/*for (int i = 0; i < train; i++)
-				Xslice.push_back(Xtrain[index[i]]);*/
 			for (int i = slice_index; i < slice_index + train; i++) {
 				if (i >= Ntrain) {
 					Xslice.push_back(Xtrain[i % Ntrain]);
@@ -7256,16 +7205,8 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			}
 
 			GetNetworkPrediction(Xslice, H, weights, biases, F, yhat);
-			/*for (int i = 0; i < yhat.size(); i++) {
-				FILE << yhat[i] << ", ";
-			}
-			FILE << "\n";*/
-			// Compute the error (d) for the current class
-			//If we replaced Ytrain with Y slice we would be chilling
+		
 			std::vector<double> d(train, 0.0);
-			/*for (int i = 0; i < train; ++i) {
-				d[i] = Ytrain[index[i]][c] - yhat[i];
-			}*/
 			int d_index = 0;
 			for (int i = slice_index; i < slice_index + train; i++) {
 				if (i >= Ntrain) {
@@ -7329,11 +7270,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			std::vector<std::vector<double> > Ftemp = std::vector<std::vector<double>>(Ntest, std::vector<double>(H, 0.0));
 			GetNetworkPrediction(Xtest, H, weights, biases, Ftemp, yhat0);
 			
-
-			/*for (int i = 0; i < yhat0.size(); i++) {
-				FILE << yhat0[i] << ", ";
-			}
-			FILE << "\n";*/
 
 			// Compute delta0 for the current class
 			std::vector<double> delta0(Ntest, 0.0);
