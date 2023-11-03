@@ -4569,12 +4569,12 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	MatrixVectorProduct(Data, Data_spec, w, y_hat);
 
 	SaveVector("wvalue.txt", w);
+	SaveVector("swwvalue.txt", Sww);
 	SaveVector("yvalue.txt", y);
 	SaveVector("yhatvalue.txt", y_hat);
 	//MatrixVectorProduct(z, z_spec, w, y_hat)
 
 
-	SaveVector("test9.txt", Sww);
 	SaveVector("data3.txt", Data);
 
 	AfxMessageBox(L"I believe I have just saved a file!");
