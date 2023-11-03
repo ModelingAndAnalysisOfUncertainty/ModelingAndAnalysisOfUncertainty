@@ -7000,6 +7000,38 @@ std::vector<std::vector<double>> CModelingandAnalysisofUncertaintyDoc::zscore(co
 	return normalized;
 }
 
+std::vector<std::vector<double>> CModelingandAnalysisofUncertaintyDoc::zscoreParallel(const std::vector<std::vector<double>>& data) {
+	std::vector<std::vector<double>> normalized;
+	int numRows = data.size();
+	int numCols = data[0].size();
+
+	double mean = 0.0;
+	double stdDev = 0.0;
+	int i = 0;
+	std::vector<double> column;
+	double normalizedValue;
+	#pragma omp parallel for private(mean, stdDev, i, column, normalizedValue)
+	for (int j = 0; j < numCols; ++j) {
+		for (i = 0; i < numRows; ++i) {
+			mean += data[i][j];
+		}
+		mean /= numRows;
+		for (i = 0; i < numRows; ++i) {
+			stdDev += pow(data[i][j] - mean, 2);
+		}
+		stdDev = sqrt(stdDev / (numRows - 1));
+		
+		for (i = 0; i < numRows; ++i) {
+			normalizedValue = (data[i][j] - mean) / stdDev;
+			column.push_back(normalizedValue);
+		}
+		#pragma omp critical
+		normalized.push_back(column);
+	}
+
+	return normalized;
+}
+
 // Function to get a random sample from a vector
 std::vector<int> CModelingandAnalysisofUncertaintyDoc::randsample(int n, int k) {
 	std::vector<int> indices(n);
