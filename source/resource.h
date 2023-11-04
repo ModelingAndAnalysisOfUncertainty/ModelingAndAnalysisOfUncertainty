@@ -42,6 +42,8 @@
 #define IDD_DIALOG_NEURALNETWORK        333
 #define IDD_ANN_TRAINSET                335
 #define IDD_NEWANN                      337
+#define IDD_DIALOG2                     339
+#define IDD_DIALOG_CLC                  339
 #define IDC_GET_NUMBER_PCS              1000
 #define IDC_EDIT_PC_2                   1003
 #define IDC_EDIT_PC_3                   1004
@@ -161,6 +163,8 @@
 #define IDC_STATIC_UNKNOWNKNOWN         1102
 #define IDC_STATIC_SHOW_SPECIFY_VARIANCE 1103
 #define IDC_STATIC_SHOW_VARIANCE_SPECIFY 1104
+#define IDC_LIST1                       1116
+#define IDC_CL1                         1116
 #define ID_BASICSTATISTICS              32771
 #define ID_BASICSTATISTICS_DESCRIPTIVESTATISTICS 32772
 #define ID_BASICSTATISTICS_HYPOTHESISTESTING 32773
@@ -205,9 +209,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        339
+#define _APS_NEXT_RESOURCE_VALUE        341
 #define _APS_NEXT_COMMAND_VALUE         32810
-#define _APS_NEXT_CONTROL_VALUE         1116
+#define _APS_NEXT_CONTROL_VALUE         1117
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif

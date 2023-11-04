@@ -9637,9 +9637,9 @@ void CModelingandAnalysisofUncertaintyView::PlotAccuraciesCurve() {
 }
 
 
-
+ 
 void CModelingandAnalysisofUncertaintyView::OnMachinelearningArtificialneuralnetworkwithaccuracy()
 {
-	NewANN New_ANN_Dlg;
-	New_ANN_Dlg.DoModal();
+	//NewANN New_ANN_Dlg; 
+	//New_ANN_Dlg.DoModal(); 
 }
