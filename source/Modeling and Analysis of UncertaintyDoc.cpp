@@ -5177,16 +5177,65 @@ void CModelingandAnalysisofUncertaintyDoc::OnKPCA() {
 
 void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	AfxMessageBox(L"Now we are working on establishing logistic regression model");
+
+	//load data
+	/*std::ifstream file("datasets/BostonHousingData.FDA");
+	CString message;
+	if (!file) {
+		message.Format(_T("Unable to open file: %S\n"), "hello");
+		AfxMessageBox(message);
+		return;
+	}
+	std::ofstream file2("example2.txt");
+	std::string line;
+	int num_features = -1;
+	CArray<double> data;
+	while (std::getline(file, line)) {
+		std::stringstream sstream(line);
+	}*/
+	
+
 	CArray<double> y, j, f, w;
 	CArray<int> y_spec, j_spec, f_spec, w_spec;
-	int w_size = 2;
+	int w_size = n_Var;
 	w.SetSize(w_size);
 	j.SetSize(4);
 	f.SetSize(2);
-	//////
+
 	for (int i = 0; i < w_size; i++) {
 		w.SetAt(i, 1);
 	}
+
+	double error = 1;
+	CArray<double> z;
+	std::ofstream FILE;
+	FILE.open("example.txt");
+	z.SetSize(Data.GetSize());
+	//FILE << "hi" << std::endl;
+	CArray<int> z_spec;
+	z_spec.SetSize(3);
+	z_spec.SetAt(0, Data_spec.GetAt(0));
+	z_spec.SetAt(1, Data_spec.GetAt(1));
+	z_spec.SetAt(2, Data_spec.GetAt(2));
+
+	for (int x = 0; x < Data_spec.GetAt(0); x++) {
+		for (int y = 0; y < Data_spec.GetAt(1); y++) {
+			double temp = Data.GetAt(GetPosition(x, y, Data_spec));			
+			z.SetAt(GetPosition(x, y, Data_spec), temp);
+			if (y == Data_spec.GetAt(1)-1) {
+				z.SetAt(GetPosition(x, y, z_spec), 1);
+			}
+		}
+	}
+
+	/*while (error > 10) {
+		
+		y_hat = 1 / (1 - exp(-z))
+	}*/
+
+
+	//////
+	
 	j_spec.SetSize(3);
 	j_spec.SetAt(0, 2);
 	j_spec.SetAt(1, 2);
@@ -5195,12 +5244,12 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	f_spec.SetAt(0, 2);
 	f_spec.SetAt(1, 2);
 	f_spec.SetAt(2, 0);
+	AfxMessageBox(L"pain");
 	//////
-	//int i = 0;
+	int i = 0;
 	
-	std::ofstream FILE;
-	FILE.open("example.txt");
-	double error = 1;
+	
+	
 	double lambda = 1;
 	while (error > 0.00001) {
 		///
@@ -5247,14 +5296,11 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 		}
 		error = sqrt(hold);
 		//error = sqrt(pow(w.GetAt(0)-temp_w.GetAt(0), 2)+pow(w.GetAt(1)-temp_w.GetAt(1), 2));
-		FILE << "sqrt[(" << w.GetAt(0) << " - " << temp_w.GetAt(0) << ")^2 + (" << w.GetAt(1) << " - " << temp_w.GetAt(1) << " )^2]= " << error << std::endl;
-		//i += 1;
+		//FILE << "sqrt[(" << w.GetAt(0) << " - " << temp_w.GetAt(0) << ")^2 + (" << w.GetAt(1) << " - " << temp_w.GetAt(1) << " )^2]= " << error << std::endl;
+		i += 1;
+		lambda = lambda / i;
 	}
 	AfxMessageBox(L"Finished");
-	
-	for (int j = 0; j < w.GetSize(); j++) {
-		FILE << w.GetAt(j) << ", ";
-	}
 }
 
 //*****************************************************************
