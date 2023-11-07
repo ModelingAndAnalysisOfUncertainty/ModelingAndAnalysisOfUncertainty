@@ -7013,6 +7013,7 @@ std::vector<std::vector<double>> CModelingandAnalysisofUncertaintyDoc::zscore(co
 	return normalized;
 }
 
+// Function to calculate z-score normalization in parallel
 std::vector<std::vector<double>> CModelingandAnalysisofUncertaintyDoc::zscoreParallel(const std::vector<std::vector<double>>& data) {
 	std::vector<std::vector<double>> normalized;
 	int numRows = data.size();
@@ -7460,6 +7461,44 @@ void CModelingandAnalysisofUncertaintyDoc::GetNetworkPrediction(const std::vecto
 			yhat[i] += w[pos] * F[i][h];
 		}
 	}
+	for (int i = 0; i < N; ++i) {
+		yhat[i] = 1.0 / (1.0 + exp(-yhat[i]));
+	}
+}
+
+////GetNetworkPrediction(Xtrain, H, weights, biases, F, yhat) in parallel
+void CModelingandAnalysisofUncertaintyDoc::GetNetworkPredictionParallel(const std::vector<std::vector<double>>& X, const int H,
+	const std::vector<double>& w, const std::vector<double>& b,
+	std::vector<std::vector<double>>& F, std::vector<double>& yhat) {
+
+	// 20, 
+	int N = X.size();
+	int M = X[0].size();
+	int pos;
+	int i;
+	int j;
+	std::vector<double> z(N, 0.0);
+	#pragma omp parallel for private(pos, z, i, j)
+	for (int h = 0; h < H; ++h) {
+		for (j = 0; j < M; ++j) {
+			pos = j * H + h;
+			for (i = 0; i < N; ++i) {
+				z[i] += w[pos] * X[i][j];
+			}
+		}
+
+		for (i = 0; i < N; ++i) {
+			z[i] += b[h];
+			F[i][h] = 1.0 / (1.0 + exp(-z[i]));
+		}
+
+		pos = M * H + h;
+		for (i = 0; i < N; ++i) {
+			#pragma omp atomic
+			yhat[i] += w[pos] * F[i][h];
+		}
+	}
+	#pragma omp parallel for
 	for (int i = 0; i < N; ++i) {
 		yhat[i] = 1.0 / (1.0 + exp(-yhat[i]));
 	}

@@ -282,6 +282,9 @@ protected:
 	void CModelingandAnalysisofUncertaintyDoc::GetNetworkPrediction(const std::vector<std::vector<double>>& X, const int H,
 		const std::vector<double>& w, const std::vector<double>& b,
 		std::vector<std::vector<double>>& F, std::vector<double>& yhat);
+	void CModelingandAnalysisofUncertaintyDoc::GetNetworkPredictionParallel(const std::vector<std::vector<double>>& X, const int H,
+		const std::vector<double>& w, const std::vector<double>& b,
+		std::vector<std::vector<double>>& F, std::vector<double>& yhat);
 	std::vector<std::vector<double>> CModelingandAnalysisofUncertaintyDoc::zscore(const std::vector<std::vector<double>>& data);
 	std::vector<std::vector<double>> CModelingandAnalysisofUncertaintyDoc::zscoreParallel(const std::vector<std::vector<double>>& data);
 	double CModelingandAnalysisofUncertaintyDoc::sum_squared_error(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2);
