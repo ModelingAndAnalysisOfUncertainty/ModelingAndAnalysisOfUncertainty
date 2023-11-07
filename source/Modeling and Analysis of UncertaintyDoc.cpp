@@ -4509,19 +4509,19 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	CArray<double> value;
 	int y_train;
 	y_train = (int)floor(n_Obs * 0.85);
-	value.SetSize(y_train);
+	value.SetSize(static_cast <int64_t> (y_train));
 	CArray<double> data2;
-	data2.SetSize(y_train* n_Var);
+	data2.SetSize(static_cast <int64_t> (n_Var) * y_train);
 	CArray <int> Traindata_spec;
-	Traindata_spec.SetSize(3);
+	Traindata_spec.SetSize(static_cast < int64_t>(3));
 	Traindata_spec.SetAt(0, y_train), Traindata_spec.SetAt(1, n_Var), Traindata_spec.SetAt(2, 0);
 
 	
 	for (int i = 0; i < y_train; i++) {
-		y.SetAt(i, Data.GetAt((n_Var)*i));
-		double temp_1;
-		temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(i, n_Var - 1, Data_spec)));
-		if (temp_1 != 1) temp_1 = -1;
+	//	y.SetAt(i, Data.GetAt((n_Var)*i));
+	//	double temp_1;
+	//	temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(i, n_Var - 1, Data_spec)));
+	//	if (temp_1 != 1) temp_1 = -1;
 		for (int j = 0; j < n_Var; j++) {
 			double temp_2;
 			int val_pos = static_cast <int64_t>(GetPosition(i, j, Traindata_spec));
@@ -4529,20 +4529,36 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 			temp_2 = Data.GetAt(static_cast <int64_t>(GetPosition(i, j, Data_spec)));
 			data2.SetAt(val_pos, temp_2);
 		}
-		
+		//value.SetAt(i, temp_1);
+	}
 
+
+	for (int i = 0; i < y_train; i++) {
+		double temp_1;
+		temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(i, n_Var - 1, Data_spec)));
+		if (temp_1 != 1) temp_1 = -1;
 		value.SetAt(i, temp_1);
 	}
-	
+	//
 
 
+
+
+	//set test data
+	// 
+	// 
+	// 
+	// multiply vectors and coefficeint see if thev alue is 1 or -1
 
 	SaveVector("test2.txt", y);
 	SaveVector("test7.txt", value);
 	SaveVector("traindata.txt", data2);
 	CArray <double> w;
 	CArray <double> Sww;
-	GetStandardRegressionModel(Data, Data_spec, y ,w, Sww);
+	//GetStandardRegressionModel(Data, Data_spec, y ,w, Sww);
+
+	//GetStandardRegressionModel(Data, Traindata_spec, value, w, Sww);
+
 	SaveVector("test.txt", w);
 	SaveVector("test9.txt", Sww);
 	SaveVector("data3.txt", Data);
