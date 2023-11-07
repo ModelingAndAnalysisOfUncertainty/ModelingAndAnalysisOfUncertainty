@@ -7130,6 +7130,25 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 
 	getTrainTestData(X, Xtrain, Xtest, Y, Ytrain, Ytest, trainFraction, M, C);
 
+	std::vector<int> Ytrue_Train(Ntrain, 0);
+	std::vector<int> Ytrue_Test(Ntest, 0);
+
+	for (int i = 0; i < Ntrain; i++) {
+		for (int c = 0; c < C; c++) {
+			if (Ytrain[i][c] == 1) {
+				Ytrue_Train[i] = c;
+				break;
+			}
+		}
+	}
+	for (int i = 0; i < Ntest; i++) {
+		for (int c = 0; c < C; c++) {
+			if (Ytest[i][c] == 1) {
+				Ytrue_Test[i] = c;
+				break;
+			}
+		}
+	}
 	std::ofstream FILE_CHECK;
 	FILE_CHECK.open("check_file.txt");
 
@@ -7139,6 +7158,11 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 		}
 		FILE_CHECK << "\n";
 	}
+
+	for (int i = 0; i < Ntest; i++) {
+		FILE_CHECK << Ytrue_Test[i] << "\n";
+	}
+
 	FILE_CHECK.close();
 	// 1x60, 1x18
 	std::vector<double> w(C * n_weights);
@@ -7319,23 +7343,8 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 		FILE << "\n";
 	}
 	CArray<int> ConfusionMatrix;
-	ConfusionOperations(ConfusionMatrix, Yhat0, Ytest, C);
-	/*ConfusionMatrix.SetSize(C* C);
-	for (int i = 0; i < Yhat0.size(); i++) {
-		double max_value = Yhat0[i][0];
-		int max_index = 0;
-		int actual_index = 0;
-		for (int j = 1; j < Yhat0[i].size(); j++) {
-			if (Yhat0[i][j] > max_value) {
-				max_value = Yhat0[i][j];
-				max_index = j;
-			}
-			if (Ytest[i][j] == 1) {
-				actual_index = j;
-			}
-		}
-		ConfusionMatrix[(C * max_index) + actual_index]++;
-	}*/
+	std::vector<std::vector<int>> yass0(Ntest, std::vector<int>(C, 0));
+	ConfusionOperations(ConfusionMatrix, Yhat0, Ytest, yass0, C);
 	for (int i = 0; i < C * C; i++) {
 		if (i % 3 == 0)
 			FILE << "\n";
@@ -7345,7 +7354,8 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 }
 
 void CModelingandAnalysisofUncertaintyDoc::ConfusionOperations(CArray <int> &ConfusionMatrix,
-	std::vector<std::vector<double>> &Yhat0, std::vector<std::vector<int>>& Ytest, const int C) {
+	std::vector<std::vector<double>> &Yhat0, std::vector<std::vector<int>>& Ytest, std::vector<std::vector<int>>& yass0,
+	const int C) {
 	ConfusionMatrix.SetSize(C * C);
 	for (int i = 0; i < Yhat0.size(); i++) {
 		double max_value = Yhat0[i][0];
@@ -7361,6 +7371,7 @@ void CModelingandAnalysisofUncertaintyDoc::ConfusionOperations(CArray <int> &Con
 			}
 		}
 		ConfusionMatrix[(C * max_index) + actual_index]++;
+		yass0[i][max_index] = 1;
 	}
 }
 
