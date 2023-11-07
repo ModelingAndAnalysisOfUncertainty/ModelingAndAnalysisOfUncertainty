@@ -7073,6 +7073,26 @@ void CModelingandAnalysisofUncertaintyDoc::getTrainTestData(std::vector<std::vec
 	}
 }
 
+int CModelingandAnalysisofUncertaintyDoc::n_choose_k(int n, int k) {
+	int resnCk;
+	resnCk = factorial(n) / (factorial((n - k)) * (factorial(k)));
+
+	return resnCk;
+}
+
+
+
+
+int CModelingandAnalysisofUncertaintyDoc::factorial(int m) {
+	int result = m;
+	int i;
+
+	for (i = 0; i < m; i++) {
+		result *= (result - 1);
+	}
+	return result;
+}
+
 void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	// Define constants
 	const int N = n_Obs;
@@ -7134,7 +7154,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	std::vector<int> Ytrue_Test(Ntest, 0);
 
 	for (int i = 0; i < Ntrain; i++) {
-		for (int c = 0; c < C; c++) {
+		for (int c = 0; c < C; c++) {  
 			if (Ytrain[i][c] == 1) {
 				Ytrue_Train[i] = c;
 				break;
@@ -7343,8 +7363,20 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 		FILE << "\n";
 	}
 	CArray<int> ConfusionMatrix;
-	std::vector<std::vector<int>> yass0(Ntest, std::vector<int>(C, 0));
-	ConfusionOperations(ConfusionMatrix, Yhat0, Ytest, yass0, C);
+	//std::vector<std::vector<int>> yass0(Ntest, std::vector<int>(C, 0));
+	std::vector<int> yass0(Ntest, 0);
+	for (int i = 0; i < Yhat0.size(); i++) {
+		int max_index = 0;
+		double max_value = Yhat0[i][0];
+		for (int j = 1; j < Yhat0[i].size(); j++) {
+			if (Yhat0[i][j] > max_value) {
+				max_value = Yhat0[i][j];
+				max_index = j;
+			}
+		}
+		yass0[i] = max_index;
+	}
+	GetConfusionMatrix(ConfusionMatrix, yass0, Ytrue_Test);
 	for (int i = 0; i < C * C; i++) {
 		if (i % 3 == 0)
 			FILE << "\n";
@@ -7354,7 +7386,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 }
 
 void CModelingandAnalysisofUncertaintyDoc::ConfusionOperations(CArray <int> &ConfusionMatrix,
-	std::vector<std::vector<double>> &Yhat0, std::vector<std::vector<int>>& Ytest, std::vector<std::vector<int>>& yass0,
+	std::vector<std::vector<double>> &Yhat0, std::vector<std::vector<int>>& Ytest, std::vector<int>& yass0,
 	const int C) {
 	ConfusionMatrix.SetSize(C * C);
 	for (int i = 0; i < Yhat0.size(); i++) {
@@ -7371,7 +7403,17 @@ void CModelingandAnalysisofUncertaintyDoc::ConfusionOperations(CArray <int> &Con
 			}
 		}
 		ConfusionMatrix[(C * max_index) + actual_index]++;
-		yass0[i][max_index] = 1;
+		yass0[i] = max_index;
+	}
+}
+
+void CModelingandAnalysisofUncertaintyDoc::GetConfusionMatrix(CArray<int>& ConfusionMatrix,
+	std::vector<int>& yass0, std::vector<int>& ytrue) {
+	int N = yass0.size();
+	ConfusionMatrix.SetSize(n_classes * n_classes);
+
+	for (int i = 0; i < N; i++) {
+		ConfusionMatrix[(n_classes * yass0[i]) + ytrue[i]]++;
 	}
 }
 
@@ -7407,6 +7449,41 @@ void CModelingandAnalysisofUncertaintyDoc::GetNetworkPrediction(const std::vecto
 	for (int i = 0; i < N; ++i) {
 		yhat[i] = 1.0 / (1.0 + exp(-yhat[i]));
 	}
+}
+
+void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(std::vector<int>& yass0, std::vector<int>& ytrue) {
+	int A = 0, B = 0, C = 0, D = 0;
+	int Ntest = yass0.size();
+	if (ytrue.size() != Ntest) {
+		std::cerr << "Y assigned and Y true aren't the same size!\n";
+		return;
+	}
+
+	for (int i = 0; i < Ntest - 1; i++) {
+		for (int j = i + 1; j < Ntest; j++) {
+			if (ytrue[i] == ytrue[j] && yass0[i] == yass0[j]) {
+				A++;
+			} else if (ytrue[i] == ytrue[j] && yass0[i] != yass0[j]) {
+				B++;
+			}
+			else if (ytrue[i] != ytrue[j] && yass0[i] == yass0[j]) {
+				C++;
+			}
+			else if (ytrue[i] != ytrue[j] && yass0[i] != yass0[j]) {
+				D++;
+			}
+		}
+	}
+	double JI = A / (A + B + C);
+	double FMI = A / (sqrt((A + B) * (A + C)));
+	double RI = (A + D) / (A + B + C + D);
+	double temp = (A + B) * (A + C) + (C + D) * (B + D);
+	double numerator = n_choose_k(Ntest, 2) * (A + D) - temp;
+	double denominator = n_choose_k(Ntest, 2) * n_choose_k(Ntest, 2) - temp;
+	double ARI = numerator / denominator;
+
+
+
 }
 // Enablers for modeling methods after datafile was read
 void CModelingandAnalysisofUncertaintyDoc::OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI) {
