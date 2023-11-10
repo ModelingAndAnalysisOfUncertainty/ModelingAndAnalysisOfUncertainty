@@ -5193,7 +5193,33 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	while (std::getline(file, line)) {
 		std::stringstream sstream(line);
 	}*/
+	CArray<double> x;
+	x.SetSize(6);
+	CArray<int> x_s;
+	x_s.SetSize(3);
+	x_s.SetAt(0, 3);
+	x_s.SetAt(1, 2);
+	x_s.SetAt(2, 0);
+	int s = 1;
+	for (int i = 0; i < x_s.GetAt(0); i++) {
+		for (int j = 0; j < x_s.GetAt(1); j++) {
+			x.SetAt(GetPosition(i, j, x_s), s);
+			s += 1;
+		}
+	}
+	SaveMatrix("example3.txt", x, x_s);
+	CArray<double> t;
+	t.SetSize(6);
+	CArray<int> t_s;
+	t_s.SetSize(3);
+	t_s.SetAt(0, 2);
+	t_s.SetAt(1, 3);
+	t_s.SetAt(2, 0);
+	AfxMessageBox(L"h");
+	Transpose(x, x_s, t, t_s);
 	
+	SaveMatrix("example.txt", t, t_s);
+	return;
 
 	CArray<double> y, j, f, w;
 	CArray<int> y_spec, j_spec, f_spec, w_spec;
@@ -5217,17 +5243,64 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	z_spec.SetAt(0, Data_spec.GetAt(0));
 	z_spec.SetAt(1, Data_spec.GetAt(1));
 	z_spec.SetAt(2, Data_spec.GetAt(2));
-
+	FILE << Data_spec.GetAt(0) << " " << Data_spec.GetAt(1) << std::endl;
 	for (int x = 0; x < Data_spec.GetAt(0); x++) {
 		for (int y = 0; y < Data_spec.GetAt(1); y++) {
 			double temp = Data.GetAt(GetPosition(x, y, Data_spec));			
 			z.SetAt(GetPosition(x, y, Data_spec), temp);
 			if (y == Data_spec.GetAt(1)-1) {
 				z.SetAt(GetPosition(x, y, z_spec), 1);
+				FILE << Data.GetAt(GetPosition(x, Data_spec.GetAt(1)-1, Data_spec));
 			}
 		}
+		FILE << std::endl;
 	}
-
+	CArray <double> label;
+	label.SetSize(Data_spec.GetAt(0));
+	FILE << label.GetSize() << std::endl;
+	double val_1 = Data.GetAt(GetPosition(0, Data_spec.GetAt(1) - 1, Data_spec));
+	for (int x = 0; x < Data_spec.GetAt(0); x++) {
+		double temp = Data.GetAt(GetPosition(x, Data_spec.GetAt(1) - 1, Data_spec));
+		FILE << temp << " ";
+		label.SetAt(x, 1);
+		
+		if (temp != val_1) {
+			label.SetAt(x, 0);
+		}
+		FILE << x << std::endl;
+	}
+	for (int i = 0; i < label.GetSize(); i++) {
+		FILE << label.GetAt(i) << std::endl;
+	}
+	
+	CArray<double> predictor;
+	predictor.SetSize(label.GetSize());
+	AfxMessageBox(L"2");
+	CArray<double> z_trans;
+	z_trans.SetSize(z.GetSize());
+	AfxMessageBox(L"3");
+	CArray<int> z_t_specs;
+	z_t_specs.SetSize(3);
+	z_t_specs.SetAt(0, z_spec.GetAt(1));
+	z_t_specs.SetAt(1, z_spec.GetAt(0));
+	z_t_specs.SetAt(2, z_spec.GetAt(2));
+	FILE << z_trans.GetSize() << " " << z.GetSize() << std::endl;
+	FILE << z_t_specs.GetAt(0) << " " << z_spec.GetAt(1) << std::endl;
+	AfxMessageBox(L"4");
+	Transpose(z, z_spec, z_trans, z_t_specs);
+	AfxMessageBox(L"aaa");
+	for (int i = 0; i < n_Obs - label.GetSize(); i++) {
+		double t = 0;
+		for (int j = 0; j < n_Var - 1; j++) {
+			t += Data.GetAt(GetPosition(i, j, Data_spec)) * w.GetAt(j);
+		}
+		t += w.GetAt(n_Var - 1);
+		predictor.SetAt(i, 1 / (1 - exp(-t)));
+	}
+	for (int i = 0; i < predictor.GetSize(); i++) {
+		FILE << predictor.GetAt(i) << std::endl;
+	}
+	return;
 	/*while (error > 10) {
 		
 		y_hat = 1 / (1 - exp(-z))
