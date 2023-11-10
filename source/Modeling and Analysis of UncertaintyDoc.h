@@ -325,7 +325,7 @@ public:
 	afx_msg void OnKPLS();
 	afx_msg void OnANN();
 	afx_msg void OnANN_MFC();
-
+	afx_msg void OnANN_MFC_Parallel();
 	afx_msg void OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateOnesample(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateTwosample(CCmdUI* pCmdUI);
