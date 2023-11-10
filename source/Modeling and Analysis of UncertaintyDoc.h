@@ -290,9 +290,6 @@ protected:
 		std::vector<std::vector<double> >& Xtrain, std::vector<std::vector<double> >& Xtest,
 		std::vector<std::vector<int>>& Y, std::vector<std::vector<int>>& Ytrain,
 		std::vector<std::vector<int>>& Ytest, double trainFraction, const int M, const int C);
-	void CModelingandAnalysisofUncertaintyDoc::ConfusionOperations(CArray <int>& ConfusionMatrix,
-		std::vector<std::vector<double>>& Yhat0, std::vector<std::vector<int>>& Ytest, std::vector<int>& yass0,
-		const int C);
 	void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(std::vector<int>& yass0, std::vector<int>& ytrue);
 	int CModelingandAnalysisofUncertaintyDoc::n_choose_k(int n, int k);
 	int CModelingandAnalysisofUncertaintyDoc::factorial(int m);

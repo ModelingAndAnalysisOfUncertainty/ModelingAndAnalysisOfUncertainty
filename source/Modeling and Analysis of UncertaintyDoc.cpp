@@ -7099,7 +7099,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	const int M = n_Var - 1;
 	const int C = n_classes;
 	const int H = 5;
-	const int n_epochs = 1000;
+	const int n_epochs = 500;
 	const int train = 20;
 	const double eta = 1e-1 / train;  
 	int batch_size = 5;
@@ -7378,33 +7378,11 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	}
 	GetConfusionMatrix(ConfusionMatrix, yass0, Ytrue_Test);
 	for (int i = 0; i < C * C; i++) {
-		if (i % 3 == 0)
+		if (i % n_classes == 0)
 			FILE << "\n";
 		FILE << ConfusionMatrix[i] << ",";
 	}
 	FILE.close();
-}
-
-void CModelingandAnalysisofUncertaintyDoc::ConfusionOperations(CArray <int> &ConfusionMatrix,
-	std::vector<std::vector<double>> &Yhat0, std::vector<std::vector<int>>& Ytest, std::vector<int>& yass0,
-	const int C) {
-	ConfusionMatrix.SetSize(C * C);
-	for (int i = 0; i < Yhat0.size(); i++) {
-		double max_value = Yhat0[i][0];
-		int max_index = 0;
-		int actual_index = 0;
-		for (int j = 1; j < Yhat0[i].size(); j++) {
-			if (Yhat0[i][j] > max_value) {
-				max_value = Yhat0[i][j];
-				max_index = j;
-			}
-			if (Ytest[i][j] == 1) {
-				actual_index = j;
-			}
-		}
-		ConfusionMatrix[(C * max_index) + actual_index]++;
-		yass0[i] = max_index;
-	}
 }
 
 void CModelingandAnalysisofUncertaintyDoc::GetConfusionMatrix(CArray<int>& ConfusionMatrix,
@@ -7458,6 +7436,13 @@ void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(std::vector<int>& yass0
 		std::cerr << "Y assigned and Y true aren't the same size!\n";
 		return;
 	}
+	std::vector<int> K(n_classes, 0);
+	for (int i = 0; i < n_classes; i++) {
+		for (int j = 0; j < ytrue.size(); j++) {
+			if (ytrue[j] == i)
+				K[i]++;
+		}
+	}
 
 	for (int i = 0; i < Ntest - 1; i++) {
 		for (int j = i + 1; j < Ntest; j++) {
@@ -7481,7 +7466,71 @@ void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(std::vector<int>& yass0
 	double numerator = n_choose_k(Ntest, 2) * (A + D) - temp;
 	double denominator = n_choose_k(Ntest, 2) * n_choose_k(Ntest, 2) - temp;
 	double ARI = numerator / denominator;
+	CArray<int> ConfusionMatrix;
+	GetConfusionMatrix(ConfusionMatrix, yass0, ytrue);
 
+	if (n_classes == 2) {
+		int TP = ConfusionMatrix[0];
+		int TN = ConfusionMatrix[3];
+		int FN = ConfusionMatrix[1];
+		int FP = ConfusionMatrix[2];
+
+		double SEN = TP / (TP + FN);
+		double SPE = TN / (TN + FP);
+		double MCC = (TP * TN - FP * FN) / sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN)) );
+		double PPV = TP / (TP + FP);
+		double F1 = 2 * PPV * SEN / (PPV + SEN);
+	}
+	else {
+		std::vector<double> F1(n_classes, 0.0);
+		int FP = 0;
+		int FN = 0;
+		for (int i = 0; i < n_classes-1; i++) {
+			for (int j = i + 1; j < n_classes; j++) {
+				FN += ConfusionMatrix[i * n_classes + j];
+				FP += ConfusionMatrix[j * n_classes + i];
+			}
+		}
+		int TP = 0;
+		for (int i = 0; i < n_classes; i++) {
+			TP += ConfusionMatrix[i * n_classes + i];
+		}
+		double Precision_micro = TP / (TP + FP);
+		double Recall_micro = TP / (TP + FN);
+		double F1_micro = 2 * Precision_micro * Recall_micro / (Precision_micro + Recall_micro);
+
+		for (int i = 0; i < n_classes; i++) {
+			std::vector<int> Positives;
+			std::vector<int> Negatives;
+			for (int col_row = 0; col_row < n_classes; col_row++) {
+				if (col_row == i)
+					continue;
+				Negatives.push_back(ConfusionMatrix[i * n_classes + col_row]);
+				Positives.push_back(ConfusionMatrix[col_row * n_classes + i]);
+			}
+			int sumPositives = 0;
+			int sumNegatives = 0;
+			for (int j = 0; j < Positives.size(); j++) {
+				sumPositives += Positives[j];
+				sumNegatives += Negatives[j];
+			}
+			int TP = ConfusionMatrix[i * n_classes + i];
+			double Precision = TP / (TP + sumPositives);
+			double Recall = TP / (TP + sumNegatives);
+			F1[i] = 2 * Precision * Recall / (Precision + Recall);
+		}
+		double sumF1 = 0;
+		double sumK = 0;
+		double sumF1_K = 0;
+		for (int i = 0; i < n_classes; i++) {
+			sumF1 += F1[i];
+			sumK += K[i];
+			sumF1_K += F1[i] * K[i];
+		}
+		double F1_macro = sumF1 / n_classes;
+		double F1_weighted = sumF1_K / sumK;
+
+	}
 
 
 }
