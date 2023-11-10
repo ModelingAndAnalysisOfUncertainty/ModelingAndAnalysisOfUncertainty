@@ -4504,64 +4504,78 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 
 	/// CArray <double>& Data_0, CArray <double>& bar, CArray <double>& std
 
-	//CArray <double> y;
-	//y.SetSize(n_Obs);
-	CArray<double> label;
-	int y_train;
-	y_train = (int)floor(n_Obs * 0.85);
-	label.SetSize(static_cast <int64_t> (y_train));
+	CArray<double> y;
+	y.SetSize(n_Obs);
+	CArray<double> value;
+
+	//We want to train with 85% of the data
+	int y_train = (int)floor(n_Obs * 0.85);
+	value.SetSize(y_train);
+
+	//Declare the data array and the specifications of it
 	CArray<double> data2;
-	data2.SetSize(static_cast <int64_t> (n_Var) * y_train);
+	data2.SetSize(y_train* n_Var);
 	CArray <int> Traindata_spec;
 	Traindata_spec.SetSize(3);
 	Traindata_spec.SetAt(0, y_train), Traindata_spec.SetAt(1, n_Var), Traindata_spec.SetAt(2, 0);
 
-	
+	// For loop gets 
 	for (int i = 0; i < y_train; i++) {
-		//value = Data.GetAt(GetPosition(i, n_Var - 1, Data_spec));
-		//y.SetAt(i, Data.GetAt((n_Var)*i));
-		double temp_1, temp_3;
-		temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(i, n_Var - 1, Data_spec)));
-
+		//Changes each y value that isn't 1 to -1
+		double temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(i, n_Var - 1, Data_spec)));
 		if (temp_1 != 1) temp_1 = -1;
-		//.SetAt(i, temp_1);
-		for (int j = 0; j < n_Var-1; j++) {
+
+		for (int j = 0; j < n_Var; j++) {
 			double temp_2;
 			int val_pos = static_cast <int64_t>(GetPosition(i, j, Traindata_spec));
 			
 			temp_2 = Data.GetAt(static_cast <int64_t>(GetPosition(i, j, Data_spec)));
 			data2.SetAt(val_pos, temp_2);
 		}
-		label.SetAt(i, temp_1);
-		int val_posconstant = static_cast <int64_t>(GetPosition(i, n_Var - 1, Traindata_spec));
-		data2.SetAt(val_posconstant, (double)1);
+	CString tmp;
+	tmp.Format(L"%lf", y[0]);
+	for (int i = 0; i < y_train; i++) {
+		//Gets the value of each y value and sets it into the y vector
+		
+	}
+	SaveVector("test2.txt", y);
+		
 
+		value.SetAt(i, temp_1);
+	}
+	
+	for (int i = (n_Obs * n_Var) - n_Obs; i < n_Obs * n_Var; i++) {
+		double setValue;
+		if (Data.GetAt(i) == 2) {
+			setValue = -1;
+		}
+		else {
+			setValue = 1;
+		}
+		y.SetAt(i - ((n_Obs * n_Var) - n_Obs), setValue);
 	}
 
 
-
-
-	
-	// multiply vectors and coefficeint see if the value is 1 or -1
-
-	SaveVector("test2.txt", label);
-	//SaveVector("test7.txt", value);
-	SaveMatrix("traindata.txt", data2, Traindata_spec);
+	SaveVector("test7.txt", value);
+	SaveVector("traindata.txt", data2);
 	CArray <double> w;
-	w.SetSize(n_Var);
-	//w.SetSize(static_cast <int64_t> (y_train));
-
 	CArray <double> Sww;
-	Sww.SetSize(n_Var);
-	//Sww.SetSize(static_cast <int64_t> (y_train));
-	//CArray < double> * data2pointer = data2;
-	//GetStandardRegressionModel(data2, Traindata_spec, label, Sww, w);
+	//We need standardized data
+	//Classification metrics
+	GetStandardRegressionModel(Data, Data_spec, y ,w, Sww);
+	//w
+	//member matrix vector product
+	CArray<double> y_hat;
+	MatrixVectorProduct(Data, Data_spec, w, y_hat);
 
-	GetRegressionVector(data2, Traindata_spec, label, Sww, false);
+	SaveVector("wvalue.txt", w);
+	SaveVector("swwvalue.txt", Sww);
+	SaveVector("yvalue.txt", y);
+	SaveVector("yhatvalue.txt", y_hat);
+	//MatrixVectorProduct(z, z_spec, w, y_hat)
 
-	//SaveVector("testW.txt", w);
-	SaveVector("test9.txt", Sww);
-	//SaveVector("data3.txt", Data);
+
+	SaveVector("data3.txt", Data);
 
 	AfxMessageBox(L"I believe I have just saved a file!");
 
@@ -5142,12 +5156,10 @@ void CModelingandAnalysisofUncertaintyDoc::GetRegressionVector(CArray <double>& 
 		value = y.GetAt(i);
 		Z.SetAt(GetPosition(i, n_var, Z_spec), value);
 	}
-
 	CArray <double>R;
 	CArray <int>R_spec;
 	bool flag;
 	QR(Z, Z_spec, R, R_spec, flag);
-
 	CArray <double> Rx;
 	CArray <double> rxy;
 	CArray <int> Rx_spec;
@@ -5168,7 +5180,6 @@ void CModelingandAnalysisofUncertaintyDoc::GetRegressionVector(CArray <double>& 
 	Inverse(Rx, Rx_spec, Rx_inv, Rx_spec);
 	if (validation == true) MatrixVectorProduct(Rx_inv, Rx_spec, rxy, w);
 	else MatrixVectorProduct(Rx_inv, Rx_spec, rxy, w_raw);
-
 	if (validation == false) {
 		double se = GetSquaredLength(y) - GetSquaredLength(rxy), value, temp;
 		se /= (double)(n_obs - n_var - 1);
@@ -5183,11 +5194,8 @@ void CModelingandAnalysisofUncertaintyDoc::GetRegressionVector(CArray <double>& 
 
 			}
 			Sww.SetAt(i, value * se);
-			AfxMessageBox(L"I got to here!");
-
 		}
 	}
-
 }
 
 void CModelingandAnalysisofUncertaintyDoc::GetStatisticalRegressorAnalysis(CArray <double>& Sww) {
