@@ -1157,6 +1157,18 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		Settings_Descriptive_Statistics.ShowWindow(SW_HIDE);
 	}
 	else if (pDoc->ANN_Training) {
+		DisplayPCA.ShowWindow(SW_HIDE);
+		DisplayLoadingPlots.ShowWindow(SW_HIDE);
+		DisplayScorePlots.ShowWindow(SW_HIDE);
+		SelectScatterPlots.ShowWindow(SW_HIDE);
+		Next_Variable.ShowWindow(SW_HIDE);
+		Previous_Variable.ShowWindow(SW_HIDE);
+		Ind_Ass_Regression.ShowWindow(SW_HIDE);
+		Sta_Ass_Regression.ShowWindow(SW_HIDE);
+		Settings_Descriptive_Statistics.ShowWindow(SW_HIDE);
+		DisplayFA.ShowWindow(SW_HIDE);
+		DisplayFactorLoadings.ShowWindow(SW_HIDE);
+		DisplayFactorScores.ShowWindow(SW_HIDE);
 		CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
 		// plot the loss and accuracy curve
 		DisplayFileAndDataSetInformation(pDoc, pDC, true);
@@ -9421,18 +9433,10 @@ void DrawGrid(CDC& dc, int startX, int startY, int endX, int endY, double xTickI
 
 // After ANN training call this view function to plot the loss curve
 void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
-	// read in data from txt log file
-	std::vector<double> losses;
-	std::ifstream file("ANN_Update/training_loss.txt");
-	std::string line;
-	while (std::getline(file, line)) {
-		if (line.find("loss:") != std::string::npos) {
-			size_t pos = line.find("loss:");
-			double loss_value = std::stod(line.substr(pos + 6));
-			losses.push_back(loss_value);
-		}
-	}
-
+	// read in data from loss_ANN
+	CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
+	std::vector<double>& losses = pDoc->Loss_Ann;
+	
 	CClientDC dc(this);
 	CRect rc;
 	GetClientRect(&rc);

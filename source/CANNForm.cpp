@@ -18,8 +18,8 @@ CANNForm::CANNForm(CWnd* pParent /*=nullptr*/)
     , batch_size(0)
 {
     learning_rate = 0.01;
-    total_epoch = 5;
-    batch_size = 128;
+    total_epoch = 1000;
+    batch_size = 5;
 }
 
 BOOL CANNForm::OnInitDialog()
