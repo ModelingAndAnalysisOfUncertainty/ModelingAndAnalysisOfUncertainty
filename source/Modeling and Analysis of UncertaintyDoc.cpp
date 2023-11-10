@@ -7446,57 +7446,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC_Parallel() {
 	// Initialize random number generator seed
 	std::srand(1);
 
-	// Generate random data for three classes
-	//std::vector<std::vector<double>> Xclass1(N, std::vector<double>(M));
-	//std::vector<std::vector<double>> Xclass2(N, std::vector<double>(M));
-	//std::vector<std::vector<double>> Xclass3(N, std::vector<double>(M));
-
-	//for (int i = 0; i < N; ++i) {
-	//	for (int j = 0; j < M; ++j) {
-	//		Xclass1[i][j] = static_cast<double>(std::rand()) / RAND_MAX + 1.0;
-	//		Xclass2[i][j] = static_cast<double>(std::rand()) / RAND_MAX;
-	//		Xclass3[i][j] = static_cast<double>(std::rand()) / RAND_MAX - 1.0;
-	//	}
-	//}
-	//// Combine data for all classes
-	//std::vector<std::vector<double>> X = Xclass1;
-	//X.insert(X.end(), Xclass2.begin(), Xclass2.end());
-	//X.insert(X.end(), Xclass3.begin(), Xclass3.end());
-	////Normalize data
-	//X = zscore(X);
-
-	//VecTranspose(X);
-
-	//// Generate ytrue as described in MATLAB
-	//std::vector<int> ytrue;
-	//for (int c = 0; c < C; ++c) {
-	//	for (int i = 0; i < N; ++i) {
-	//		ytrue.push_back(c + 1);
-	//	}
-	//}
-
-	//// Generate y1, y2, and y3
-	//std::vector<double> y1(N, 1.0);
-	//std::vector<double> y2(N, 0.0);
-	//std::vector<double> y3(N, 0.0);
-
-
-	//for (int i = 0; i < 2000; i++) {
-	//	y1.push_back(0.0);
-	//	if (i < 1000) {
-	//		y2.push_back(1);
-	//		y3.push_back(0);
-	//		continue;
-	//	}
-	//	y2.push_back(0);
-	//	y3.push_back(1);
-	//}
-	//// Concatenate y1, y2, and y3 to create Y
-	//std::vector<std::vector<double>> Y;
-	//Y.push_back(y1);
-	//Y.push_back(y2);
-	//Y.push_back(y3);
-
 	CArray<double> Data0, bar, std;
 	Data0.RemoveAll();
 	bar.RemoveAll();
