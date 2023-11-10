@@ -4553,7 +4553,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 
 
 	SaveVector("test7.txt", value);
-	CArray <double> w;
 	CArray <double> Sww;
 	//We need standardized data
 	//Classification metrics
@@ -4573,7 +4572,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	//GetStandardRegressionModel(data2, Traindata_spec, label, Sww, w);
 	Sww.SetSize(y_train * n_Var);
 
-	GetRegressionVector(data2, Traindata_spec, label, Sww, false);
+	GetRegressionVector(data2, Traindata_spec, label, Sww, true);
 	SaveVector("w.txt", w);
 
 	//SaveVector("data3.txt", Data);
@@ -5183,6 +5182,7 @@ void CModelingandAnalysisofUncertaintyDoc::GetRegressionVector(CArray <double>& 
 	Inverse(Rx, Rx_spec, Rx_inv, Rx_spec);
 	if (validation == true) MatrixVectorProduct(Rx_inv, Rx_spec, rxy, w);
 	else MatrixVectorProduct(Rx_inv, Rx_spec, rxy, w_raw);
+	SaveVector("w_inside.txt", w);
 	if (validation == false) {
 		double se = GetSquaredLength(y) - GetSquaredLength(rxy), value, temp;
 		se /= (double)(n_obs - n_var - 1);
