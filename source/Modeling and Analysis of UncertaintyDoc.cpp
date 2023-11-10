@@ -4498,7 +4498,7 @@ void CModelingandAnalysisofUncertaintyDoc::SetUpFDAMatrices(CArray <double>& Sb,
 
 void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	
-	AfxMessageBox(L"Now we are working on establishing an linear classification model");
+	//AfxMessageBox(L"Now we are working on establishing an linear classification model");
 	//curent data 
 	//get data to parse through
 
@@ -4515,18 +4515,21 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	//Declare the data array and the specifications of it
 	CArray<double> data2;
 	CArray<double> label;
-	data2.SetSize(y_train* n_Var);
+	data2.SetSize(static_cast <int64_t> (n_Var) * y_train);
+	label.SetSize(static_cast <int64_t> (y_train));
+
 	CArray <int> Traindata_spec;
 	Traindata_spec.SetSize(3);
 	Traindata_spec.SetAt(0, y_train), Traindata_spec.SetAt(1, n_Var), Traindata_spec.SetAt(2, 0);
+	double temp_1, temp_3, temp_2;
 
 	// For loop gets new test train vector data
 	for (int i = 0; i < y_train; i++) {	
-		double temp_1, temp_3;
+
 		temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(i, n_Var - 1, Data_spec)));
 		if (temp_1 != 1) temp_1 = -1;
+
 		for (int j = 0; j < n_Var - 1; j++) {
-			double temp_2;
 			int val_pos = static_cast <int64_t>(GetPosition(i, j, Traindata_spec));
 			temp_2 = Data.GetAt(static_cast <int64_t>(GetPosition(i, j, Data_spec)));
 			data2.SetAt(val_pos, temp_2);
@@ -4536,6 +4539,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 		data2.SetAt(val_posconstant, (double)1);
 
 	}
+	AfxMessageBox(L"I got to here");
 	for (int i = (n_Obs * n_Var) - n_Obs; i < n_Obs * n_Var; i++) {
 		double setValue;
 		if (Data.GetAt(i) == 2) {
@@ -4549,29 +4553,32 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 
 
 	SaveVector("test7.txt", value);
-	SaveVector("traindata.txt", data2);
 	CArray <double> w;
 	CArray <double> Sww;
 	//We need standardized data
 	//Classification metrics
-	GetStandardRegressionModel(Data, Data_spec, y ,w, Sww);
+	//GetStandardRegressionModel(Data, Data_spec, y ,w, Sww);
 	//w
 	//member matrix vector product
 	CArray<double> y_hat;
-	MatrixVectorProduct(Data, Data_spec, w, y_hat);
+	//MatrixVectorProduct(Data, Data_spec, w, y_hat);
 
-	SaveVector("wvalue.txt", w);
-	SaveVector("swwvalue.txt", Sww);
-	SaveVector("yvalue.txt", y);
-	SaveVector("yhatvalue.txt", y_hat);
+	//SaveVector("wvalue.txt", w);
+	//SaveVector("swwvalue.txt", Sww);
+	//SaveVector("yvalue.txt", y);
+	//SaveVector("yhatvalue.txt", y_hat);
 	//MatrixVectorProduct(z, z_spec, w, y_hat)
 
 	//GetRegressionVector
 	//GetStandardRegressionModel(data2, Traindata_spec, label, Sww, w);
 	Sww.SetSize(y_train * n_Var);
-	GetRegressionVector(data2, Traindata_spec, label, Sww, false);
 
-	SaveVector("data3.txt", Data);
+	GetRegressionVector(data2, Traindata_spec, label, Sww, false);
+	SaveVector("w.txt", w);
+
+	//SaveVector("data3.txt", Data);
+	SaveVector("test2.txt", label);
+	SaveMatrix("traindata.txt", data2, Traindata_spec);
 
 	AfxMessageBox(L"I believe I have just saved a file!");
 
