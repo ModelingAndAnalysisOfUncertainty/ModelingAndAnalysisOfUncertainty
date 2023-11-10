@@ -59,8 +59,6 @@ s.t.
 */
 
 
-#ifndef _QUADPROGPP
-#define _QUADPROGPP
 
 #include "Array.hh"
 
@@ -73,4 +71,4 @@ double solve_quadprog(Matrix<double>& G, Vector<double>& g0,
 
 }  // namespace quadprogpp
 
-#endif // #define _QUADPROGPP
+// #define _QUADPROGPP

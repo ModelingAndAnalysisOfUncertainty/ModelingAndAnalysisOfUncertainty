@@ -202,7 +202,20 @@ double solve_quadprog(Matrix<double>& G, Vector<double>& g0,
     
     /* compute the new solution value */
     f_value += 0.5 * (t2 * t2) * scalar_product(z, np);
-    A[i] = -i - 1;
+
+    const size_t size = 5;
+    unsigned int A[size];
+
+    for (size_t i = 0; i < size; ++i) {
+        if (i == 0) {
+            A[i] = 0;  // handle the special case when i is zero
+        }
+        else {
+            A[i] = -static_cast<int>(i) - 1;
+        }
+
+        std::cout << A[i] << " ";
+    }
     
     if (!add_constraint(R, J, d, iq, R_norm))
     {	  

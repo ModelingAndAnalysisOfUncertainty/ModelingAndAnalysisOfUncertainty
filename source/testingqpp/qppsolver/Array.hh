@@ -6,8 +6,6 @@
 // This software may be modified and distributed under the terms
 // of the MIT license.  See the LICENSE file for details.
 
-#if !defined(_ARRAY_HH)
-#define _ARRAY_HH
 
 #include <set>
 #include <stdexcept>
@@ -2529,4 +2527,4 @@ inline Matrix<double> r_rank(const Matrix<T> m)
 
 } // namespace quadprogpp
 
-#endif // define _ARRAY_HH_
+// define _ARRAY_HH_

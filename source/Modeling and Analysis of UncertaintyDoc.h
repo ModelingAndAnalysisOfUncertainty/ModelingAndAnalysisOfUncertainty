@@ -250,7 +250,7 @@ protected:
 	void VPC(CArray <double>&, CArray <int>&, int&);
 	void VRE(CArray <double>&, CArray <int>&, int&);
 	// *** Additional functions
-	double QPPSolver(void);
+	void QPPSolver();
 	double GetOptimalBandwidth(CArray <double>&);
 	double NumericalIntegration(CArray <double>&, double);
 	void SetUpFDAMatrices(CArray <double>&, CArray <double>&, CArray <int>&, CArray <double>&);
@@ -299,6 +299,7 @@ public:
 	afx_msg void OnKPLS();
 	afx_msg void OnANN();
 
+	afx_msg void QPPSolver(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateOnesample(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateTwosample(CCmdUI* pCmdUI);

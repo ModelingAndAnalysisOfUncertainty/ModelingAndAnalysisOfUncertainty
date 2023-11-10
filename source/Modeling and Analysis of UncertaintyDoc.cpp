@@ -16,6 +16,9 @@
 #include <random>
 #include <chrono>
 
+
+
+
 // SHARED_HANDLERS can be defined in an ATL project implementing preview, thumbnail
 // and search filter handlers and allows sharing of document code with that project.
 #ifndef SHARED_HANDLERS
@@ -31,11 +34,14 @@
 #include "CSpecifyFactorAnalysis.h"
 #include "CSpecifyRegressionModel.h"
 #include "CANNForm.h"
-#include "quadprogpp/QuadProg++.hh"
 
 //Dlib for Aritificial Neural Netowrk
 #include <dlib/dnn.h>
 #include <dlib/data_io.h>
+
+// QPP solver
+#include "quadprogpp/QuadProg++.hh"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -2667,15 +2673,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnDescriptiveStatistics() {
 	UpdateAllViews(NULL);
 }
 
-double CModelingandAnalysisofUncertaintyDoc::QPPSolver(void) {
-
-	// x^T H x - (f^T)x
-	// Ax <= b
-	// c^Tx = d
-
-
-		
-	// H
+void CModelingandAnalysisofUncertaintyDoc::QPPSolver() {
 	quadprogpp::Matrix<double> G;
 	G.resize(2, 2);
 	G[0][0] = 2;
@@ -2684,14 +2682,12 @@ double CModelingandAnalysisofUncertaintyDoc::QPPSolver(void) {
 	G[1][1] = 4;
 
 
-	// f
 	quadprogpp::Vector<double> g0;
 	g0.resize(2);
 	g0[0] = -4;
 	g0[1] = -8;
 
 
-	// c
 	quadprogpp::Matrix<double> CE;
 	CE.resize(2, 2); // 2 row, 1 column
 	CE[0][0] = 1;
@@ -2702,15 +2698,12 @@ double CModelingandAnalysisofUncertaintyDoc::QPPSolver(void) {
 
 
 
-	// d
 	quadprogpp::Vector<double> ce0;
 	ce0.resize(2);
 	ce0[0] = 3;
 	ce0[1] = 0;
 	// ce0[2] = 0;
 
-
-	// A
 	quadprogpp::Matrix<double> CI;
 	CI.resize(2, 1);
 	CI[0][0] = 0;
@@ -2719,14 +2712,11 @@ double CModelingandAnalysisofUncertaintyDoc::QPPSolver(void) {
 	CI[1][1] = 0;
 
 
-	// b
 	quadprogpp::Vector<double> ci0;
 	ci0.resize(1);
 	ci0[0] = 0;
 	// ci0[1] = 0;
 
-
-	// return values in vector
 	quadprogpp::Vector<double> x;
 	x.resize(2);
 
@@ -2734,17 +2724,32 @@ double CModelingandAnalysisofUncertaintyDoc::QPPSolver(void) {
 	// try {
 	double result = solve_quadprog(G, g0, CE, ce0, CI, ci0, x);
 
+	std::ofstream outdata;
+
+	outdata.open("quadprogpp/qppOutput.txt");
+
+
+	outdata << result << std::endl;
+
+	outdata.close();
+
+
 
 	std::cout << "Optimal value: " << result << std::endl;
-	std::cout << "Optimal solution (x): ";
-	for (int i = 0; i < x.size(); i++) {
-		std::cout << x[i] << " ";
-	}
-	std::cout << std::endl;
+
+
+	//std::cout << "Optimal solution (x): ";
+	//for (int i = 0; i < x.size(); i++) {
+	//	std::cout << x[i] << " ";
+	//}
+	//std::cout << std::endl;
 	// } 
 	// catch (const std::exception &e) {
 	//     std::cerr << "Error: " << e.what() << std::endl;
 	// }
+
+
+	return;
 }
 
 double CModelingandAnalysisofUncertaintyDoc::GetOptimalBandwidth(CArray <double>& sample) {
@@ -6500,6 +6505,9 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN() {
 }
 
 // Enablers for modeling methods after datafile was read
+void CModelingandAnalysisofUncertaintyDoc::QPPSolver(CCmdUI* pCmdUI) {
+	pCmdUI->Enable(FileOpen);
+}
 void CModelingandAnalysisofUncertaintyDoc::OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI) {
 	pCmdUI->Enable(FileOpen);
 }
