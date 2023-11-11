@@ -4515,7 +4515,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	//Declare the data array and the specifications of it
 	CArray<double> data2;
 	CArray<double> label;
-	data2.SetSize(static_cast <int64_t> (n_Var) * y_train);
 	data2.SetSize(static_cast <int64_t> (n_Var*y_train));
 	label.SetSize(static_cast <int64_t> (y_train));
 
