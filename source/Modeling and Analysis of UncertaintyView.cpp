@@ -12,6 +12,7 @@
 #include "CSettingsDescriptiveStatistics.h"
 #include "CSelectScatterDiagrams.h"
 #include "NewANN.h"
+#include "CLCDialog.h"
 
 #include <vector>
 #include <iostream>
@@ -9640,6 +9641,13 @@ void CModelingandAnalysisofUncertaintyView::PlotAccuraciesCurve() {
  
 void CModelingandAnalysisofUncertaintyView::OnMachinelearningArtificialneuralnetworkwithaccuracy()
 {
-	//NewANN New_ANN_Dlg; 
-	//New_ANN_Dlg.DoModal(); 
+	NewANN New_ANN_Dlg; 
+	if (New_ANN_Dlg.DoModal() == IDOK)
+	{
+		int numLayers = New_ANN_Dlg.m_selectedlayer;
+		CLCDialog Sec_Dlg;
+		Sec_Dlg.SetNumLayers(numLayers);
+		Sec_Dlg.DoModal();
+		std::vector<int> nodeCounts = Sec_Dlg.GetNodeCounts();
+	}
 }
