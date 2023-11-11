@@ -162,6 +162,7 @@ public:
 	bool ShowStatisticalAnalysis = false;
 	// FLAGS FOR ARTIFICIAL NEURAL NETWORKS
 	bool ANN_Training = false;
+	std::vector<double> Loss_Ann;
 	// OPERATIONS NEEDED FOR VIEW CLASS
 	int GetPosition(int, int, CArray<int>&);
 	void SaveMatrix(std::string, CArray <double>&, CArray <int>&);
@@ -344,4 +345,5 @@ public:
 	afx_msg void OnUpdateL2_Regularization(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateKPLS(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateANN(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateMachinelearningArtificialneuralnetworkwithaccuracy(CCmdUI* pCmdUI);
 };

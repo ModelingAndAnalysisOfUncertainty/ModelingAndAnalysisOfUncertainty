@@ -95,6 +95,7 @@ BEGIN_MESSAGE_MAP(CModelingandAnalysisofUncertaintyDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(ID_REGULARIZATION_L2NORM, &CModelingandAnalysisofUncertaintyDoc::OnUpdateL2_Regularization)
 	ON_UPDATE_COMMAND_UI(ID_MACHINELEARNING_KERNELPARTIALLEASTSQUARES, &CModelingandAnalysisofUncertaintyDoc::OnUpdateKPLS)
 	ON_UPDATE_COMMAND_UI(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORK, &CModelingandAnalysisofUncertaintyDoc::OnUpdateKPLS)
+	ON_UPDATE_COMMAND_UI(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORKWITHACCURACY, &CModelingandAnalysisofUncertaintyDoc::OnUpdateMachinelearningArtificialneuralnetworkwithaccuracy)
 END_MESSAGE_MAP()
 
 // CModelingandAnalysisofUncertaintyDoc construction/destruction
@@ -7047,15 +7048,42 @@ void CModelingandAnalysisofUncertaintyDoc::VecTransposeInt(std::vector<std::vect
 }
 
 void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
+	CWnd* pParent = nullptr;
+	CANNForm Selection(pParent);
+	OnOpenedFile = false;
+	DescriptiveStatistics = false;
+	HypothesisTesting_OneSample = false;
+	HypothesisTesting_TwoSample = false;
+	ShapiroWilkTest = false;
+	AndersonDarlingTest = false;
+	ANOVA = false;
+	PCA_Select_PCs = false;
+	PCA_Display_PCs_Standard = false;
+	PCA_Display_Scores = false;
+	PCA_Display_Loadings = false;
+	FA_Display_Standard = false;
+	FA_Display_Loadings = false;
+	FA_Display_Scores = false;
+	FA_Display_Matrices = false;
+	FDA = false;
+	ANN_Training = true;
+
+	// Get training setting from user
+	Selection.DoModal();
+	//double lr = Selection.learning_rate;
+	//int epoch_num = Selection.total_epoch;
+	//int batch_num = Selection.batch_size;
+
 	// Define constants
 	const int N = n_Obs;
 	const int M = n_Var - 1;
 	const int C = n_classes;
 	const int H = 5;
-	const int n_epochs = 1000;
+	const int n_epochs = Selection.total_epoch;
 	const int train = 20;
-	const double eta = 1e-1 / train;  
-	int batch_size = 5;
+	//const double eta = 1e-1 / train;    Not sure here; divide by train or not
+	const double eta = Selection.learning_rate;
+	int batch_size = Selection.batch_size;
 	// Initialize random number generator seed
 	std::srand(1);
 
@@ -7365,7 +7393,10 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 		// Print the current epoch and spe_new
 		if (epoch % batch_size == 0) {
 			FILE << epoch << "\t" << spe_new << "\n";
+			Loss_Ann.push_back(spe_new);
+			UpdateAllViews(NULL);
 		}
+		
 	}
 	FILE << "Yhat0 (Prediction):\n";
 	for (int i = 0; i < Yhat0.size(); i++) {
@@ -7509,5 +7540,11 @@ void CModelingandAnalysisofUncertaintyDoc::OnUpdateKPLS(CCmdUI* pCmdUI) {
 }
 
 void CModelingandAnalysisofUncertaintyDoc::OnUpdateANN(CCmdUI* pCmdUI) {
+	pCmdUI->Enable(FileOpen);
+}
+
+
+void CModelingandAnalysisofUncertaintyDoc::OnUpdateMachinelearningArtificialneuralnetworkwithaccuracy(CCmdUI* pCmdUI)
+{
 	pCmdUI->Enable(FileOpen);
 }
