@@ -623,7 +623,7 @@ void CModelingandAnalysisofUncertaintyDoc::Transpose(CArray <double>& A, CArray 
 		Atrans_spec.SetAt(0, col), Atrans_spec.SetAt(1, row), Atrans_spec.SetAt(2, 0);
 		for (int i = 0; i < row; i++) {
 			for (int j = 0; j < col; j++) {
-				pos_1 = GetPosition(j, i, A_spec);
+				pos_1 = GetPosition(j, i, Atrans_spec);
 				pos_2 = GetPosition(i, j, A_spec);
 				Atrans.SetAt(pos_1, A.GetAt(pos_2));
 			}
@@ -5193,7 +5193,10 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	while (std::getline(file, line)) {
 		std::stringstream sstream(line);
 	}*/
-	CArray<double> x;
+
+	//Test to see if transpose method works
+	
+	/*CArray<double> x;
 	x.SetSize(6);
 	CArray<int> x_s;
 	x_s.SetSize(3);
@@ -5219,7 +5222,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	Transpose(x, x_s, t, t_s);
 	
 	SaveMatrix("example.txt", t, t_s);
-	return;
+	return;*/
 
 	CArray<double> y, j, f, w;
 	CArray<int> y_spec, j_spec, f_spec, w_spec;
@@ -5243,52 +5246,48 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	z_spec.SetAt(0, Data_spec.GetAt(0));
 	z_spec.SetAt(1, Data_spec.GetAt(1));
 	z_spec.SetAt(2, Data_spec.GetAt(2));
-	FILE << Data_spec.GetAt(0) << " " << Data_spec.GetAt(1) << std::endl;
+	//FILE << Data_spec.GetAt(0) << " " << Data_spec.GetAt(1) << std::endl;
 	for (int x = 0; x < Data_spec.GetAt(0); x++) {
 		for (int y = 0; y < Data_spec.GetAt(1); y++) {
 			double temp = Data.GetAt(GetPosition(x, y, Data_spec));			
 			z.SetAt(GetPosition(x, y, Data_spec), temp);
 			if (y == Data_spec.GetAt(1)-1) {
 				z.SetAt(GetPosition(x, y, z_spec), 1);
-				FILE << Data.GetAt(GetPosition(x, Data_spec.GetAt(1)-1, Data_spec));
+				//FILE << Data.GetAt(GetPosition(x, Data_spec.GetAt(1)-1, Data_spec));
 			}
 		}
-		FILE << std::endl;
+		//FILE << std::endl;
 	}
 	CArray <double> label;
 	label.SetSize(Data_spec.GetAt(0));
-	FILE << label.GetSize() << std::endl;
+	//FILE << label.GetSize() << std::endl;
 	double val_1 = Data.GetAt(GetPosition(0, Data_spec.GetAt(1) - 1, Data_spec));
 	for (int x = 0; x < Data_spec.GetAt(0); x++) {
 		double temp = Data.GetAt(GetPosition(x, Data_spec.GetAt(1) - 1, Data_spec));
-		FILE << temp << " ";
+		//FILE << temp << " ";
 		label.SetAt(x, 1);
 		
 		if (temp != val_1) {
 			label.SetAt(x, 0);
 		}
-		FILE << x << std::endl;
-	}
-	for (int i = 0; i < label.GetSize(); i++) {
-		FILE << label.GetAt(i) << std::endl;
+		//FILE << x << std::endl;
 	}
 	
 	CArray<double> predictor;
 	predictor.SetSize(label.GetSize());
-	AfxMessageBox(L"2");
+	//AfxMessageBox(L"2");
 	CArray<double> z_trans;
 	z_trans.SetSize(z.GetSize());
-	AfxMessageBox(L"3");
+	//AfxMessageBox(L"3");
 	CArray<int> z_t_specs;
 	z_t_specs.SetSize(3);
 	z_t_specs.SetAt(0, z_spec.GetAt(1));
 	z_t_specs.SetAt(1, z_spec.GetAt(0));
 	z_t_specs.SetAt(2, z_spec.GetAt(2));
-	FILE << z_trans.GetSize() << " " << z.GetSize() << std::endl;
-	FILE << z_t_specs.GetAt(0) << " " << z_spec.GetAt(1) << std::endl;
-	AfxMessageBox(L"4");
+	//FILE << z_trans.GetSize() << " " << z.GetSize() << std::endl;
+	//FILE << z_t_specs.GetAt(0) << " " << z_spec.GetAt(1) << std::endl;
+	//AfxMessageBox(L"4");
 	Transpose(z, z_spec, z_trans, z_t_specs);
-	AfxMessageBox(L"aaa");
 	for (int i = 0; i < n_Obs - label.GetSize(); i++) {
 		double t = 0;
 		for (int j = 0; j < n_Var - 1; j++) {
@@ -5297,10 +5296,39 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 		t += w.GetAt(n_Var - 1);
 		predictor.SetAt(i, 1 / (1 - exp(-t)));
 	}
+	CArray<double> B;
+	B.SetSize(label.GetSize());
+	for (int i = 0; i < label.GetSize(); i++) {
+		B.SetAt(i, label.GetAt(i) - predictor.GetAt(i));
+	}
+	
+	CArray<double> mult_matrix;
+	MatrixVectorProduct(z_trans, z_t_specs, B, mult_matrix);
 	for (int i = 0; i < predictor.GetSize(); i++) {
 		FILE << predictor.GetAt(i) << std::endl;
 	}
-	return;
+
+	CArray<double> diag;
+	CArray<int> diag_spec;
+	diag_spec.SetSize(3);
+	diag_spec.SetAt(0, Data_spec.GetAt(0));
+	diag_spec.SetAt(1, Data_spec.GetAt(1));
+	diag_spec.SetAt(2, Data_spec.GetAt(2));
+	//FILE << Data_spec.GetAt(0) << " " << Data_spec.GetAt(1) << std::endl;
+	for (int x = 0; x < diag_spec.GetAt(0); x++) {
+		for (int y = 0; y < diag_spec.GetAt(1); y++) {
+			if (x == y) {
+				diag.SetAt(GetPosition(x, y, diag_spec), predictor.GetAt(x) * (1 - predictor.GetAt(x)));
+			}
+			else {
+				diag.SetAt(GetPosition(x, y, diag_spec), 0);
+			}
+		}
+	}
+	CArray<double> h_t;
+	CArray<double> Hessian;
+	MatrixVectorProduct(diag, diag_spec, z_trans, h_t);
+	MatrixVectorProduct(z, z_spec, h_t, Hessian);
 	/*while (error > 10) {
 		
 		y_hat = 1 / (1 - exp(-z))
