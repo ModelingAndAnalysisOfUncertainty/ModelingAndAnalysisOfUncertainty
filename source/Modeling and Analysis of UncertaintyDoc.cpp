@@ -6956,6 +6956,104 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN() {
 	CloseHandle(hEvent);
 }
 
+// *******************************************
+// ***      Matrix  Format  Conversion     ***
+// *******************************************
+
+// These helper functions are for ANN, where they convert CArray/2D Vector Matrixs and vectors.
+// Two functions' return type are void because MFC prevent CArray from shallow copying. 
+
+// Matrix helper function that convert the CArray to 2D Vector
+// Input: 1D cArray Matrix, 1D cArray Matrix Spec
+// Output: 2D std Vector Matrix
+// Usage:
+// std::vector<std::vector<double>> myVMatrix = CarrayToVectorM(M, M_spec);
+std::vector<std::vector<double>> CModelingandAnalysisofUncertaintyDoc::CarrayToVectorM(CArray <double>& M, CArray <int>& M_spec) {
+	// std 2D vector to be returned
+	std::vector<std::vector<double>> matrix;
+	// Temp CArray to get a row
+	CArray<double> rowArray;
+	int numRows = M_spec.GetAt(0);
+
+	// For each row in the matrix, copy the row to 2D vector
+	for (int i = 0; i < numRows; ++i) {
+		GetRow(M, M_spec, rowArray, i);
+		std::vector<double> row(rowArray.GetSize());
+		for (int j = 0; j < rowArray.GetSize(); ++j) {
+			row[j] = rowArray.GetAt(j);
+		}
+		matrix.push_back(row);
+	}
+
+	return matrix;
+}
+
+// Matrix helper function that convert the 2D Vector Matrix to CArray Matrix
+// Input: 2D std Vector, 1D Carray M, 1D Carray M_spec
+// Usage:
+/* std::vector<double> myVector = {{1, 2, 3}, {3, 4, 5}, {6, 7, 8}};
+   CArray<double> myCArray, myCArray_spec;
+   VectorToCarrayM(myVector, myCArray, myCArray_spec);
+*/
+void CModelingandAnalysisofUncertaintyDoc::VectorToCarrayM(std::vector<std::vector<double>>& A, CArray <double>& M, CArray <int>& M_spec) {
+	// Clear any existing data in M and M_spec
+	M.RemoveAll();
+	M_spec.RemoveAll();
+
+	// Determine the dimensions of the matrix A
+	int numRows = A.size();
+	int numCols = A.empty() ? 0 : A[0].size();
+
+	// Populate M_spec with matrix specifications
+	M_spec.Add(numRows); // Number of rows
+	M_spec.Add(numCols); // Number of columns
+	M_spec.Add(0);       // Matrix type: 0 for general matrix
+
+	// Populate M with the data from the 2D vector A
+	for (const auto& row : A) {
+		for (double val : row) {
+			M.Add(val);
+		}
+	}
+}
+
+// Vector helper function that convert the CArray to Vector
+// Input: 1D cArray
+// Output: 1D std vector
+// Usage:
+// std::vector<double> myVector = VectorToCarrayV(myCArray)
+std::vector<double> CModelingandAnalysisofUncertaintyDoc::CarrayToVectorV(CArray <double>& V) {
+	// Get the size of the target vector
+	std::vector<double> vector(V.GetSize());
+	// Copy into CArray
+	for (int i = 0; i < V.GetSize(); ++i) {
+		vector[i] = V.GetAt(i);
+	}
+	return vector;
+}
+
+// Vector helper function that convert the Vector to CArray
+// Input: 1D vector, 1D CArrray
+// Output: None
+// Usage:
+/* std::vector<double> myVector = {1, 2, 3};
+   CArray<double> myCArray;
+   VectorToCarrayV(myVector, myCArray)
+*/
+ void CModelingandAnalysisofUncertaintyDoc::VectorToCarrayV(std::vector<double>& V, CArray <double>& output) {
+	// Clear the CArray
+	output.RemoveAll();
+	// Set Size for CArray
+	output.SetSize(V.size());
+	// Copying from vector to CArray vector
+	for (int i = 0; i < V.size(); ++i) {
+		output[i] = V[i];
+	}
+}
+
+// *******************************************
+// ***                ANN                  ***
+// *******************************************
 // Function to calculate the sum of squared errors
 double CModelingandAnalysisofUncertaintyDoc::sum_squared_error(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2) {
 	double error = 0.0;
