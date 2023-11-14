@@ -4904,17 +4904,30 @@ void CModelingandAnalysisofUncertaintyDoc::OnFDA() {
 	CArray <double> Data_0, bar, std;
 	StandardizeDataMatrix(Data_0, bar, std);
 	CArray <double> Sb, Sw;
-	CArray <int> S_spec;
+	CArray <int> S_spec, Data0_Var_spec;
 	bool flag = false;
+	CArray <double> Data0_Var;
+	//Making an array that only has variables
+	Data0_Var.Copy(Data_0);
+	int counter, label_counter;
+	counter = Data_0.GetSize();
+	counter -= 1;
+	//Clearing last row of data and creating label vector
+	label_counter = n_Obs;
+	Label_Y.SetSize(n_Obs);
+	for (int i = 0; i < n_Obs; i++) {
+		label_counter -= 1;
+		Data0_Var.RemoveAt(counter);
+		Label_Y.SetAt(label_counter, Data[counter]);
+		counter -= 1;
+
+	}
+	Data0_Var_spec.SetSize(3);
+	Data0_Var_spec.SetAt(0, n_Obs);
+	Data0_Var_spec.SetAt(1, n_Var - 1);
+	Data0_Var_spec.SetAt(2, Data_spec.GetAt(2));
 	SetUpFDAMatrices(Sb, Sw, S_spec, Data_0);
-	//getting eigenvectors and eigenvalues
 	GEVD(Sw, S_spec, Sb, S_spec, P, P_spec, lambda, n_classes - 1, flag);
-	CString Text;
-	Text.Empty(), Text.Format(L"%d, %d and %d", P_spec.GetAt(0), P_spec.GetAt(1), P_spec.GetAt(2));
-	AfxMessageBox(Text);
-	// getting FDA scores
-	Text.Empty(), Text.Format(L"%d, %d and %d", Data_spec.GetAt(0), Data_spec.GetAt(1), Data_spec.GetAt(2));
-	AfxMessageBox(Text);
 	double temp, value_1, value_2;
 	T.RemoveAll();
 	T.SetSize(static_cast <int64_t>(n_Obs * (n_classes - 1)));
@@ -4923,15 +4936,159 @@ void CModelingandAnalysisofUncertaintyDoc::OnFDA() {
 		for (int j = 0; j < n_classes - 1; j++) {
 			temp = 0;
 			for (int k = 0; k < n_Var - 1; k++) {
+				//value_1 = Data_0.GetAt(GetPosition(i, k, Data0_Var_spec));
 				value_1 = Data_0.GetAt(GetPosition(i, k, Data_spec));
 				value_2 = P.GetAt(GetPosition(k, j, P_spec));
 				temp += value_1 * value_2;
 			}
 			T.SetAt(GetPosition(i, j, T_spec), temp);
 		}
-	}
-}
 
+	}
+	//Creating confusion matrix(classification)
+	CArray <double> P_Temp, Class_Y_Temp;
+	Class_Y.RemoveAll();
+	Class_Y.SetSize((n_classes - 1)n_Obs);
+	for (int i = 0; i < n_classes - 1; i++) {
+		P_Temp.RemoveAll();
+		P_Temp.SetSize(n_Var - 1);
+		for (int j = 0; j < n_Var - 1; j++) {
+			P_Temp.SetAt(j, P.GetAt(i * (n_Var - 1) + j));
+			MatrixVectorProduct(Data0_Var, Data0_Var_spec, P_Temp, Class_Y_Temp);
+		}
+		for (int k = 0; k < n_Obs; k++) {
+			Class_Y.SetAt(k + ((n_Obs)i), Class_Y_Temp.GetAt(k));
+		}
+	}
+	//MatrixVectorProduct(Data0_Var, Data0_Var_spec, P, Class_Y);
+	//finding mean of Class_Y and subtracting it from Class Y
+	avg_ClassY.RemoveAll();
+	avg_ClassY.SetSize(n_classes(n_classes - 1));
+	Class_count.RemoveAll();
+	Class_count.SetSize(n_classes * (n_classes - 1));
+	for (int i = 0; i < n_classes - 1; i++) {
+		for (int j = 0; j < n_Obs; j++) {
+			avg_ClassY[int(Label_Y[j] - 1) + (n_classesi)] += Class_Y[j + (n_Obs * i)];
+			Class_count[int(Label_Y[j] - 1) + (n_classes * i)]++;
+		}
+	}
+	for (int j = 0; j < avg_ClassY.GetSize(); j++) {
+		avg_ClassY[j] = avg_ClassY[j] / Class_count[j];
+	}
+	if (n_classes == 2) {
+		TP = 0, TN = 0, FN = 0, FP = 0;
+		//Finding True/False Positives/Negatives
+		for (int i = 0; i < n_Obs; i++) {
+			double pos = 0;
+			pos = abs(Class_Y[i] - avg_ClassY[0]);
+			double neg = 0;
+			neg = abs(Class_Y[i] - avg_ClassY[1]);
+			if ((Label_Y[i] - 1) == 0) {
+				if (pos <= neg) {
+					TP++;
+				}
+				else {
+					FP++;
+				}
+			}
+			else if ((Label_Y[i] - 1) == 1) {
+				if (neg <= pos) {
+					TN++;
+				}
+				else {
+					FN++;
+				}
+			}
+		}
+		//Metric Calculations
+		sensitivity = static_cast<double>(TP) / (TP + FN);
+		specificity = static_cast<double>(TN) / (TN + FP);
+		mcc_test = (TP * TN - FP * FN) / sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN));
+		ppv_test = static_cast<double>(TP) / (TP + FP);
+		F1_test = 2 * ppv_test * sensitivity / (ppv_test + sensitivity);
+		acc_test = static_cast<double>(TP + TN) / (TP + FN + TN + FP);
+		//ROC Curve work
+		double lower = -3;
+		double upper = 3;
+		double delta_thresh = 0.05;
+		double vec_size = static_cast<double>(upper - lower) / (delta_thresh);
+		vec_size = vec_size + 1;
+		ROC_X.RemoveAll();
+		ROC_Y.RemoveAll();
+		ROC_X.SetSize(vec_size);
+		ROC_Y.SetSize(vec_size);
+		int spot = 0;
+		//Loop through to gather data
+		for (double threshold = lower; threshold <= upper; threshold += delta_thresh) {
+			int TP_ROC = 0, FN_ROC = 0, TN_ROC = 0, FP_ROC = 0;
+			for (int i = 0; i < n_Obs; i++) {
+				if ((Label_Y[i] - 1) == 0) {
+					//Confused about orientation of vector
+					if (Class_Y[i] <= threshold) {
+						TP_ROC++;
+					}
+					else {
+						FN_ROC++;
+					}
+				}
+				else if ((Label_Y[i] - 1) == 1) {
+					if (Class_Y[i] > threshold) {
+						TN_ROC++;
+					}
+					else {
+						FP_ROC++;
+					}
+				}
+			}
+			double sen_temp = static_cast<double>(TP_ROC) / (TP_ROC + FN_ROC);
+			double spec_temp = static_cast<double>(TN_ROC) / (TN_ROC + FP_ROC);
+			spec_temp = 1 - spec_temp;
+			ROC_Y.SetAt(spot, sen_temp);
+			ROC_X.SetAt(spot, spec_temp);
+			spot++;
+		}
+		AUC_Total = 0;
+		int size = ROC_X.GetSize();
+		float q1, q2, p1, p2;
+		q1 = ROC_Y[0];
+		q2 = ROC_X[0];
+		float area = 0.0;
+		for (int i = 1; i < size; ++i) {
+			p1 = ROC_Y[i];
+			p2 = ROC_X[i];
+			AUC_Total += sqrt(pow(((1 - q1) + (1 - p1)) / 2 * (q2 - p2), 2));
+			q1 = p1;
+			q2 = p2;
+		}
+	}
+	if (n_classes > 2) {
+		Confusion_Label.RemoveAll();
+		Confusion_Label.SetSize(n_classesn_classes);
+		for (int i = 0; i < n_Obs; i++) {
+			CArray <double> class_label;
+			class_label.RemoveAll();
+			class_label.SetSize(n_classes);
+			for (int j = 0; j < n_classes; j++) {
+				double label_mag = 0;
+				for (int k = 0; k < n_classes - 1; k++) {
+					label_mag += (abs(Class_Y[i + kn_Obs] - avg_ClassY[j + kn_classes]))(abs(Class_Y[i + k * n_Obs] - avg_ClassY[j + k * n_classes]));
+				}
+				class_label.SetAt(j, sqrt(label_mag));
+			}
+			double minValue = class_label[0]; // Assume the first element as the minimum value
+			int minIndex = 0;
+			for (int j = 1; j < n_classes; j++) {
+				if (class_label[j] < minValue) {
+					minValue = class_label[j];
+					minIndex = j;
+				}
+			}
+			//Assigning vector location for true vs predicted
+			Confusion_Label[(minIndex * n_classes) + (Label_Y[i] - 1)]++;
+		}
+	}
+	UpdateAllViews(NULL);
+}
 void CModelingandAnalysisofUncertaintyDoc::SetUpFDAMatrices(CArray <double>& Sb, CArray <double>& Sw, CArray <int>& S_spec, CArray <double>& Data_0) {
 	Sb.RemoveAll();
 	Sw.RemoveAll();
