@@ -3088,6 +3088,127 @@ void CModelingandAnalysisofUncertaintyView::DisplayLoadings(CModelingandAnalysis
 	pDC->SetTextAlign(TA_LEFT | TA_TOP);
 }
 
+//Creating a Confusion Matrix
+void CModelingandAnalysisofUncertaintyView::ConfusionMatrix(CModelingandAnalysisofUncertaintyDoc* pDoc, CDC* pDC, CArray <int>& C_Vec, CPoint TopLeft, CPoint BottomRight, CString Label) {
+	CPen Standard;
+	Standard.CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
+	pDC->SelectObject(&Standard);
+	int Length = BottomRight.x - TopLeft.x - 25, Height = BottomRight.y - TopLeft.y - 25, x0 = TopLeft.x, y0 = TopLeft.y + 25, nObs = pDoc->n_Obs, pos;
+	double min, max, value, range, x_relative, y_relative;
+	CPoint Point;
+	CRect rectA(TopLeft.x, TopLeft.y, TopLeft.x + 125, TopLeft.y + 20);
+	CString Text;
+	pDC->Rectangle(rectA);
+	CBrush Brush_Header;
+	Brush_Header.CreateSolidBrush(RGB(238, 228, 50));
+	pDC->FillRect(&rectA, &Brush_Header);
+	pDC->SetBkMode(TRANSPARENT);
+	CFont Standard_Font;
+	Standard_Font.CreateStockObject(SYSTEM_FONT);
+	pDC->SelectObject(&Standard_Font);
+	pDC->SetTextAlign(TA_LEFT);
+	pDC->TextOutW(TopLeft.x + 3, TopLeft.y + 3, Label);
+	x_relative = 0.0, y_relative = 0.0;
+	//Draw Rectangle
+	Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+	y_relative = 1.0, Point.y = y0 + (int)(y_relative * Height), pDC->LineTo(Point);
+	x_relative = 1.0, Point.x = x0 + (int)(x_relative * Length), pDC->LineTo(Point);
+	y_relative = 0.0, Point.y = y0 + (int)(y_relative * Height), pDC->LineTo(Point);
+	x_relative = 0.0, Point.x = x0 + (int)(x_relative * Length), pDC->LineTo(Point);
+	//Set up boundaries
+	Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+	x_relative = .1, Point.x = x0 + (int)(x_relative * Length), pDC->LineTo(Point);
+	y_relative = 1.0, Point.y = y0 + (int)(y_relative * Height), pDC->LineTo(Point);
+	x_relative = 0.0;
+	Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+	y_relative = .1, Point.y = y0 + (int)(y_relative * Height), pDC->LineTo(Point);
+	x_relative = 1.0, Point.x = x0 + (int)(x_relative * Length), pDC->LineTo(Point);
+	//Writing Horizontal Label
+	CFont Label_x_text, Label_y_text;
+	Label_x_text.CreateFont(20, 10, 0, 0, FALSE, FALSE, FALSE, 0, ARABIC_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_ROMAN, _T("Courier New"));
+	pDC->SelectObject(&Label_x_text);
+	pDC->SetTextAlign(TA_CENTER | TA_TOP);
+	x_relative = 0.5, y_relative = 0.0;
+	Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height);
+	pDC->TextOutW(Point.x, Point.y, _T("Assigned Class"));
+	//Writing Vertical Label
+	Label_y_text.CreateFont(20, 10, 900, 0, FALSE, FALSE, FALSE, 0, ARABIC_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_ROMAN, _T("Courier New"));
+	pDC->SelectObject(&Label_y_text);
+	pDC->SetTextAlign(TA_CENTER | TA_BOTTOM);
+	x_relative = 0.1, y_relative = 0.5;
+	Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height);
+	pDC->TextOutW(Point.x, Point.y, _T("True Class"));
+	//Writing Class Column
+	x_relative = 0.2, y_relative = 0.1;
+	Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+	y_relative = 1.0, Point.y = y0 + (int)(y_relative * Height), pDC->LineTo(Point);
+	x_relative = 0.1, y_relative = 0.2;
+	Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+	x_relative = 1.0, Point.x = x0 + (int)(x_relative * Length), pDC->LineTo(Point);
+	//Drawing horizontal lines
+	x_relative = 0.1, y_relative = 0.2;
+	Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+	double y_increment;
+	y_increment = 0.8 / (pDoc->n_classes);
+	for (int i = 0; i < pDoc->n_classes - 1; i++) {
+		y_relative += y_increment;
+		Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+		x_relative = 1.0, Point.x = x0 + (int)(x_relative * Length), pDC->LineTo(Point);
+		x_relative = 0.1;
+		Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+	}
+	//Drawing Vertical lines
+	x_relative = 0.2, y_relative = 0.1;
+	Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+	double x_increment;
+	x_increment = 0.8 / (pDoc->n_classes);
+	for (int i = 0; i < pDoc->n_classes - 1; i++) {
+		x_relative += x_increment;
+		Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+		y_relative = 1.0, Point.y = y0 + (int)(y_relative * Height), pDC->LineTo(Point);
+		y_relative = 0.1;
+		Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+	}
+	//Layering in the values
+	x_relative = 0.2, y_relative = 0.2;
+	x_relative += x_increment / 2;
+	y_relative += y_increment / 2;
+	pDC->SelectObject(&Label_x_text);
+	pDC->SetTextAlign(TA_CENTER | TA_TOP);
+	for (int i = 0; i < (pDoc->n_classes) * (pDoc->n_classes); i++) {
+		if (i % pDoc->n_classes == 0 && i != 0) {
+			x_relative += x_increment;
+			y_relative = 0.2 + y_increment / 2;
+		}
+		Text.Empty();
+		Text.Format(L"%d", C_Vec[i]);
+		Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+		pDC->TextOutW(Point.x, Point.y, Text);
+		y_relative += y_increment;
+	}
+	//Filling in class values
+	x_relative = 0.2, y_relative = 0.2;
+	CString Temp;
+	pDC->SetTextAlign(TA_LEFT | TA_BOTTOM);
+	for (int i = 0; i < pDoc->n_classes; i++) {
+		Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+		Text.Empty(), Temp.Empty();
+		Temp.Format(L"%d", i + 1), Text.Append(L"Class " + Temp);
+		pDC->TextOutW(Point.x + 5, Point.y, Text);
+		x_relative += x_increment;
+	}
+	pDC->SelectObject(&Label_y_text);
+	pDC->SetTextAlign(TA_RIGHT | TA_BOTTOM);
+	x_relative = 0.2, y_relative = 0.2;
+	for (int i = 0; i < pDoc->n_classes; i++) {
+		Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+		Text.Empty(), Temp.Empty();
+		Temp.Format(L"%d", i + 1), Text.Append(L"Class " + Temp);
+		pDC->TextOutW(Point.x, Point.y + 5, Text);
+		y_relative += y_increment;
+	}
+}
+
 void CModelingandAnalysisofUncertaintyView::DisplayScores(CModelingandAnalysisofUncertaintyDoc* pDoc, CDC* pDC, CArray <double>& Scores, CPoint TopLeft, CPoint BottomRight, CString Label) {
 	CPen Standard;
 	Standard.CreatePen(PS_SOLID, 1, RGB(0, 0, 0));

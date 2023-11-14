@@ -122,6 +122,7 @@ private:
 	void DisplayScatterPlot(CModelingandAnalysisofUncertaintyDoc*, CDC*, CArray <double>&, CArray <double>&, CPoint, CPoint, int, int, CString, CString, bool, bool, bool, double);
 	void DisplayFactorAnalysisModel(CModelingandAnalysisofUncertaintyDoc*, CDC*, CPoint);
 	// Plots for Fisher discriminant analysis
+	void ConfusionMatrix(CModelingandAnalysisofUncertaintyDoc*, CDC*, CArray <int>&, CPoint, CPoint, CString);
 	// Plots for regression analsyis
 	void DisplayStandardRegressionAnalysis(CModelingandAnalysisofUncertaintyDoc*, CDC*);
 	void ShowHypothesisTextingResults(CModelingandAnalysisofUncertaintyDoc*, CDC*, CPoint&, CPoint&);

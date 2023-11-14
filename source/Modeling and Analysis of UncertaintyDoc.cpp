@@ -7383,6 +7383,8 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 		FILE << ConfusionMatrix[i] << ",";
 	}
 	FILE.close();
+
+	EvaluateModel(yass0, Ytrue_Test);
 }
 
 void CModelingandAnalysisofUncertaintyDoc::GetConfusionMatrix(CArray<int>& ConfusionMatrix,
@@ -7578,7 +7580,15 @@ void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(std::vector<int>& yass0
 	Model_RI = RI;
 	Model_FMI = FMI;
 	Model_JI = JI;
-
+	std::ofstream FILE;
+	FILE.open("Model.txt");
+	FILE << "Model Accuracy: " << Model_Accuracy << "\n";
+	FILE << "MCC: " << Model_MCC << "\n";
+	FILE << "ARI: " << Model_ARI<< "\n";
+	FILE << "RI: " << Model_RI<< "\n";
+	FILE << "FMI: " << Model_FMI<< "\n";
+	FILE << "JI: " << Model_Accuracy << "\n";
+	FILE.close();
 }
 // Enablers for modeling methods after datafile was read
 void CModelingandAnalysisofUncertaintyDoc::OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI) {
