@@ -7067,7 +7067,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	FA_Display_Matrices = false;
 	FDA = false;
 	ANN_Training = true;
-
 	// Get training setting from user
 	Selection.DoModal();
 	//double lr = Selection.learning_rate;
@@ -7084,6 +7083,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	//const double eta = 1e-1 / train;    Not sure here; divide by train or not
 	const double eta = Selection.learning_rate;
 	int batch_size = Selection.batch_size;
+	Loss_Ann.clear();
 	// Initialize random number generator seed
 	std::srand(1);
 
@@ -7395,6 +7395,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			FILE << epoch << "\t" << spe_new << "\n";
 			Loss_Ann.push_back(spe_new);
 			UpdateAllViews(NULL);
+			//UpdateAllViews();
 		}
 		
 	}

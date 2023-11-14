@@ -1,3 +1,4 @@
+
 #include "pch.h"
 #include "framework.h"
 #ifndef SHARED_HANDLERS
@@ -14,8 +15,11 @@
 #include "NewANN.h"
 #include "CLCDialog.h"
 
+
 #include <vector>
 #include <iostream>
+#include <cstddef>
+#include <algorithm>
 #include <fstream>
 
 #ifdef _DEBUG
@@ -51,6 +55,7 @@ BEGIN_MESSAGE_MAP(CModelingandAnalysisofUncertaintyView, CView)
 	ON_BN_CLICKED(IDC_FACTOR_MATRICES, On_Display_Factor_Matrices)
 	ON_WM_MOUSEMOVE()
 	ON_COMMAND(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORKWITHACCURACY, &CModelingandAnalysisofUncertaintyView::OnMachinelearningArtificialneuralnetworkwithaccuracy)
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 // CModelingandAnalysisofUncertaintyView construction/destruction
@@ -1172,9 +1177,10 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		DisplayFactorScores.ShowWindow(SW_HIDE);
 		CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
 		// plot the loss and accuracy curve
-		DisplayFileAndDataSetInformation(pDoc, pDC, true);
+		//DisplayFileAndDataSetInformation(pDoc, pDC, true);
 		PlotLossCurve();
 		//PlotAccuraciesCurve();
+		StartDrawing();
 	}
 	
 }
@@ -9407,8 +9413,69 @@ void CModelingandAnalysisofUncertaintyView::TwoSampleBoxPlot(CModelingandAnalysi
 	
 }
 
+//timer for drawing
+void CModelingandAnalysisofUncertaintyView::StartDrawing()
+{
+	m_nCurrentIndex = 0;
+	m_nTimerID = SetTimer(1, 100, NULL);  // update every 100ms 
+}
 
 
+void CModelingandAnalysisofUncertaintyView::OnTimer(UINT_PTR nIDEvent)
+{
+	if (nIDEvent == m_nTimerID)
+	{
+		CClientDC dc(this);
+		CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
+		ASSERT_VALID(pDoc);
+		if (!pDoc)
+			return;
+
+		std::vector<double>& losses = pDoc->Loss_Ann;
+
+		// range of index
+		if (m_nCurrentIndex >= losses.size()) {
+			KillTimer(m_nTimerID);  //stop timer when done
+			return;
+		}
+
+		int margin = 70;
+		int spacingBetweenGraphs = 50;
+		CRect rc;
+		GetClientRect(&rc);
+		int graphHeight = (rc.Height() - 3 * margin - spacingBetweenGraphs) / 2;
+		int graphWidth = rc.Width() - 2 * margin;
+
+		int startX = margin;
+		int startY = (2 * graphHeight) + (2 * margin) + spacingBetweenGraphs;
+		int endX = startX + graphWidth;
+		int endY = startY - graphHeight;
+
+		double scaleX = static_cast<double>(graphWidth) / losses.size();
+		double maxLoss = *std::max_element(losses.begin(), losses.end());
+		double scaleY = static_cast<double>(graphHeight) / maxLoss;
+
+		CPen penLine(PS_SOLID, 2, RGB(255, 0, 0));
+		dc.SelectObject(&penLine);
+		
+
+		size_t nextIndex = min(m_nCurrentIndex + 10, losses.size());
+		for (size_t i = m_nCurrentIndex; i < nextIndex; ++i) {
+			int x = startX + static_cast<int>(i * scaleX);
+			int y = startY - static_cast<int>(losses[i] * scaleY);
+			if (i == m_nCurrentIndex) {
+				dc.MoveTo(x, y);
+			}
+			else {
+				dc.LineTo(x, y);
+			}
+		}
+
+		m_nCurrentIndex = nextIndex; // update index for next draw
+	}
+
+	CView::OnTimer(nIDEvent);
+}
 
 
 // Helper function to draw grid
@@ -9462,7 +9529,7 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 
 
 
-
+		/*
 		CPen penLine(PS_SOLID, 2, RGB(255, 0, 0));  // Red color for curve
 		dc.SelectObject(&penLine);
 
@@ -9472,7 +9539,7 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 			int y = startY - static_cast<int>(losses[i] * scaleY);
 			dc.LineTo(x, y);
 		}
-
+		*/
 		int numXTicks = 10;
 		int numYTicks = 10;
 
