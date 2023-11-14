@@ -4948,7 +4948,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnFDA() {
 	//Creating confusion matrix(classification)
 	CArray <double> P_Temp, Class_Y_Temp;
 	Class_Y.RemoveAll();
-	Class_Y.SetSize((n_classes - 1)n_Obs);
+	Class_Y.SetSize((n_classes - 1) * n_Obs);
 	for (int i = 0; i < n_classes - 1; i++) {
 		P_Temp.RemoveAll();
 		P_Temp.SetSize(n_Var - 1);
@@ -4957,18 +4957,18 @@ void CModelingandAnalysisofUncertaintyDoc::OnFDA() {
 			MatrixVectorProduct(Data0_Var, Data0_Var_spec, P_Temp, Class_Y_Temp);
 		}
 		for (int k = 0; k < n_Obs; k++) {
-			Class_Y.SetAt(k + ((n_Obs)i), Class_Y_Temp.GetAt(k));
+			Class_Y.SetAt(k + ((n_Obs)*i), Class_Y_Temp.GetAt(k));
 		}
 	}
 	//MatrixVectorProduct(Data0_Var, Data0_Var_spec, P, Class_Y);
 	//finding mean of Class_Y and subtracting it from Class Y
 	avg_ClassY.RemoveAll();
-	avg_ClassY.SetSize(n_classes(n_classes - 1));
+	avg_ClassY.SetSize(n_classes * (n_classes - 1));
 	Class_count.RemoveAll();
 	Class_count.SetSize(n_classes * (n_classes - 1));
 	for (int i = 0; i < n_classes - 1; i++) {
 		for (int j = 0; j < n_Obs; j++) {
-			avg_ClassY[int(Label_Y[j] - 1) + (n_classesi)] += Class_Y[j + (n_Obs * i)];
+			avg_ClassY[int(Label_Y[j] - 1) + (n_classes*i)] += Class_Y[j + (n_Obs * i)];
 			Class_count[int(Label_Y[j] - 1) + (n_classes * i)]++;
 		}
 	}
@@ -5063,7 +5063,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnFDA() {
 	}
 	if (n_classes > 2) {
 		Confusion_Label.RemoveAll();
-		Confusion_Label.SetSize(n_classesn_classes);
+		Confusion_Label.SetSize(n_classes*n_classes);
 		for (int i = 0; i < n_Obs; i++) {
 			CArray <double> class_label;
 			class_label.RemoveAll();
@@ -5071,7 +5071,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnFDA() {
 			for (int j = 0; j < n_classes; j++) {
 				double label_mag = 0;
 				for (int k = 0; k < n_classes - 1; k++) {
-					label_mag += (abs(Class_Y[i + kn_Obs] - avg_ClassY[j + kn_classes]))(abs(Class_Y[i + k * n_Obs] - avg_ClassY[j + k * n_classes]));
+					label_mag += (abs(Class_Y[i + k*n_Obs] - avg_ClassY[j + k*n_classes]))*(abs(Class_Y[i + k * n_Obs] - avg_ClassY[j + k * n_classes]));
 				}
 				class_label.SetAt(j, sqrt(label_mag));
 			}
@@ -5184,6 +5184,7 @@ void CModelingandAnalysisofUncertaintyDoc::SetUpFDAMatrices(CArray <double>& Sb,
 		}
 	}
 }
+
 
 //*****************************************************************
 //***            Compute linear classification model            ***

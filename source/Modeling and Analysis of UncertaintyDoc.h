@@ -156,6 +156,10 @@ public:
 	bool FA_Display_Matrices = false;
 	// FLAGS FOR FISHER DISCRIMINANT ANALYSIS
 	bool FDA = false;
+	CArray <double> Class_Y, Label_Y, avg_ClassY, ROC_Y, ROC_X;
+	CArray <int> Class_count, Confusion_Label;
+	int TP, FP, TN, FN;// True_Label, False_Label;
+	double sensitivity, specificity, mcc_test, ppv_test, F1_test, acc_test, AUC_Total;
 	// FLAGS FOR LINEAR MULTIPLE REGRESSION ANALYSIS
 	bool RegressionAnalysis = false;
 	bool RegressionAnalysis_Independent = false;
@@ -311,6 +315,7 @@ protected:
 	int CModelingandAnalysisofUncertaintyDoc::factorial(int m);
 	void CModelingandAnalysisofUncertaintyDoc::GetConfusionMatrix(CArray<int>& ConfusionMatrix,
 		std::vector<int>& yass0, std::vector<int>& ytrue);
+
 
 	// Generated message map functions
 protected:
