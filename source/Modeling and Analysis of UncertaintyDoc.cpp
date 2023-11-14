@@ -7469,6 +7469,7 @@ void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(std::vector<int>& yass0
 	CArray<int> ConfusionMatrix;
 	GetConfusionMatrix(ConfusionMatrix, yass0, ytrue);
 
+	double MCC;
 	if (n_classes == 2) {
 		int TP = ConfusionMatrix[0];
 		int TN = ConfusionMatrix[3];
@@ -7477,9 +7478,13 @@ void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(std::vector<int>& yass0
 
 		double SEN = TP / (TP + FN);
 		double SPE = TN / (TN + FP);
-		double MCC = (TP * TN - FP * FN) / sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN)) );
+		MCC = (TP * TN - FP * FN) / sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN));
 		double PPV = TP / (TP + FP);
 		double F1 = 2 * PPV * SEN / (PPV + SEN);
+
+		Model_F1 = F1;
+		Model_SPE = SPE;
+		Model_SEN = SEN;
 	}
 	else {
 		std::vector<double> F1(n_classes, 0.0);
@@ -7522,16 +7527,57 @@ void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(std::vector<int>& yass0
 		double sumF1 = 0;
 		double sumK = 0;
 		double sumF1_K = 0;
+		int s = 0;
+		int c = 0;
 		for (int i = 0; i < n_classes; i++) {
 			sumF1 += F1[i];
 			sumK += K[i];
 			sumF1_K += F1[i] * K[i];
+			c += ConfusionMatrix[i * n_classes + i];
 		}
 		double F1_macro = sumF1 / n_classes;
 		double F1_weighted = sumF1_K / sumK;
+		for (int i = 0; i < (n_classes * n_classes); i++) {
+			s += ConfusionMatrix[i];
+		}
+		std::vector<int> tk(n_classes - 1, 0);
+		std::vector<int> pk(n_classes - 1, 0);
 
+		int sum_tk_pk = 0;
+		int sum_tk_squared = 0;
+		int sum_pk_squared = 0;
+		for (int i = 0; i < n_classes; i++) {
+			int st = 0;
+			int sp = 0;
+			for (int rowcol = 0; rowcol < n_classes; rowcol++) {
+				st += ConfusionMatrix[rowcol * n_classes + i];
+				sp += ConfusionMatrix[i * n_classes + rowcol];
+			}
+			tk[i] = st;
+			pk[i] = sp;
+			sum_tk_pk += tk[i] * pk[i];
+			sum_tk_squared += tk[i] * tk[i];
+			sum_pk_squared += pk[i] * pk[i];
+		}
+		MCC = (c * s - sum_tk_pk) / sqrt((s * s - sum_pk_squared) * (s * s - sum_tk_squared));
+		Model_F1_Micro = F1_micro;
+		Model_F1_Macro = F1_macro;
+		Model_F1_Weighted = F1_weighted;
 	}
-
+	int sumDiag = 0;
+	int sumTotal = 0;
+	for (int i = 0; i < n_classes; i++) {
+		sumDiag += ConfusionMatrix[i * n_classes + i];
+	}
+	for (int i = 0; i < (n_classes * n_classes); i++) {
+		sumTotal += ConfusionMatrix[i];
+	}
+	Model_Accuracy = sumDiag / sumTotal;
+	Model_MCC = MCC;
+	Model_ARI = ARI;
+	Model_RI = RI;
+	Model_FMI = FMI;
+	Model_JI = JI;
 
 }
 // Enablers for modeling methods after datafile was read

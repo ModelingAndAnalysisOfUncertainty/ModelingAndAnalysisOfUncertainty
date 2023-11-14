@@ -171,6 +171,22 @@ public:
 	void QuickSort(CArray <double>&, int, int);
 	void GetColumn(CArray <double>&, CArray <int>&, CArray <double>&, int);
 	void GetLargestElement(CArray <double>&, CArray <int>&, double&);
+	// Variables for Neural Network Model
+	double Model_MCC;
+	double Model_F1_Micro;
+	double Model_F1_Macro;
+	double Model_F1_Weighted;
+	double Model_Accuracy;
+	double Model_ARI;
+	double Model_RI;
+	double Model_FMI;
+	double Model_JI;
+	double Model_F1;
+	double Model_SEN;
+	double Model_SPE;
+
+
+
 public:
 
 	// Overrides
