@@ -7204,57 +7204,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	// Initialize random number generator seed
 	std::srand(1);
 
-	// Generate random data for three classes
-	//std::vector<std::vector<double>> Xclass1(N, std::vector<double>(M));
-	//std::vector<std::vector<double>> Xclass2(N, std::vector<double>(M));
-	//std::vector<std::vector<double>> Xclass3(N, std::vector<double>(M));
-
-	//for (int i = 0; i < N; ++i) {
-	//	for (int j = 0; j < M; ++j) {
-	//		Xclass1[i][j] = static_cast<double>(std::rand()) / RAND_MAX + 1.0;
-	//		Xclass2[i][j] = static_cast<double>(std::rand()) / RAND_MAX;
-	//		Xclass3[i][j] = static_cast<double>(std::rand()) / RAND_MAX - 1.0;
-	//	}
-	//}
-	//// Combine data for all classes
-	//std::vector<std::vector<double>> X = Xclass1;
-	//X.insert(X.end(), Xclass2.begin(), Xclass2.end());
-	//X.insert(X.end(), Xclass3.begin(), Xclass3.end());
-	////Normalize data
-	//X = zscore(X);
-
-	//VecTranspose(X);
-
-	//// Generate ytrue as described in MATLAB
-	//std::vector<int> ytrue;
-	//for (int c = 0; c < C; ++c) {
-	//	for (int i = 0; i < N; ++i) {
-	//		ytrue.push_back(c + 1);
-	//	}
-	//}
-
-	//// Generate y1, y2, and y3
-	//std::vector<double> y1(N, 1.0);
-	//std::vector<double> y2(N, 0.0);
-	//std::vector<double> y3(N, 0.0);
-
-
-	//for (int i = 0; i < 2000; i++) {
-	//	y1.push_back(0.0);
-	//	if (i < 1000) {
-	//		y2.push_back(1);
-	//		y3.push_back(0);
-	//		continue;
-	//	}
-	//	y2.push_back(0);
-	//	y3.push_back(1);
-	//}
-	//// Concatenate y1, y2, and y3 to create Y
-	//std::vector<std::vector<double>> Y;
-	//Y.push_back(y1);
-	//Y.push_back(y2);
-	//Y.push_back(y3);
-
 	CArray<double> Data0, bar, std;
 	Data0.RemoveAll();
 	bar.RemoveAll();
@@ -7529,6 +7478,290 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	}
 	FILE.close();
 	
+}
+
+// OnANN function with OpenMP parallelization for batch processing
+void CModelingandAnalysisofUncertaintyDoc::OnANN_batchParallel() {
+	// Define constants
+	const int N = n_Obs;
+	const int M = n_Var - 1;
+	const int C = n_classes;
+	const int H = 5;
+	const int n_epochs = 1000;
+	const int train = 20;
+	const double eta = 1e-1 / train;
+	int batch_size = 5;
+	// Initialize random number generator seed
+	std::srand(1);
+
+	CArray<double> Data0, bar, std;
+	Data0.RemoveAll();
+	bar.RemoveAll();
+	std.RemoveAll();
+	StandardizeDataMatrix(Data0, bar, std);
+
+	std::vector<std::vector<double>> X(n_Obs, std::vector<double>(n_Var - 1));
+	std::vector<double> Input_Y(n_Obs);
+
+	for (int i = 0; i < n_Obs * (n_Var - 1); i++) {
+		int row = i % n_Obs;
+		int col = i / n_Obs;
+		X[row][col] = Data0[i];
+	}
+	for (int i = 0; i < n_Obs; i++) {
+		Input_Y[i] = Data[n_Obs * (n_Var - 1) + i];
+	}
+
+	std::vector<std::vector<int>> Y(n_Obs, std::vector<int>(C));
+	for (int i = 0; i < n_Obs; i++) {
+		Y[i][(Input_Y[i] - 1)] = 1;
+	}
+
+	// Initialize weight (w) and bias (b) matrices for the neural network
+	int n_weights = H * (M + 1);
+	int n_biases = H + 1;
+
+	const double trainFraction = 0.85;
+
+	// Calculate Ntrain
+	int Ntrain = static_cast<int>(round(N * trainFraction));
+	// Vector of 0-3000 shuffled
+
+	int Ntest = N - Ntrain;
+	std::vector<std::vector<double>> Xtrain(Ntrain, std::vector<double>(M));
+	std::vector<std::vector<int>> Ytrain(Ntrain, std::vector<int>(C));
+	std::vector<std::vector<double>> Xtest(Ntest, std::vector<double>(M));
+	std::vector<std::vector<int>> Ytest(Ntest, std::vector<int>(C));
+	std::vector<int> index = randsample(N, N);
+
+	for (int i = 0; i < Ntrain; i++) {
+		Xtrain[i] = X[index[i]];
+		for (int c = 0; c < C; c++) {
+			Ytrain[i][c] = Y[index[i]][c];
+		}
+	}
+	for (int i = Ntrain; i < N; i++) {
+		Xtest[i - Ntrain] = X[index[i]];
+		for (int c = 0; c < C; c++) {
+			Ytest[i - Ntrain][c] = Y[index[i]][c];
+		}
+	}
+	std::ofstream FILE_CHECK;
+	FILE_CHECK.open("check_file.txt");
+
+	for (int i = 0; i < Ytest.size(); i++) {
+		for (int j = 0; j < Ytest[i].size(); j++) {
+			FILE_CHECK << Ytest[i][j] << ", ";
+		}
+		FILE_CHECK << "\n";
+	}
+	FILE_CHECK.close();
+	std::vector<double> w(C * n_weights);
+	std::vector<double> b(C * n_biases);
+
+	for (int i = 0; i < C * n_weights; ++i) {
+		w[i] = 0.2 * static_cast<double>(std::rand()) / RAND_MAX - 0.1;
+	}
+
+	for (int i = 0; i < C * n_biases; ++i) {
+		b[i] = 0.2 * static_cast<double>(std::rand()) / RAND_MAX - 0.1;
+	}
+
+	// Calculates spe_old
+	double spe_old = 0.0;
+	for (int c = 0; c < C; ++c) {
+		for (int i = 0; i < Ntest; ++i) {
+			spe_old += std::pow(Ytest[i][c], 2);
+		}
+	}
+	spe_old /= N;
+
+	// Initialize MIN and other variables
+	double MIN = 1e7;
+
+	// 450x3 matrix of 0's
+	std::vector<std::vector<double>> yhat0(Ntest, std::vector<double>(C, 0.0));
+
+	// Create variables for Yhat0 and delta0
+	// These are both 450x3 uninitialized matrices
+	std::vector<std::vector<double>> Yhat0(Ntest, std::vector<double>(C));
+	std::vector<std::vector<double>> delta0(Ntest, std::vector<double>(C));
+
+	// Initialize global best weights and biases
+	std::vector<double> global_best_w = w;
+	std::vector<double> global_best_b = b;
+	double global_MIN = 1e7;
+
+	std::ofstream FILE;
+	FILE.open("outfile.txt");
+	int slice_index = 0;
+
+	#pragma omp parallel
+	{
+		// private weight and bias for each thread
+		std::vector<double> private_w = w;
+		std::vector<double> private_b = b;
+		double private_MIN = 1e7;
+
+		// nowait to avoid unnecessary barrier at the end of the loop
+		#pragma omp for nowait
+		for (int epoch = 1; epoch <= n_epochs; ++epoch) {
+			double spe_new = 0.0;
+
+			// Iterate through three times
+			for (int c = 0; c < C; ++c) {
+				//Draw 20 random numbers from 0-2550
+				std::vector<int> index = randsample(Ntrain, train);
+				slice_index += train;
+				slice_index %= Ntrain;
+				// Random numbers from w and b somehow
+				std::vector<double> weights(private_w.begin() + c * n_weights, private_w.begin() + (c + 1) * n_weights);
+				std::vector<double> biases(private_b.begin() + c * n_biases, private_b.begin() + (c + 1) * n_biases);
+
+				// Get network predictions for the training data
+				std::vector<std::vector<double>> F = std::vector<std::vector<double>>(train, std::vector<double>(H, 0.0));
+				std::vector<double> yhat = std::vector<double>(train, 0.0);
+
+				std::vector<std::vector<double> > Xslice;
+				for (int i = slice_index; i < slice_index + train; i++) {
+					if (i >= Ntrain) {
+						Xslice.push_back(Xtrain[i % Ntrain]);
+						continue;
+					}
+					Xslice.push_back(Xtrain[i]);
+				}
+
+				GetNetworkPrediction(Xslice, H, weights, biases, F, yhat);
+				// Compute the error (d) for the current class
+				std::vector<double> d(train, 0.0);
+				int d_index = 0;
+				for (int i = slice_index; i < slice_index + train; i++) {
+					if (i >= Ntrain) {
+						d[d_index] = Ytrain[i % Ntrain][c] - yhat[d_index];
+						continue;
+					}
+					d[d_index] = Ytrain[i][c] - yhat[d_index];
+					d_index++;
+				}
+
+
+				// Update weights and biases
+				int pos = c * n_weights + M * H;
+				std::vector<double> dphi_t(train, 0.0);
+				for (int i = 0; i < train; ++i) {
+					dphi_t[i] = yhat[i] * (1.0 - yhat[i]);
+				}
+
+				// Update weights connecting the hidden to the output layer
+				for (int h = 0; h < H; ++h) {
+					double sum = 0.0;
+					for (int i = 0; i < d.size(); i++) {
+						sum += dphi_t[i] * F[i][h] * d[i] * eta;
+					}
+					private_w[pos + h] += sum;
+				}
+
+				// Update bias term connecting hidden to output layer
+				int posB = c * H + (H + 1);
+				double sumB = 0.0;
+				for (int i = 0; i < train; i++)
+					sumB += dphi_t[i] * d[i] * eta;
+				private_b[posB] += sumB;
+
+				// Update weights connecting the input to the hidden layer
+				for (int h = 0; h < H; ++h) {
+					std::vector<double> dphi_fh(train, 0.0);
+					for (int i = 0; i < train; ++i) {
+						dphi_fh[i] = F[i][h] * (1.0 - F[i][h]);
+					}
+
+					for (int j = 0; j < M; ++j) {
+						double sumDphi = 0;
+						int posW = c * n_weights + j * H + h;
+						for (int i = 0; i < train; ++i) {
+							sumDphi += d[i] * (dphi_t[i] * dphi_fh[i] * Xslice[i][j]);
+						}
+						private_w[posW] += eta * private_w[c * n_weights + M * H + h] * sumDphi;
+					}
+
+					int posB = c * n_biases + h;
+					double sumB = 0;
+					for (int i = 0; i < train; i++) {
+						sumB += d[i] * (dphi_t[i] * dphi_fh[i]);
+					}
+					private_b[posB] += eta * private_w[c * n_weights + M * H + h] * sumB;
+				}
+
+				// Update yhat0 for the current class (TODO: Implement GetNetworkPrediction)
+				std::vector<double> yhat0(Ntest, 0.0);
+				std::vector<std::vector<double> > Ftemp = std::vector<std::vector<double>>(Ntest, std::vector<double>(H, 0.0));
+				GetNetworkPrediction(Xtest, H, weights, biases, Ftemp, yhat0);
+
+				// Compute delta0 for the current class
+				std::vector<double> delta0(Ntest, 0.0);
+				double sumDelta = 0;
+				for (int i = 0; i < Ntest; ++i) {
+					delta0[i] = Ytest[i][c] - yhat0[i];
+					sumDelta += delta0[i] * delta0[i];
+				}
+				// Update spe_new for the current class
+				spe_new += sumDelta / Ntest;
+				if (spe_new < MIN) {
+					for (int i = 0; i < yhat0.size(); i++) {
+						Yhat0[i][c] = yhat0[i];
+					}
+				}
+			}
+
+			// Critical section to combine updates from each thread
+			#pragma omp critical
+			{
+				if (spe_new < private_MIN) {
+					private_MIN = spe_new;
+				}
+			}
+
+			// Print the current epoch and spe_new
+			if (epoch % batch_size == 0) {
+				// Ensure only one thread writes to the file at a time
+				#pragma omp critical
+				{
+					FILE << epoch << "\t" << spe_new << "\n";
+				}
+			}
+		}
+
+		// Critical section for updating global best weights and biases
+		#pragma omp critical
+		{
+			if (private_MIN < global_MIN) {
+				global_MIN = private_MIN;
+				global_best_w = private_w;
+				global_best_b = private_b;
+			}
+		}
+	}
+
+	// Assign the best weights and biases back to the global variables
+	w = global_best_w;
+	b = global_best_b;
+
+	FILE << "Yhat0 (Prediction):\n";
+	for (int i = 0; i < Yhat0.size(); i++) {
+		for (int j = 0; j < Yhat0[i].size(); j++) {
+			FILE << Yhat0[i][j] << ", ";
+		}
+		FILE << "\n";
+	}
+
+	FILE << "YTest:\n";
+	for (int i = 0; i < Ytest.size(); i++) {
+		for (int j = 0; j < Ytest[i].size(); j++) {
+			FILE << Ytest[i][j] << ", ";
+		}
+		FILE << "\n";
+	}
+	FILE.close();
 }
 
 void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC_Parallel() {
