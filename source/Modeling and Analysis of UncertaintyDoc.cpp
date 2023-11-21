@@ -4525,7 +4525,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 
 	// For loop gets new test train vector data
 
-	//Assuming there are equal parts of each classification
+	/*//Assuming there are equal parts of each classification
 	int classSize = n_Obs/3;
 	int labelIndex = 0;
 	//For each class
@@ -4547,7 +4547,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 			label.SetAt(labelIndex, temp_1);
 			labelIndex++;
 		}
-	}
+	}*/
 	/*for (int i = 0; i < y_train; i++) {
 
 		temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(i, n_Var - 1, Data_spec)));
