@@ -1177,7 +1177,7 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		DisplayFactorScores.ShowWindow(SW_HIDE);
 		CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
 		// plot the loss and accuracy curve
-		//DisplayFileAndDataSetInformation(pDoc, pDC, true);
+		DisplayFileAndDataSetInformation(pDoc, pDC, true);
 		PlotLossCurve();
 		//PlotAccuraciesCurve();
 		StartDrawing();
@@ -9413,11 +9413,25 @@ void CModelingandAnalysisofUncertaintyView::TwoSampleBoxPlot(CModelingandAnalysi
 	
 }
 
+// helper function to check vector value
+void SaveDataToFile(const std::vector<double>& Data, const std::string& filePath) {
+	std::ofstream outFile(filePath);
+	if (outFile.is_open()) {
+		for (const auto& value :Data) {
+			outFile << value << std::endl;
+		}
+		outFile.close();
+	}
+	else {
+		std::cerr << "Unable to open file: " << filePath << std::endl;
+	}
+}
+
 //timer for drawing
 void CModelingandAnalysisofUncertaintyView::StartDrawing()
 {
 	m_nCurrentIndex = 0;
-	m_nTimerID = SetTimer(1, 100, NULL);  // update every 100ms 
+	m_nTimerID = SetTimer(1, 10, NULL);  // update every 10ms 
 }
 
 
@@ -9432,6 +9446,9 @@ void CModelingandAnalysisofUncertaintyView::OnTimer(UINT_PTR nIDEvent)
 			return;
 
 		std::vector<double>& losses = pDoc->Loss_Ann;
+
+		//Check the data
+		SaveDataToFile(pDoc->Loss_Ann, "loss_ann.txt");
 
 		// range of index
 		if (m_nCurrentIndex >= losses.size()) {
@@ -9460,15 +9477,17 @@ void CModelingandAnalysisofUncertaintyView::OnTimer(UINT_PTR nIDEvent)
 		
 
 		size_t nextIndex = min(m_nCurrentIndex + 10, losses.size());
+		if (m_nCurrentIndex > 0) {
+			dc.MoveTo(startX + static_cast<int>((m_nCurrentIndex - 1) * scaleX), startY - static_cast<int>(losses[m_nCurrentIndex - 1] * scaleY));
+		}else {
+			dc.MoveTo(startX, startY - static_cast<int>(losses[0] * scaleY)); 
+		}
 		for (size_t i = m_nCurrentIndex; i < nextIndex; ++i) {
 			int x = startX + static_cast<int>(i * scaleX);
 			int y = startY - static_cast<int>(losses[i] * scaleY);
-			if (i == m_nCurrentIndex) {
-				dc.MoveTo(x, y);
-			}
-			else {
-				dc.LineTo(x, y);
-			}
+	
+			dc.LineTo(x, y);
+			
 		}
 
 		m_nCurrentIndex = nextIndex; // update index for next draw
