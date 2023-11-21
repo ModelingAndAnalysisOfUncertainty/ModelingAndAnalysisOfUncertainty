@@ -7480,6 +7480,58 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	
 }
 
+void CModelingandAnalysisofUncertaintyDoc::UpdateBaises(int c, int n_weights, const int M, const int H, const int train,
+	std::vector<double> &yhat, std::vector<double>& private_w, const int eta, std::vector<std::vector<double>>&F, 
+	std::vector<double> &d, int n_biases, std::vector<std::vector<double> > &Xslice, std::vector<double>& private_b) {
+	// Update weights and biases
+	int pos = c * n_weights + M * H;
+	std::vector<double> dphi_t(train, 0.0);
+	for (int i = 0; i < train; ++i) {
+		dphi_t[i] = yhat[i] * (1.0 - yhat[i]);
+	}
+
+	// Update weights connecting the hidden to the output layer
+	for (int h = 0; h < H; ++h) {
+		double sum = 0.0;
+		for (int i = 0; i < d.size(); i++) {
+			sum += dphi_t[i] * F[i][h] * d[i] * eta;
+		}
+		private_w[pos + h] += sum;
+	}
+
+	// Update bias term connecting hidden to output layer
+	int posB = c * H + (H + 1);
+	double sumB = 0.0;
+	for (int i = 0; i < train; i++)
+		sumB += dphi_t[i] * d[i] * eta;
+	private_b[posB] += sumB;
+
+	// Update weights connecting the input to the hidden layer
+	for (int h = 0; h < H; ++h) {
+		std::vector<double> dphi_fh(train, 0.0);
+		for (int i = 0; i < train; ++i) {
+			dphi_fh[i] = F[i][h] * (1.0 - F[i][h]);
+		}
+
+		for (int j = 0; j < M; ++j) {
+			double sumDphi = 0;
+			int posW = c * n_weights + j * H + h;
+			for (int i = 0; i < train; ++i) {
+				sumDphi += d[i] * (dphi_t[i] * dphi_fh[i] * Xslice[i][j]);
+			}
+			private_w[posW] += eta * private_w[c * n_weights + M * H + h] * sumDphi;
+		}
+
+		int posB = c * n_biases + h;
+		double sumB = 0;
+		for (int i = 0; i < train; i++) {
+			sumB += d[i] * (dphi_t[i] * dphi_fh[i]);
+		}
+		private_b[posB] += eta * private_w[c * n_weights + M * H + h] * sumB;
+	}
+
+}
+
 // OnANN function with OpenMP parallelization for batch processing
 void CModelingandAnalysisofUncertaintyDoc::OnANN_batchParallel() {
 	// Define constants
@@ -7644,53 +7696,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_batchParallel() {
 					d_index++;
 				}
 
-
-				// Update weights and biases
-				int pos = c * n_weights + M * H;
-				std::vector<double> dphi_t(train, 0.0);
-				for (int i = 0; i < train; ++i) {
-					dphi_t[i] = yhat[i] * (1.0 - yhat[i]);
-				}
-
-				// Update weights connecting the hidden to the output layer
-				for (int h = 0; h < H; ++h) {
-					double sum = 0.0;
-					for (int i = 0; i < d.size(); i++) {
-						sum += dphi_t[i] * F[i][h] * d[i] * eta;
-					}
-					private_w[pos + h] += sum;
-				}
-
-				// Update bias term connecting hidden to output layer
-				int posB = c * H + (H + 1);
-				double sumB = 0.0;
-				for (int i = 0; i < train; i++)
-					sumB += dphi_t[i] * d[i] * eta;
-				private_b[posB] += sumB;
-
-				// Update weights connecting the input to the hidden layer
-				for (int h = 0; h < H; ++h) {
-					std::vector<double> dphi_fh(train, 0.0);
-					for (int i = 0; i < train; ++i) {
-						dphi_fh[i] = F[i][h] * (1.0 - F[i][h]);
-					}
-
-					for (int j = 0; j < M; ++j) {
-						double sumDphi = 0;
-						int posW = c * n_weights + j * H + h;
-						for (int i = 0; i < train; ++i) {
-							sumDphi += d[i] * (dphi_t[i] * dphi_fh[i] * Xslice[i][j]);
-						}
-						private_w[posW] += eta * private_w[c * n_weights + M * H + h] * sumDphi;
-					}
-
-					int posB = c * n_biases + h;
-					double sumB = 0;
-					for (int i = 0; i < train; i++) {
-						sumB += d[i] * (dphi_t[i] * dphi_fh[i]);
-					}
-					private_b[posB] += eta * private_w[c * n_weights + M * H + h] * sumB;
-				}
+				UpdateBaises(c, n_weights, M, H, train, yhat, private_w, eta, F, d, n_biases, Xslice, private_b);
 
 				// Update yhat0 for the current class (TODO: Implement GetNetworkPrediction)
 				std::vector<double> yhat0(Ntest, 0.0);
