@@ -4527,15 +4527,25 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 
 	//Assuming there are equal parts of each classification
 	int classSize = n_Obs/3;
+	int labelIndex = 0;
 	//For each class
 	for (int i = 0; i < 3; i++) {
 		//Trying to get 85% from each class
 		//j+classSize*i would go through 85% of each class
-		for (int j = 0; j < classSize*0.85; j++) {
+		for (int j = 0; j < floor(classSize * 0.85); j++) {
+			//Value for the y value of the test data
 			temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(j+classSize*i, n_Var - 1, Data_spec)));
 			if (temp_1 != 1) temp_1 = -1;
 
-			label.SetAt(j+i*classSize, temp_1);
+			//This part is iffy
+			for (int k = 0; k < n_Var - 1; k++) {
+				int val_pos = static_cast <int64_t>(GetPosition(labelIndex, k, Traindata_spec));
+				temp_2 = Data.GetAt(static_cast <int64_t>(GetPosition(j+classSize*i, k, Data_spec)));
+				data2.SetAt(val_pos, temp_2);
+			}
+			
+			label.SetAt(labelIndex, temp_1);
+			labelIndex++;
 		}
 	}
 	/*for (int i = 0; i < y_train; i++) {
