@@ -5272,7 +5272,9 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 		}
 		//FILE << x << std::endl;
 	}
-	
+	for (int i = 0; i < label.GetSize(); i++) {
+		FILE << label.GetAt(i) << std::endl;
+	}
 	CArray<double> predictor;
 	predictor.SetSize(label.GetSize());
 	//AfxMessageBox(L"2");
@@ -5288,47 +5290,52 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	//FILE << z_t_specs.GetAt(0) << " " << z_spec.GetAt(1) << std::endl;
 	//AfxMessageBox(L"4");
 	Transpose(z, z_spec, z_trans, z_t_specs);
-	for (int i = 0; i < n_Obs - label.GetSize(); i++) {
+	SaveMatrix("example3.txt", z_trans, z_t_specs);
+	FILE << label.GetSize() << std::endl;
+	for (int i = 0; i < n_Obs; i++) {
 		double t = 0;
+		
 		for (int j = 0; j < n_Var - 1; j++) {
 			t += Data.GetAt(GetPosition(i, j, Data_spec)) * w.GetAt(j);
+			
 		}
 		t += w.GetAt(n_Var - 1);
 		predictor.SetAt(i, 1 / (1 - exp(-t)));
 	}
+	
 	CArray<double> B;
 	B.SetSize(label.GetSize());
 	for (int i = 0; i < label.GetSize(); i++) {
 		B.SetAt(i, label.GetAt(i) - predictor.GetAt(i));
 	}
 	
-	CArray<double> mult_matrix;
-	MatrixVectorProduct(z_trans, z_t_specs, B, mult_matrix);
-	for (int i = 0; i < predictor.GetSize(); i++) {
-		FILE << predictor.GetAt(i) << std::endl;
-	}
-
+	CArray<double> gradient;
+	MatrixVectorProduct(z_trans, z_t_specs, B, gradient);
+	
 	CArray<double> diag;
+	diag.SetSize(z_trans.GetSize());
 	CArray<int> diag_spec;
 	diag_spec.SetSize(3);
-	diag_spec.SetAt(0, Data_spec.GetAt(0));
-	diag_spec.SetAt(1, Data_spec.GetAt(1));
-	diag_spec.SetAt(2, Data_spec.GetAt(2));
-	//FILE << Data_spec.GetAt(0) << " " << Data_spec.GetAt(1) << std::endl;
-	for (int x = 0; x < diag_spec.GetAt(0); x++) {
-		for (int y = 0; y < diag_spec.GetAt(1); y++) {
-			if (x == y) {
-				diag.SetAt(GetPosition(x, y, diag_spec), predictor.GetAt(x) * (1 - predictor.GetAt(x)));
-			}
-			else {
-				diag.SetAt(GetPosition(x, y, diag_spec), 0);
-			}
+	diag_spec.SetAt(0, z_t_specs.GetAt(0));
+	diag_spec.SetAt(1, z_t_specs.GetAt(1));
+	diag_spec.SetAt(2, z_t_specs.GetAt(2));
+	FILE << z_t_specs.GetAt(1) << std::endl;
+	for (int x = 0; x < z_t_specs.GetAt(0); x++) {
+		for (int y = 0; y < z_t_specs.GetAt(1); y++) {
+			
+			
+			FILE << z_trans.GetAt(GetPosition(x, y, z_t_specs)) << " ";
+			FILE << predictor.GetAt(x) << " ";
+			diag.SetAt(GetPosition(x, y, diag_spec), z_trans.GetAt(GetPosition(x, y, z_t_specs))*(predictor.GetAt(x)*(1-predictor.GetAt(x))));
+			FILE << diag.GetAt(GetPosition(x,y,diag_spec)) << " ";
 		}
+		FILE << std::endl;
 	}
-	CArray<double> h_t;
+	AfxMessageBox(L"hello");
+	SaveMatrix("example2.txt", diag, diag_spec);
 	CArray<double> Hessian;
-	MatrixVectorProduct(diag, diag_spec, z_trans, h_t);
-	MatrixVectorProduct(z, z_spec, h_t, Hessian);
+	MatrixVectorProduct(diag, diag_spec, z, Hessian);
+	
 	/*while (error > 10) {
 		
 		y_hat = 1 / (1 - exp(-z))
