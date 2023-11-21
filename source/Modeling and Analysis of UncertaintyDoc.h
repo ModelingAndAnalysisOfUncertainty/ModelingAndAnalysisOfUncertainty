@@ -1,4 +1,4 @@
-// Modeling and Analysis of UncertaintyDoc.h : interface of the CModelingandAnalysisofUncertaintyDoc class
+ // Modeling and Analysis of UncertaintyDoc.h : interface of the CModelingandAnalysisofUncertaintyDoc class
 //
 #include <fstream>
 #include <ctime>

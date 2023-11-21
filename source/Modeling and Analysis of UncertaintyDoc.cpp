@@ -4503,7 +4503,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	//get data to parse through
 
 	/// CArray <double>& Data_0, CArray <double>& bar, CArray <double>& std
-
+	//CArray for 3 classification
 	CArray<double> y;
 	y.SetSize(n_Obs);
 	CArray<double> value;
@@ -4562,7 +4562,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	CArray<double> y_hat;
 	//MatrixVectorProduct(Data, Data_spec, w, y_hat);
 
-	//SaveVector("wvalue.txt", w);
+	SaveVector("ypredv.txt", n_classes);
 	//SaveVector("swwvalue.txt", Sww);
 	//SaveVector("yvalue.txt", y);
 	//SaveVector("yhatvalue.txt", y_hat);
