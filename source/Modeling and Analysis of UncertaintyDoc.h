@@ -298,9 +298,10 @@ protected:
 	double sum_squared_error_parallel(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2);
 	void VecTranspose(std::vector<std::vector<double> >& b);
 	void VecTransposeInt(std::vector<std::vector<int> >& b);
-	void UpdateBaises(int c, int n_weights, const int M, const int H, const int train,
+	void UpdateBiases(int c, int n_weights, const int M, const int H, const int train,
 		std::vector<double>& yhat, std::vector<double>& private_w, const int eta, std::vector<std::vector<double>>& F,
-		std::vector<double>& d, int n_biases, std::vector<std::vector<double> >& Xslice, std::vector<double>& private_b);
+		std::vector<std::vector<int>>& Ytrain, int n_biases, std::vector<std::vector<double> >& Xslice, std::vector<double>& private_b,
+		int slice_index, int Ntrain);
 
 	// Generated message map functions
 protected:

@@ -7480,9 +7480,23 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	
 }
 
-void CModelingandAnalysisofUncertaintyDoc::UpdateBaises(int c, int n_weights, const int M, const int H, const int train,
+//Update the biases and the weights
+void CModelingandAnalysisofUncertaintyDoc::UpdateBiases(int c, int n_weights, const int M, const int H, const int train,
 	std::vector<double> &yhat, std::vector<double>& private_w, const int eta, std::vector<std::vector<double>>&F, 
-	std::vector<double> &d, int n_biases, std::vector<std::vector<double> > &Xslice, std::vector<double>& private_b) {
+	std::vector<std::vector<int>> &Ytrain, int n_biases, std::vector<std::vector<double> > &Xslice, std::vector<double>& private_b,
+	int slice_index, int Ntrain) {
+
+	// Compute the error (d) for the current class
+	std::vector<double> d(train, 0.0);
+	int d_index = 0;
+	for (int i = slice_index; i < slice_index + train; i++) {
+		if (i >= Ntrain) {
+			d[d_index] = Ytrain[i % Ntrain][c] - yhat[d_index];
+			continue;
+		}
+		d[d_index] = Ytrain[i][c] - yhat[d_index];
+		d_index++;
+	}
 	// Update weights and biases
 	int pos = c * n_weights + M * H;
 	std::vector<double> dphi_t(train, 0.0);
@@ -7684,19 +7698,9 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_batchParallel() {
 				}
 
 				GetNetworkPrediction(Xslice, H, weights, biases, F, yhat);
-				// Compute the error (d) for the current class
-				std::vector<double> d(train, 0.0);
-				int d_index = 0;
-				for (int i = slice_index; i < slice_index + train; i++) {
-					if (i >= Ntrain) {
-						d[d_index] = Ytrain[i % Ntrain][c] - yhat[d_index];
-						continue;
-					}
-					d[d_index] = Ytrain[i][c] - yhat[d_index];
-					d_index++;
-				}
 
-				UpdateBaises(c, n_weights, M, H, train, yhat, private_w, eta, F, d, n_biases, Xslice, private_b);
+				//Update the biases and the weights
+				UpdateBaises(c, n_weights, M, H, train, yhat, private_w, eta, F, Ytrain, n_biases, Xslice, private_b, slice_index, Ntrain);
 
 				// Update yhat0 for the current class (TODO: Implement GetNetworkPrediction)
 				std::vector<double> yhat0(Ntest, 0.0);
