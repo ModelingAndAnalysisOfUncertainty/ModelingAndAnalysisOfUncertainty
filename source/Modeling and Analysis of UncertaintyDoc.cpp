@@ -4571,6 +4571,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	//Classification metrics
 	//GetStandardRegressionModel(Data, Data_spec, y ,w, Sww);
 	SaveVector("traindata.txt", data2);
+	SaveVector("label.txt", label);
 	//We need standardized data
 	//Classification metrics
 
