@@ -7700,7 +7700,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_batchParallel() {
 				GetNetworkPrediction(Xslice, H, weights, biases, F, yhat);
 
 				//Update the biases and the weights
-				UpdateBaises(c, n_weights, M, H, train, yhat, private_w, eta, F, Ytrain, n_biases, Xslice, private_b, slice_index, Ntrain);
+				UpdateBiases(c, n_weights, M, H, train, yhat, private_w, eta, F, Ytrain, n_biases, Xslice, private_b, slice_index, Ntrain);
 
 				// Update yhat0 for the current class (TODO: Implement GetNetworkPrediction)
 				std::vector<double> yhat0(Ntest, 0.0);
