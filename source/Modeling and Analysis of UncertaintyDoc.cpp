@@ -4524,7 +4524,21 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	double temp_1, temp_3, temp_2;
 
 	// For loop gets new test train vector data
-	/*for (int i = 0; i < y_train; i++) {	
+
+	//Assuming there are equal parts of each classification
+	int classSize = n_Obs/3;
+	//For each class
+	for (int i = 0; i < 3; i++) {
+		//Trying to get 85% from each class
+		//j+classSize*i would go through 85% of each class
+		for (int j = 0; j < classSize*0.85; j++) {
+			temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(j+classSize*i, n_Var - 1, Data_spec)));
+			if (temp_1 != 1) temp_1 = -1;
+
+			label.SetAt(j+i*classSize, temp_1);
+		}
+	}
+	/*for (int i = 0; i < y_train; i++) {
 
 		temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(i, n_Var - 1, Data_spec)));
 		if (temp_1 != 1) temp_1 = -1;
@@ -4555,7 +4569,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	
 	//MatrixVectorProduct(Data, Data_spec, w, y_hat);
 
-	SaveVector("ypredv.txt", n_classes);
+	//SaveVector("ypredv.txt", n_classes);
 	//SaveVector("swwvalue.txt", Sww);
 	//SaveVector("yvalue.txt", y);
 	//SaveVector("yhatvalue.txt", y_hat);
