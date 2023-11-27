@@ -4559,7 +4559,31 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 
 
 	// For loop gets new test train vector data
-	/*for (int i = 0; i < y_train; i++) {	
+
+	/*//Assuming there are equal parts of each classification
+	int classSize = n_Obs/3;
+	int labelIndex = 0;
+	//For each class
+	for (int i = 0; i < 3; i++) {
+		//Trying to get 85% from each class
+		//j+classSize*i would go through 85% of each class
+		for (int j = 0; j < floor(classSize * 0.85); j++) {
+			//Value for the y value of the test data
+			temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(j+classSize*i, n_Var - 1, Data_spec)));
+			if (temp_1 != 1) temp_1 = -1;
+
+			//This part is iffy
+			for (int k = 0; k < n_Var - 1; k++) {
+				int val_pos = static_cast <int64_t>(GetPosition(labelIndex, k, Traindata_spec));
+				temp_2 = Data.GetAt(static_cast <int64_t>(GetPosition(j+classSize*i, k, Data_spec)));
+				data2.SetAt(val_pos, temp_2);
+			}
+			
+			label.SetAt(labelIndex, temp_1);
+			labelIndex++;
+		}
+	}*/
+	/*for (int i = 0; i < y_train; i++) {
 
 		temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(i, n_Var - 1, Data_spec)));
 		if (temp_1 != 1) temp_1 = -1;
@@ -4579,13 +4603,14 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	SaveVector("test7.txt", value);
 	CArray <double> Sww;
 	SaveVector("traindata.txt", data2);
+	SaveVector("label.txt", label);
 	//We need standardized data
 	//Classification metrics
 	//member matrix vector product
 	
 	//MatrixVectorProduct(Data, Data_spec, w, y_hat);
 
-	SaveVector("ypredv.txt", n_classes);
+	//SaveVector("ypredv.txt", n_classes);
 	//SaveVector("swwvalue.txt", Sww);
 	//SaveVector("yvalue.txt", y);
 	//SaveVector("yhatvalue.txt", y_hat);
