@@ -4507,7 +4507,18 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	CArray<double> y;
 	y.SetSize(n_Obs);
 	CArray<double> value;
+	/*
+	
+			//generating number y variable
+			std::vector<int> indices(n_Obs);
+			std::iota(indices.begin(), indices.end(), 0);  // Fill with 0, 1, ..., data.size() - 1
 
+			std::random_device rd;
+			std::mt19937 g(rd());
+			std::shuffle(indices.begin(), indices.end(), g);
+
+			int training_size = ratio * data.size();
+			training_data.resize(training_size);*/
 	//We want to train with 85% of the data
 	int y_train = (int)floor(n_Obs * 0.85);
 	value.SetSize(y_train);
@@ -4517,11 +4528,35 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	CArray<double> label;
 	data2.SetSize(static_cast <int64_t> (n_Var*y_train));
 	label.SetSize(static_cast <int64_t> (y_train));
-
+    //new data size with new n object
 	CArray <int> Traindata_spec;
 	Traindata_spec.SetSize(3);
 	Traindata_spec.SetAt(0, y_train), Traindata_spec.SetAt(1, n_Var), Traindata_spec.SetAt(2, 0);
 	double temp_1, temp_3, temp_2;
+	//test data 15 percent
+	CArray<double> testData;
+	testData.SetSize(static_cast <int64_t> (n_Obs - y_train));
+	CArray <int> testData_spec;
+	testData_spec.SetSize(3);
+	testData_spec.SetAt(0, (n_Obs - y_train)), testData_spec.SetAt(1, n_Var), testData_spec.SetAt(2, 0);
+	for (int i = y_train; i < n_Obs; i++) {
+
+		temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(i, n_Var - 1, Data_spec)));
+		if (temp_1 != 1) temp_1 = -1;
+
+		for (int j = 0; j < n_Var - 1; j++) {
+			int val_pos = static_cast <int64_t>(GetPosition(i, j, testData_spec));
+			temp_2 = Data.GetAt(static_cast <int64_t>(GetPosition(i, j, Data_spec)));
+			testData.SetAt(val_pos, temp_2);
+		}
+		label.SetAt(i, temp_1);
+		int val_posconstant = static_cast <int64_t>(GetPosition(i, n_Var - 1, Traindata_spec));
+		data2.SetAt(val_posconstant, (double)1);
+	}
+
+
+
+
 
 	// For loop gets new test train vector data
 	/*for (int i = 0; i < y_train; i++) {	
@@ -4543,14 +4578,9 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 
 	SaveVector("test7.txt", value);
 	CArray <double> Sww;
-	//We need standardized data
-	//Classification metrics
-	//GetStandardRegressionModel(Data, Data_spec, y ,w, Sww);
 	SaveVector("traindata.txt", data2);
 	//We need standardized data
 	//Classification metrics
-
-	//w
 	//member matrix vector product
 	
 	//MatrixVectorProduct(Data, Data_spec, w, y_hat);
@@ -5462,7 +5492,7 @@ void standardize_data(int num_features, std::vector<dlib::matrix<float>>& data) 
 void split_data(const std::vector<dlib::matrix<float>>& data, const std::vector<unsigned long>& labels,
 	std::vector<dlib::matrix<float>>& training_data, std::vector<unsigned long>& training_labels,
 	std::vector<dlib::matrix<float>>& testing_data, std::vector<unsigned long>& testing_labels, float ratio = 0.85) {
-
+	//generating number y variable
 	std::vector<int> indices(data.size());
 	std::iota(indices.begin(), indices.end(), 0);  // Fill with 0, 1, ..., data.size() - 1
 
