@@ -4518,7 +4518,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	int y_train = (int)floor(n_Obs * 0.85);
 	value.SetSize(y_train);
 
-	//Declare the data array and the specifications of it
+	//Declare the train data array and the specifications of it
 	CArray<double> data2;
 	CArray<double> label;
 	data2.SetSize(static_cast <int64_t> (n_Var*y_train));
@@ -4530,24 +4530,26 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	double temp_1, temp_3, temp_2;
 	//test data 15 percent
 	CArray<double> testData;
-	testData.SetSize(static_cast <int64_t> (n_Obs - y_train));
+	testData.SetSize(static_cast <int64_t> (n_Var * (n_Obs - y_train)));
 	CArray <int> testData_spec;
 	testData_spec.SetSize(3);
+	//Declare the test data array and the specifications of it
+	CArray<double> testlabel;
+	testlabel.SetSize(static_cast <int64_t> ((n_Obs - y_train)));
+
+	int k = 0;
 	testData_spec.SetAt(0, (n_Obs - y_train)), testData_spec.SetAt(1, n_Var), testData_spec.SetAt(2, 0);
-	//for (int i = y_train; i < n_Obs; i++) {
-
-	//	temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(indices[i], n_Var - 1, Data_spec)));
-	//	if (temp_1 != 1) temp_1 = -1;
-
-	//	for (int j = 0; j < n_Var - 1; j++) {
-	//		int val_pos = static_cast <int64_t>(GetPosition(indices[i], j, testData_spec));
-	//		temp_2 = Data.GetAt(static_cast <int64_t>(GetPosition(indices[i], j, Data_spec)));
-	//		testData.SetAt(val_pos, temp_2);
-	//	}
-	//	label.SetAt(i, temp_1);
-	//	int val_posconstant = static_cast <int64_t>(GetPosition(indices[i], n_Var - 1, Traindata_spec));
-	//	data2.SetAt(val_posconstant, (double)1);
-	//}
+	 for (int i = y_train; i < n_Obs; i++) {
+		
+		 for (int j = 0; j < n_Var - 1; j++) {
+	     	int val_pos = static_cast <int64_t>(GetPosition(k, j, testData_spec));
+	    	temp_2 = Data.GetAt(static_cast <int64_t>(GetPosition(indices[i], j, Data_spec)));
+	    	testData.SetAt(val_pos, temp_2);
+			}
+	//	///*int val_posconstant = static_cast <int64_t>(GetPosition(k, n_Var - 1, testData_spec));
+	//	//data2.SetAt(val_posconstant, (double)1);*/
+	      k++;
+	 }
 
 
 
@@ -4644,6 +4646,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	}
 
 	SaveMatrix("resultValue.txt", W, W_spec);
+	SaveMatrix("traindata2.txt", W, W_spec);
 
 	SaveVector("wvalue.txt", w);
 	SaveVector("swwvalue.txt", Sww);
