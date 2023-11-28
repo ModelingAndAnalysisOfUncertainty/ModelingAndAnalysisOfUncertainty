@@ -4592,21 +4592,30 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	CArray <double> Sww;
 
 	GetRegressionVector(data2, Traindata_spec, label, Sww, true);
-
 	SaveVector("Model1_coefficient.txt", w);
-	GetRegressionVector(data2, Traindata_spec, label2, Sww, true);
 	MatrixVectorProduct(testData, testData_spec, w, testlabel1);
-	SaveVector("Model1_coefficient2.txt", w);
+	SaveVector("testlabel1.txt", testlabel1);
+
+
 	GetRegressionVector(data2, Traindata_spec, label2, Sww, true);
+	SaveVector("Model1_coefficient2.txt", w);
 	MatrixVectorProduct(testData, testData_spec, w, testlabel2);
+	SaveVector("testlabel2.txt", testlabel2);
+
+	GetRegressionVector(data2, Traindata_spec, label2, Sww, true);
 	SaveVector("Model1_coefficient3.txt", w);
 	MatrixVectorProduct(testData, testData_spec, w, testlabel3);
+	SaveVector("testlabel3.txt", testlabel3);
+
+
+
 
 	SaveVector("test7.txt", value);
 	SaveVector("label.txt", label);
 	SaveMatrix("traindata.txt", data2, Traindata_spec);
 
-	
+		SaveMatrix("traindata.txt", data2, Traindata_spec);
+
 	//We need standardized data
 	//Classification metrics
 	//member matrix vector product
