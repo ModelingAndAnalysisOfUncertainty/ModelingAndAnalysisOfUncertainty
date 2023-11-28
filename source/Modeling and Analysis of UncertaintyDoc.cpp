@@ -5177,65 +5177,14 @@ void CModelingandAnalysisofUncertaintyDoc::OnKPCA() {
 
 void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	AfxMessageBox(L"Now we are working on establishing logistic regression model");
-
-	//load data
-	/*std::ifstream file("datasets/BostonHousingData.FDA");
-	CString message;
-	if (!file) {
-		message.Format(_T("Unable to open file: %S\n"), "hello");
-		AfxMessageBox(message);
-		return;
-	}
-	std::ofstream file2("example2.txt");
-	std::string line;
-	int num_features = -1;
-	CArray<double> data;
-	while (std::getline(file, line)) {
-		std::stringstream sstream(line);
-	}*/
-
-	//Test to see if transpose method works
-	
-	/*CArray<double> x;
-	x.SetSize(6);
-	CArray<int> x_s;
-	x_s.SetSize(3);
-	x_s.SetAt(0, 3);
-	x_s.SetAt(1, 2);
-	x_s.SetAt(2, 0);
-	int s = 1;
-	for (int i = 0; i < x_s.GetAt(0); i++) {
-		for (int j = 0; j < x_s.GetAt(1); j++) {
-			x.SetAt(GetPosition(i, j, x_s), s);
-			s += 1;
-		}
-	}
-	SaveMatrix("example3.txt", x, x_s);
-	CArray<double> t;
-	t.SetSize(6);
-	CArray<int> t_s;
-	t_s.SetSize(3);
-	t_s.SetAt(0, 2);
-	t_s.SetAt(1, 3);
-	t_s.SetAt(2, 0);
-	AfxMessageBox(L"h");
-	Transpose(x, x_s, t, t_s);
-	
-	SaveMatrix("example.txt", t, t_s);
-	return;*/
-
-	CArray<double> y, j, f, w;
-	CArray<int> y_spec, j_spec, f_spec, w_spec;
+	AfxMessageBox(L"We are looking at for the Hessian Matrix and Gradient");
+	CArray<double> w;
 	int w_size = n_Var;
 	w.SetSize(w_size);
-	j.SetSize(4);
-	f.SetSize(2);
-
 	for (int i = 0; i < w_size; i++) {
 		w.SetAt(i, 1);
 	}
 
-	double error = 1;
 	CArray<double> z;
 	std::ofstream FILE;
 	FILE.open("example.txt");
@@ -5272,9 +5221,9 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 		}
 		//FILE << x << std::endl;
 	}
-	for (int i = 0; i < label.GetSize(); i++) {
+	/*for (int i = 0; i < label.GetSize(); i++) {
 		FILE << label.GetAt(i) << std::endl;
-	}
+	}*/
 	CArray<double> predictor;
 	predictor.SetSize(label.GetSize());
 	//AfxMessageBox(L"2");
@@ -5290,17 +5239,18 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	//FILE << z_t_specs.GetAt(0) << " " << z_spec.GetAt(1) << std::endl;
 	//AfxMessageBox(L"4");
 	Transpose(z, z_spec, z_trans, z_t_specs);
-	SaveMatrix("example3.txt", z_trans, z_t_specs);
-	FILE << label.GetSize() << std::endl;
+		
+	//FILE << label.GetSize() << std::endl;
 	for (int i = 0; i < n_Obs; i++) {
 		double t = 0;
 		
 		for (int j = 0; j < n_Var - 1; j++) {
 			t += Data.GetAt(GetPosition(i, j, Data_spec)) * w.GetAt(j);
-			
 		}
 		t += w.GetAt(n_Var - 1);
-		predictor.SetAt(i, 1 / (1 - exp(-t)));
+		//FILE << t << ": " << w.GetAt(n_Var-1) <<" ";
+		predictor.SetAt(i, 1 / (1 - std::exp(-t)));
+		//FILE << predictor.GetAt(i) << std::endl;
 	}
 	
 	CArray<double> B;
@@ -5319,31 +5269,37 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	diag_spec.SetAt(0, z_t_specs.GetAt(0));
 	diag_spec.SetAt(1, z_t_specs.GetAt(1));
 	diag_spec.SetAt(2, z_t_specs.GetAt(2));
-	FILE << z_t_specs.GetAt(1) << std::endl;
+	//FILE << z_t_specs.GetAt(1) << std::endl;
 	for (int x = 0; x < z_t_specs.GetAt(0); x++) {
 		for (int y = 0; y < z_t_specs.GetAt(1); y++) {
 			
 			
-			FILE << z_trans.GetAt(GetPosition(x, y, z_t_specs)) << " ";
-			FILE << predictor.GetAt(x) << " ";
+			//FILE << z_trans.GetAt(GetPosition(x, y, z_t_specs)) << "*";
+			//FILE << predictor.GetAt(x) << "*" << 1-predictor.GetAt(x) << " = ";
 			diag.SetAt(GetPosition(x, y, diag_spec), z_trans.GetAt(GetPosition(x, y, z_t_specs))*(predictor.GetAt(x)*(1-predictor.GetAt(x))));
-			FILE << diag.GetAt(GetPosition(x,y,diag_spec)) << " ";
+			//FILE << diag.GetAt(GetPosition(x,y,diag_spec)) << std::endl;
 		}
-		FILE << std::endl;
+		//FILE << std::endl;
 	}
-	AfxMessageBox(L"hello");
-	SaveMatrix("example2.txt", diag, diag_spec);
+	
 	CArray<double> Hessian;
+	//AfxMessageBox(L"h");
 	MatrixVectorProduct(diag, diag_spec, z, Hessian);
+
+
+	AfxMessageBox(L"Finished Finding Hessian Matrix and Gradient");
+	AfxMessageBox(L"Beginning Levenburg-Marquardt Algorithm");
+	CArray<double> y, j, f, w1;
+	CArray<int> y_spec, j_spec, f_spec;
+	int w1_size = 2;
+	w1.SetSize(w1_size);
+	j.SetSize(4);
+	f.SetSize(2);
 	
-	/*while (error > 10) {
-		
-		y_hat = 1 / (1 - exp(-z))
-	}*/
-
-
 	//////
-	
+	for (int i = 0; i < w1_size; i++) {
+		w1.SetAt(i, 1);
+	}
 	j_spec.SetSize(3);
 	j_spec.SetAt(0, 2);
 	j_spec.SetAt(1, 2);
@@ -5352,21 +5308,21 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	f_spec.SetAt(0, 2);
 	f_spec.SetAt(1, 2);
 	f_spec.SetAt(2, 0);
-	AfxMessageBox(L"pain");
 	//////
-	int i = 0;
-	
-	
-	
+	//int i = 0;
+
+	double error = 1;
 	double lambda = 1;
+	int i = 0;
 	while (error > 0.00001) {
+		//AfxMessageBox(L"h");
 		///
 		///get position
 		///
-		j.SetAt(0, cos(w.GetAt(0)));
-		j.SetAt(1, 2 * w.GetAt(0));
+		j.SetAt(0, cos(w1.GetAt(0)));
+		j.SetAt(1, 2 * w1.GetAt(0));
 		j.SetAt(2, 1);
-		j.SetAt(3, sin(w.GetAt(1)));
+		j.SetAt(3, sin(w1.GetAt(1)));
 		for (int x = 0; x < j_spec.GetAt(0); x++) {
 			for (int y = 0; y < j_spec.GetAt(1); y++) {
 				if (x == y) {
@@ -5375,8 +5331,9 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 			}
 		}
 		///
-		f.SetAt(0, sin(w.GetAt(0)) + w.GetAt(1));
-		f.SetAt(1, -cos(w.GetAt(1)) + pow(w.GetAt(0), 2));
+		//AfxMessageBox(L"h1");
+		f.SetAt(0, sin(w1.GetAt(0)) + w1.GetAt(1));
+		f.SetAt(1, -cos(w1.GetAt(1)) + pow(w1.GetAt(0), 2));
 		CArray<double> j_inverse;
 		j_inverse.SetSize(4);
 		CArray<int> j_inv_specs;
@@ -5385,26 +5342,23 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 		j_inv_specs.SetAt(1, 2);
 		j_inv_specs.SetAt(2, 0);
 		Inverse(j, j_spec, j_inverse, j_inv_specs);
-		
+
 		MatrixVectorProduct(j_inverse, j_inv_specs, f, y);
-		
-	
-		
+
 		CArray<double> temp_w;
-		temp_w.SetSize(w_size);
+		temp_w.SetSize(w1_size);
+		//AfxMessageBox(L"h2");
 		for (int i = 0; i < temp_w.GetSize(); i++) {
-			temp_w.SetAt(i, w.GetAt(i));
+			temp_w.SetAt(i, w1.GetAt(i));
 		}
-		for (int i = 0; i < w.GetSize(); i++) {
-			w.SetAt(i, w.GetAt(i) - y.GetAt(i));
+		for (int i = 0; i < w1.GetSize(); i++) {
+			w1.SetAt(i, w1.GetAt(i) - y.GetAt(i));
 		}
 		double hold = 0;
-		for (int i = 0; i < w.GetSize(); i++) {
-			hold += pow(w.GetAt(i) - temp_w.GetAt(i), 2);
+		for (int i = 0; i < w1.GetSize(); i++) {
+			hold += std::pow(w1.GetAt(i) - temp_w.GetAt(i), 2);
 		}
 		error = sqrt(hold);
-		//error = sqrt(pow(w.GetAt(0)-temp_w.GetAt(0), 2)+pow(w.GetAt(1)-temp_w.GetAt(1), 2));
-		//FILE << "sqrt[(" << w.GetAt(0) << " - " << temp_w.GetAt(0) << ")^2 + (" << w.GetAt(1) << " - " << temp_w.GetAt(1) << " )^2]= " << error << std::endl;
 		i += 1;
 		lambda = lambda / i;
 	}
