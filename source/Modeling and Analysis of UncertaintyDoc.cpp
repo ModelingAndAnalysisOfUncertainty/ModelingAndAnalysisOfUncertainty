@@ -4527,7 +4527,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	CArray <int> Traindata_spec;
 	Traindata_spec.SetSize(3);
 	Traindata_spec.SetAt(0, y_train), Traindata_spec.SetAt(1, n_Var), Traindata_spec.SetAt(2, 0);
-	double temp_1, temp_3, temp_2;
+	double temp_1, temp_3, temp_2, temp_4, temp_5;
 	//test data 15 percent
 	CArray<double> testData;
 	testData.SetSize(static_cast <int64_t> (n_Var * (n_Obs - y_train)));
@@ -4536,7 +4536,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	//Declare the test data array and the specifications of it
 	CArray<double> testlabel;
 	testlabel.SetSize(static_cast <int64_t> ((n_Obs - y_train)));
-
+	
 	int k = 0;
 	testData_spec.SetAt(0, (n_Obs - y_train)), testData_spec.SetAt(1, n_Var), testData_spec.SetAt(2, 0);
 	 for (int i = y_train; i < n_Obs; i++) {
@@ -4553,54 +4553,47 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 
 
 
-
+	 //time to test data and create 3 models
 
 	// For loop gets new test train vector data
 
-	/*//Assuming there are equal parts of each classification
-	int classSize = n_Obs/3;
-	int labelIndex = 0;
-	//For each class
-	for (int i = 0; i < 3; i++) {
-		//Trying to get 85% from each class
-		//j+classSize*i would go through 85% of each class
-		for (int j = 0; j < floor(classSize * 0.85); j++) {
-			//Value for the y value of the test data
-			temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(j+classSize*i, n_Var - 1, Data_spec)));
-			if (temp_1 != 1) temp_1 = -1;
 
-			//This part is iffy
-			for (int k = 0; k < n_Var - 1; k++) {
-				int val_pos = static_cast <int64_t>(GetPosition(labelIndex, k, Traindata_spec));
-				temp_2 = Data.GetAt(static_cast <int64_t>(GetPosition(j+classSize*i, k, Data_spec)));
-				data2.SetAt(val_pos, temp_2);
-			}
-			
-			label.SetAt(labelIndex, temp_1);
-			labelIndex++;
-		}
-	}*/
+	 //3 model data coeficient declare array declare 3 label 
+	 CArray<double> label2;
+	 label2.SetSize(static_cast <int64_t> (y_train));
+	 CArray<double> label3;
+	 label3.SetSize(static_cast <int64_t> (y_train));
+
+
 	for (int i = 0; i < y_train; i++) {
 
 		temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(indices[i], n_Var - 1, Data_spec)));
-		if (temp_1 != 1) temp_1 = -1;
+		temp_4 = temp_1;
+		temp_5 = temp_4;
 
+		if (temp_1 != 1) temp_1 = -1;
+		if (temp_4 != 2) temp_4 = -1;
+		if (temp_5 != 3) temp_4 = -3;
 		for (int j = 0; j < n_Var - 1; j++) {
 			int val_pos = static_cast <int64_t>(GetPosition(i, j, Traindata_spec));
 			temp_2 = Data.GetAt(static_cast <int64_t>(GetPosition(indices[i], j, Data_spec)));
 			data2.SetAt(val_pos, temp_2);
 		}
 		label.SetAt(i, temp_1);
+		label2.SetAt(i, temp_4);
+		label3.SetAt(i, temp_5);
 		int val_posconstant = static_cast <int64_t>(GetPosition(i, n_Var - 1, Traindata_spec));
 		data2.SetAt(val_posconstant, (double)1);
 
 	}
-
+	
 
 	SaveVector("test7.txt", value);
 	CArray <double> Sww;
-	SaveVector("traindata.txt", data2);
 	SaveVector("label.txt", label);
+	SaveMatrix("traindata.txt", data2, Traindata_spec);
+
+	
 	//We need standardized data
 	//Classification metrics
 	//member matrix vector product
