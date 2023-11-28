@@ -4534,9 +4534,12 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	CArray <int> testData_spec;
 	testData_spec.SetSize(3);
 	//Declare the test data array and the specifications of it
-	CArray<double> testlabel;
-	testlabel.SetSize(static_cast <int64_t> ((n_Obs - y_train)));
-	
+	CArray<double> testlabel1;
+	testlabel1.SetSize(static_cast <int64_t> ((n_Obs - y_train)));
+	CArray<double> testlabel2;
+	testlabel2.SetSize(static_cast <int64_t> ((n_Obs - y_train)));
+	CArray<double> testlabel3;
+	testlabel3.SetSize(static_cast <int64_t> ((n_Obs - y_train)));
 	int k = 0;
 	testData_spec.SetAt(0, (n_Obs - y_train)), testData_spec.SetAt(1, n_Var), testData_spec.SetAt(2, 0);
 	 for (int i = y_train; i < n_Obs; i++) {
@@ -4586,10 +4589,20 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 		data2.SetAt(val_posconstant, (double)1);
 
 	}
-	
+	CArray <double> Sww;
+
+	GetRegressionVector(data2, Traindata_spec, label, Sww, true);
+
+	SaveVector("Model1_coefficient.txt", w);
+	GetRegressionVector(data2, Traindata_spec, label2, Sww, true);
+	MatrixVectorProduct(testData, testData_spec, w, testlabel1);
+	SaveVector("Model1_coefficient2.txt", w);
+	GetRegressionVector(data2, Traindata_spec, label2, Sww, true);
+	MatrixVectorProduct(testData, testData_spec, w, testlabel2);
+	SaveVector("Model1_coefficient3.txt", w);
+	MatrixVectorProduct(testData, testData_spec, w, testlabel3);
 
 	SaveVector("test7.txt", value);
-	CArray <double> Sww;
 	SaveVector("label.txt", label);
 	SaveMatrix("traindata.txt", data2, Traindata_spec);
 
@@ -4648,8 +4661,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	//MatrixVectorProduct(z, z_spec, w, y_hat)
 
 	
-	//GetRegressionVector(data2, Traindata_spec, label, Sww, true);
-	SaveVector("w.txt", w);
+	
 
 	//SaveVector("data3.txt", Data);
 	SaveVector("test2.txt", label);
