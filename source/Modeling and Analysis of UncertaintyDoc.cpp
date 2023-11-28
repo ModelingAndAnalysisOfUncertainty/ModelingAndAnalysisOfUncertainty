@@ -4619,6 +4619,9 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	CArray<double> W;
 	CArray<int> W_spec;
 	CArray<double> y_hat;
+	CArray<double> y_hat_total;
+	y_hat_total.SetSize(n_Obs * 3);
+	int count = 0;
 	W.SetSize(n_Var*3);
 	W_spec.SetSize(3);
 	W_spec.SetAt(0, n_Var); W_spec.SetAt(1, 3); W_spec.SetAt(2, 0);
@@ -4638,12 +4641,26 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 		SaveVector("yvalue.txt", y);
 		GetRegressionVector(Data, Data_spec, y, Sww, true);
 		MatrixVectorProduct(Data, Data_spec, w, y_hat);
+		for (int i = 0; i < y_hat.GetSize(); i++) {
+			int value;
+			if (y_hat.GetAt(i) < 0) {
+				value = -1;
+			}
+			else {
+				value = 1;
+			}
+			y_hat_total.SetAt(i + count * y_hat.GetSize(), value);
+		}
+		count++;
 		for (int i = 0; i < w.GetSize(); i++) {
 			W.SetAt(i + w.GetSize() * (j-1), w.GetAt(i));
 		}
 	}
 
+
+
 	SaveMatrix("resultValue.txt", W, W_spec);
+	SaveVector("y_hat_everything.txt", y_hat_total);
 
 	SaveVector("wvalue.txt", w);
 	SaveVector("swwvalue.txt", Sww);
