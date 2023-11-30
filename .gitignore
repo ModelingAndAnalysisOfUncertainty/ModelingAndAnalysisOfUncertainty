@@ -36,3 +36,4 @@ source/x64/*
 source/.vs/*
 source/*.vcxproj
 .idea/*
+source/libtorch/*
