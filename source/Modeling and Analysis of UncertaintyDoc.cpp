@@ -43,6 +43,7 @@
 // Thread Handler for ANN
 #define WM_USER_THREAD_FINISHED WM_APP + 1
 
+
 // CModelingandAnalysisofUncertaintyDoc
 
 IMPLEMENT_DYNCREATE(CModelingandAnalysisofUncertaintyDoc, CDocument)
@@ -6882,6 +6883,7 @@ UINT ANN_EEA5_ThreadProc(LPVOID pParam) {
 	return 0;
 }
 
+
 // Wait for processing message
 void ProcessPendingMessages() {
 	MSG msg;
@@ -6890,6 +6892,7 @@ void ProcessPendingMessages() {
 		DispatchMessage(&msg);
 	}
 }
+
 
 
 void CModelingandAnalysisofUncertaintyDoc::OnANN() {
@@ -7047,6 +7050,30 @@ void CModelingandAnalysisofUncertaintyDoc::VecTransposeInt(std::vector<std::vect
 	b = trans_vec;    // <--- reassign here
 }
 
+struct ANNParams {
+	double learningRate;
+	int epochs;
+	int batchSize;
+	HANDLE hEvent;
+	CModelingandAnalysisofUncertaintyDoc* pDoc;
+};
+
+
+UINT __cdecl ANN_MFC1_Thread(LPVOID pParam)
+{
+	ANNParams* params = (ANNParams*)pParam;
+	CModelingandAnalysisofUncertaintyDoc* pDoc = params->pDoc;
+
+
+	pDoc->OnANN_MFC_layer1(params->learningRate, params->epochs, params->batchSize , params->hEvent);
+	
+
+	
+
+	delete params;
+	return 0;
+}
+
 void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	CWnd* pParent = nullptr;
 	CANNForm Selection(pParent);
@@ -7067,76 +7094,64 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	FA_Display_Matrices = false;
 	FDA = false;
 	ANN_Training = true;
+
+	Loss_Ann.clear();
 	// Get training setting from user
 	Selection.DoModal();
+	HANDLE hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	if (hEvent == NULL) {
+		AfxMessageBox(_T("Failed to create synchronization event."));
+		return; 
+	}
 	//double lr = Selection.learning_rate;
 	//int epoch_num = Selection.total_epoch;
 	//int batch_num = Selection.batch_size;
+	int epoch = Selection.total_epoch;
+	int count = epoch / 100;
+	ANNParams* params = new ANNParams{ Selection.learning_rate, epoch, Selection.batch_size,hEvent, this };
+	AfxBeginThread(ANN_MFC1_Thread, params);
+	for (int i = 0; i < epoch; ++i) {
+		DWORD dwResult = WaitForSingleObject(hEvent, 800);
+		if (dwResult == WAIT_OBJECT_0) {
+			ProcessPendingMessages();
+			// The event is signaled, so update the views
+			
+			if (i % count == 0) {
+				UpdateAllViews(NULL);
+			}
+	
+			ResetEvent(hEvent);  // Reset the event for the next epoch
+		}
+		else if (dwResult == WAIT_TIMEOUT) {
+			//AfxMessageBox(_T("Operation timed out."));
+			break; 
+		}
+	}
+	UpdateAllViews(NULL);
+	CloseHandle(hEvent);
+
+
+	//  Move Training methods to the OnANN_MFC_layer1. Then run training in different thread.
+	
+	
+	
+}
+
+
+void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC_layer1(double learningRate, int epochs, int batchSize, HANDLE hEvent) {
 
 	// Define constants
 	const int N = n_Obs;
 	const int M = n_Var - 1;
 	const int C = n_classes;
 	const int H = 5;
-	const int n_epochs = Selection.total_epoch;
+	const int n_epochs = epochs;
 	const int train = 20;
 	//const double eta = 1e-1 / train;    Not sure here; divide by train or not
-	const double eta = Selection.learning_rate;
-	int batch_size = Selection.batch_size;
+	const double eta = learningRate;
+	int batch_size = batchSize;
 	Loss_Ann.clear();
-	// Initialize random number generator seed
 	std::srand(1);
-
-	// Generate random data for three classes
-	//std::vector<std::vector<double>> Xclass1(N, std::vector<double>(M));
-	//std::vector<std::vector<double>> Xclass2(N, std::vector<double>(M));
-	//std::vector<std::vector<double>> Xclass3(N, std::vector<double>(M));
-
-	//for (int i = 0; i < N; ++i) {
-	//	for (int j = 0; j < M; ++j) {
-	//		Xclass1[i][j] = static_cast<double>(std::rand()) / RAND_MAX + 1.0;
-	//		Xclass2[i][j] = static_cast<double>(std::rand()) / RAND_MAX;
-	//		Xclass3[i][j] = static_cast<double>(std::rand()) / RAND_MAX - 1.0;
-	//	}
-	//}
-	//// Combine data for all classes
-	//std::vector<std::vector<double>> X = Xclass1;
-	//X.insert(X.end(), Xclass2.begin(), Xclass2.end());
-	//X.insert(X.end(), Xclass3.begin(), Xclass3.end());
-	////Normalize data
-	//X = zscore(X);
-
-	//VecTranspose(X);
-
-	//// Generate ytrue as described in MATLAB
-	//std::vector<int> ytrue;
-	//for (int c = 0; c < C; ++c) {
-	//	for (int i = 0; i < N; ++i) {
-	//		ytrue.push_back(c + 1);
-	//	}
-	//}
-
-	//// Generate y1, y2, and y3
-	//std::vector<double> y1(N, 1.0);
-	//std::vector<double> y2(N, 0.0);
-	//std::vector<double> y3(N, 0.0);
-
-
-	//for (int i = 0; i < 2000; i++) {
-	//	y1.push_back(0.0);
-	//	if (i < 1000) {
-	//		y2.push_back(1);
-	//		y3.push_back(0);
-	//		continue;
-	//	}
-	//	y2.push_back(0);
-	//	y3.push_back(1);
-	//}
-	//// Concatenate y1, y2, and y3 to create Y
-	//std::vector<std::vector<double>> Y;
-	//Y.push_back(y1);
-	//Y.push_back(y2);
-	//Y.push_back(y3);
 
 	CArray<double> Data0, bar, std;
 	Data0.RemoveAll();
@@ -7147,10 +7162,10 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	//std::ofstream FILE_CHECK;
 	//FILE_CHECK.open("check_file.txt");
 
-	std::vector<std::vector<double>> X(n_Obs, std::vector<double>(n_Var-1));
+	std::vector<std::vector<double>> X(n_Obs, std::vector<double>(n_Var - 1));
 	std::vector<double> Input_Y(n_Obs);
 
-	for (int i = 0; i < n_Obs * (n_Var-1); i++) {
+	for (int i = 0; i < n_Obs * (n_Var - 1); i++) {
 		int row = i % n_Obs;
 		int col = i / n_Obs;
 		X[row][col] = Data0[i];
@@ -7163,9 +7178,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	for (int i = 0; i < n_Obs; i++) {
 		Y[i][(Input_Y[i] - 1)] = 1;
 	}
-	//FILE_CHECK << "n_Obs: " << n_Obs << "\nn_Var: " << n_Var << "\nn_Classes: " << n_classes << "\n";
-	//FILE_CHECK.close();
-
 
 	//VecTranspose(Y);
 
@@ -7239,10 +7251,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	// 450x3 matrix of 0's
 	std::vector<std::vector<double>> yhat0(Ntest, std::vector<double>(C, 0.0));
 	//Need to fix
-	/*
-	// Initialize some variables for tracking training progress
-	*/
-
 	// Create variables for Yhat0 and delta0
 	// These are both 450x3 uninitialized matrices
 	std::vector<std::vector<double>> Yhat0(Ntest, std::vector<double>(C));
@@ -7264,17 +7272,10 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			std::vector<double> weights(w.begin() + c * n_weights, w.begin() + (c + 1) * n_weights);
 			std::vector<double> biases(b.begin() + c * n_biases, b.begin() + (c + 1) * n_biases);
 
-			// Get network predictions for the training data
-			//CString version;
-			//version.Append(L"classification");
-			//What is F and yhat
-			// F = 1000x5
 			std::vector<std::vector<double>> F = std::vector<std::vector<double>>(train, std::vector<double>(H, 0.0));
 			std::vector<double> yhat = std::vector<double>(train, 0.0);
 
 			std::vector<std::vector<double> > Xslice;
-			/*for (int i = 0; i < train; i++)
-				Xslice.push_back(Xtrain[index[i]]);*/
 			for (int i = slice_index; i < slice_index + train; i++) {
 				if (i >= Ntrain) {
 					Xslice.push_back(Xtrain[i % Ntrain]);
@@ -7284,16 +7285,8 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			}
 
 			GetNetworkPrediction(Xslice, H, weights, biases, F, yhat);
-			/*for (int i = 0; i < yhat.size(); i++) {
-				FILE << yhat[i] << ", ";
-			}
-			FILE << "\n";*/
-			// Compute the error (d) for the current class
-			//If we replaced Ytrain with Y slice we would be chilling
 			std::vector<double> d(train, 0.0);
-			/*for (int i = 0; i < train; ++i) {
-				d[i] = Ytrain[index[i]][c] - yhat[i];
-			}*/
+
 			int d_index = 0;
 			for (int i = slice_index; i < slice_index + train; i++) {
 				if (i >= Ntrain) {
@@ -7356,7 +7349,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			std::vector<double> yhat0(Ntest, 0.0);
 			std::vector<std::vector<double> > Ftemp = std::vector<std::vector<double>>(Ntest, std::vector<double>(H, 0.0));
 			GetNetworkPrediction(Xtest, H, weights, biases, Ftemp, yhat0);
-			
+
 
 			/*for (int i = 0; i < yhat0.size(); i++) {
 				FILE << yhat0[i] << ", ";
@@ -7391,13 +7384,16 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			//Yhat0 = yhat0;
 		}
 		// Print the current epoch and spe_new
+		
 		if (epoch % batch_size == 0) {
 			FILE << epoch << "\t" << spe_new << "\n";
-			Loss_Ann.push_back(spe_new);
-			UpdateAllViews(NULL);
+
+			//UpdateAllViews(NULL);
 			//UpdateAllViews();
 		}
-		
+		Loss_Ann.push_back(spe_new);
+		SetEvent(hEvent);
+
 	}
 	FILE << "Yhat0 (Prediction):\n";
 	for (int i = 0; i < Yhat0.size(); i++) {
@@ -7415,7 +7411,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 		FILE << "\n";
 	}
 	FILE.close();
-	
+
 }
 
 //GetNetworkPrediction(Xtrain, H, weights, biases, F, yhat);
