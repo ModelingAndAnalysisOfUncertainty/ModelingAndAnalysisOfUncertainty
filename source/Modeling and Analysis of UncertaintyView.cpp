@@ -9735,8 +9735,7 @@ void CModelingandAnalysisofUncertaintyView::OnMachinelearningArtificialneuralnet
 	if (New_ANN_Dlg.DoModal() == IDOK)
 	{
 		int numLayers = New_ANN_Dlg.m_selectedlayer;
-		CLCDialog Sec_Dlg;
-		Sec_Dlg.SetNumLayers(numLayers);
+		CLCDialog Sec_Dlg(numLayers);
 		Sec_Dlg.DoModal();
 		std::vector<int> nodeCounts = Sec_Dlg.GetNodeCounts();
 	}

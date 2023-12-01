@@ -1,6 +1,8 @@
 #pragma once
 #include "afxdialogex.h"
 #include <vector>
+#include <iostream>
+using namespace std;
 
 
 // CLCDialog dialog
@@ -10,7 +12,7 @@ class CLCDialog : public CDialogEx
 	DECLARE_DYNAMIC(CLCDialog)
 
 public:
-	CLCDialog(CWnd* pParent = nullptr);   // standard constructor
+	CLCDialog(int numLayers, CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CLCDialog();
 	void SetNumLayers(int numLayers);
 	std::vector<int> GetNodeCounts() const;
@@ -25,9 +27,15 @@ protected:
 	virtual BOOL OnInitDialog();
 	std::vector<int> m_NodeCounts;
 	virtual void OnOK();
+	afx_msg void OnLvnEndlabeleditList(NMHDR* pNMHDR, LRESULT* pResult);
 
 	DECLARE_MESSAGE_MAP()
 
 public:
 	CListCtrl m_LayerNodeList;
+
+private:
+	int m_numLayers;
+public:
+	afx_msg void OnLvnItemchangedList1(NMHDR* pNMHDR, LRESULT* pResult);
 };
