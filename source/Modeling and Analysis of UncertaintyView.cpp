@@ -56,6 +56,8 @@ BEGIN_MESSAGE_MAP(CModelingandAnalysisofUncertaintyView, CView)
 	ON_WM_MOUSEMOVE()
 	ON_COMMAND(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORKWITHACCURACY, &CModelingandAnalysisofUncertaintyView::OnMachinelearningArtificialneuralnetworkwithaccuracy)
 	ON_WM_TIMER()
+	
+
 END_MESSAGE_MAP()
 
 // CModelingandAnalysisofUncertaintyView construction/destruction
@@ -1179,8 +1181,11 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		// plot the loss and accuracy curve
 		DisplayFileAndDataSetInformation(pDoc, pDC, true);
 		PlotLossCurve();
+		//StartDrawing();
 		//PlotAccuraciesCurve();
-		StartDrawing();
+		//m_nCurrentIndex = 0;
+		//m_nTimerID = SetTimer(1, 10, NULL);
+		//OnTimer(m_nTimerID);
 	}
 	
 }
@@ -9417,9 +9422,11 @@ void CModelingandAnalysisofUncertaintyView::TwoSampleBoxPlot(CModelingandAnalysi
 void SaveDataToFile(const std::vector<double>& Data, const std::string& filePath) {
 	std::ofstream outFile(filePath);
 	if (outFile.is_open()) {
+		outFile << Data.size() << "/n";
 		for (const auto& value :Data) {
 			outFile << value << std::endl;
 		}
+		
 		outFile.close();
 	}
 	else {
@@ -9430,16 +9437,20 @@ void SaveDataToFile(const std::vector<double>& Data, const std::string& filePath
 //timer for drawing
 void CModelingandAnalysisofUncertaintyView::StartDrawing()
 {
+	/*
 	m_nCurrentIndex = 0;
-	m_nTimerID = SetTimer(1, 10, NULL);  // update every 10ms 
+	m_nTimerID = SetTimer(1, 1, NULL);  // update every 10ms 
+	*/
 }
 
 
 void CModelingandAnalysisofUncertaintyView::OnTimer(UINT_PTR nIDEvent)
 {
+	/*
 	if (nIDEvent == m_nTimerID)
 	{
 		CClientDC dc(this);
+
 		CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
 		ASSERT_VALID(pDoc);
 		if (!pDoc)
@@ -9494,6 +9505,7 @@ void CModelingandAnalysisofUncertaintyView::OnTimer(UINT_PTR nIDEvent)
 	}
 
 	CView::OnTimer(nIDEvent);
+	*/
 }
 
 
@@ -9523,7 +9535,7 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 	// read in data from loss_ANN
 	CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
 	std::vector<double>& losses = pDoc->Loss_Ann;
-	
+	int batch_size = pDoc->ann_batch_size;
 	CClientDC dc(this);
 	CRect rc;
 	GetClientRect(&rc);
@@ -9548,7 +9560,7 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 
 
 
-		/*
+		
 		CPen penLine(PS_SOLID, 2, RGB(255, 0, 0));  // Red color for curve
 		dc.SelectObject(&penLine);
 
@@ -9558,7 +9570,7 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 			int y = startY - static_cast<int>(losses[i] * scaleY);
 			dc.LineTo(x, y);
 		}
-		*/
+		
 		int numXTicks = 10;
 		int numYTicks = 10;
 

@@ -163,6 +163,7 @@ public:
 	// FLAGS FOR ARTIFICIAL NEURAL NETWORKS
 	bool ANN_Training = false;
 	std::vector<double> Loss_Ann;
+	int ann_batch_size;
 	// OPERATIONS NEEDED FOR VIEW CLASS
 	int GetPosition(int, int, CArray<int>&);
 	void SaveMatrix(std::string, CArray <double>&, CArray <int>&);
@@ -297,6 +298,7 @@ protected:
 	void SetSearchContent(const CString& value);
 #endif // SHARED_HANDLERS
 public:
+	
 	afx_msg void OnDescriptiveStatistics();
 	afx_msg void OnOneSample();
 	afx_msg void OnTwoSample();
@@ -321,6 +323,7 @@ public:
 	afx_msg void OnKPLS();
 	afx_msg void OnANN();
 	afx_msg void OnANN_MFC();
+	afx_msg void OnANN_MFC_layer1(double learningRate, int epochs, int batchSize,HANDLE hEvent);
 
 	afx_msg void OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateOnesample(CCmdUI* pCmdUI);
@@ -346,4 +349,5 @@ public:
 	afx_msg void OnUpdateKPLS(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateANN(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateMachinelearningArtificialneuralnetworkwithaccuracy(CCmdUI* pCmdUI);
+
 };
