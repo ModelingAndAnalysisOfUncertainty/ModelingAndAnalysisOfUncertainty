@@ -7110,8 +7110,8 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	int count = epoch / 100;
 	ANNParams* params = new ANNParams{ Selection.learning_rate, epoch, Selection.batch_size,hEvent, this };
 	AfxBeginThread(ANN_MFC1_Thread, params);
-	for (int i = 1; i < epoch; ++i) {
-		DWORD dwResult = WaitForSingleObject(hEvent, 1000);
+	for (int i = 0; i < epoch; ++i) {
+		DWORD dwResult = WaitForSingleObject(hEvent, 800);
 		if (dwResult == WAIT_OBJECT_0) {
 			ProcessPendingMessages();
 			// The event is signaled, so update the views
