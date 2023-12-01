@@ -9437,16 +9437,16 @@ void SaveDataToFile(const std::vector<double>& Data, const std::string& filePath
 //timer for drawing
 void CModelingandAnalysisofUncertaintyView::StartDrawing()
 {
-	/*
+	
 	m_nCurrentIndex = 0;
 	m_nTimerID = SetTimer(1, 1, NULL);  // update every 10ms 
-	*/
+	
 }
 
 
 void CModelingandAnalysisofUncertaintyView::OnTimer(UINT_PTR nIDEvent)
 {
-	/*
+	
 	if (nIDEvent == m_nTimerID)
 	{
 		CClientDC dc(this);
@@ -9505,7 +9505,7 @@ void CModelingandAnalysisofUncertaintyView::OnTimer(UINT_PTR nIDEvent)
 	}
 
 	CView::OnTimer(nIDEvent);
-	*/
+	
 }
 
 

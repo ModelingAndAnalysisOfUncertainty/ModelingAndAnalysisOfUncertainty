@@ -7106,18 +7106,28 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	//double lr = Selection.learning_rate;
 	//int epoch_num = Selection.total_epoch;
 	//int batch_num = Selection.batch_size;
-	ANNParams* params = new ANNParams{ Selection.learning_rate, Selection.total_epoch, Selection.batch_size,hEvent, this };
+	int epoch = Selection.total_epoch;
+	int count = epoch / 100;
+	ANNParams* params = new ANNParams{ Selection.learning_rate, epoch, Selection.batch_size,hEvent, this };
 	AfxBeginThread(ANN_MFC1_Thread, params);
-	for (int i = 0; i < Selection.total_epoch; ++i) {
-		DWORD dwResult = WaitForSingleObject(hEvent, INFINITE);
+	for (int i = 1; i < epoch; ++i) {
+		DWORD dwResult = WaitForSingleObject(hEvent, 1000);
 		if (dwResult == WAIT_OBJECT_0) {
 			ProcessPendingMessages();
 			// The event is signaled, so update the views
-			UpdateAllViews(NULL);
+			
+			if (i % count == 0) {
+				UpdateAllViews(NULL);
+			}
+	
 			ResetEvent(hEvent);  // Reset the event for the next epoch
 		}
+		else if (dwResult == WAIT_TIMEOUT) {
+			//AfxMessageBox(_T("Operation timed out."));
+			break; 
+		}
 	}
-
+	UpdateAllViews(NULL);
 	CloseHandle(hEvent);
 
 
