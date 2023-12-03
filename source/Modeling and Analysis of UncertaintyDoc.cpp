@@ -7669,26 +7669,31 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_batchParallel() {
 		std::vector<double> private_b = b;
 		double private_MIN = 1e7;
 
+		double spe_new, sumDelta;
+		int c;
+		std::vector<int> index;
+		std::vector<double> weights, biases, yhat, yhat0, delta0;
+		std::vector<std::vector<double>> F, Xslice, Ftemp;
 		// nowait to avoid unnecessary barrier at the end of the loop
-		#pragma omp for nowait
+		#pragma omp for nowait private(spe_new,c, index, slice_index, weights, biases, F, yhat, Xslice, yhat0, delta0, Ftemp, sumDelta)
 		for (int epoch = 1; epoch <= n_epochs; ++epoch) {
-			double spe_new = 0.0;
+			spe_new = 0.0;
 
 			// Iterate through three times
-			for (int c = 0; c < C; ++c) {
+			for (c = 0; c < C; ++c) {
 				//Draw 20 random numbers from 0-2550
-				std::vector<int> index = randsample(Ntrain, train);
+				index = randsample(Ntrain, train);
 				slice_index += train;
 				slice_index %= Ntrain;
 				// Random numbers from w and b somehow
-				std::vector<double> weights(private_w.begin() + c * n_weights, private_w.begin() + (c + 1) * n_weights);
-				std::vector<double> biases(private_b.begin() + c * n_biases, private_b.begin() + (c + 1) * n_biases);
+				weights = std::vector<double>(private_w.begin() + c * n_weights, private_w.begin() + (c + 1) * n_weights);
+				biases = std::vector<double>(private_b.begin() + c * n_biases, private_b.begin() + (c + 1) * n_biases);
 
 				// Get network predictions for the training data
-				std::vector<std::vector<double>> F = std::vector<std::vector<double>>(train, std::vector<double>(H, 0.0));
-				std::vector<double> yhat = std::vector<double>(train, 0.0);
+				F = std::vector<std::vector<double>>(train, std::vector<double>(H, 0.0));
+				yhat = std::vector<double>(train, 0.0);
 
-				std::vector<std::vector<double> > Xslice;
+				Xslice.empty();
 				for (int i = slice_index; i < slice_index + train; i++) {
 					if (i >= Ntrain) {
 						Xslice.push_back(Xtrain[i % Ntrain]);
@@ -7703,13 +7708,13 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_batchParallel() {
 				UpdateBiases(c, n_weights, M, H, train, yhat, private_w, eta, F, Ytrain, n_biases, Xslice, private_b, slice_index, Ntrain);
 
 				// Update yhat0 for the current class (TODO: Implement GetNetworkPrediction)
-				std::vector<double> yhat0(Ntest, 0.0);
-				std::vector<std::vector<double> > Ftemp = std::vector<std::vector<double>>(Ntest, std::vector<double>(H, 0.0));
+				yhat0 = std::vector<double>(Ntest, 0.0);
+				Ftemp = std::vector<std::vector<double>>(Ntest, std::vector<double>(H, 0.0));
 				GetNetworkPrediction(Xtest, H, weights, biases, Ftemp, yhat0);
 
 				// Compute delta0 for the current class
-				std::vector<double> delta0(Ntest, 0.0);
-				double sumDelta = 0;
+				delta0 = std::vector<double>(Ntest, 0.0);
+				sumDelta = 0;
 				for (int i = 0; i < Ntest; ++i) {
 					delta0[i] = Ytest[i][c] - yhat0[i];
 					sumDelta += delta0[i] * delta0[i];
