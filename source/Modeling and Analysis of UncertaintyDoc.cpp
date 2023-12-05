@@ -1321,6 +1321,42 @@ void CModelingandAnalysisofUncertaintyDoc::X_X_tr_Parallel(CArray <double>& A, C
 
 //Computes the time taken for normal and parallel functions and outputs the speed up of the parallel
 void CModelingandAnalysisofUncertaintyDoc::MatrixParallelTest() {
+	/*
+	Parallel size thresholds & speedup
+
+	Adding
+	Threshold: 350 x 350
+	Speedup with 10000 x 10000: 3.5 times
+
+	Subtracting
+	Threshold: 350 x 350
+	Speedup with 10000 x 10000: 3.5 times
+
+	Vector Product
+	Threshold: 450 x 450
+	Speedup with 10000 x 10000: 7.8 times
+
+	Matrix product
+	Threshold: 60 x 60
+	Speedup with 1000 x 1000 (100000 takes too long): 4 times
+
+	X_tr_X
+	Threshold: 80 x 80
+	Speedup with 1000 x 1000: 7.3 times
+
+	X_tr_Y
+	Threshold: 65 x 65
+	Speedup with 1000 x 1000: 8.9 times
+
+	X_Y_tr
+	Threshold: 75 x 75
+	Speedup with 1000 x 1000: 10.87 times
+
+	X_X_tr
+	Threshold: 110 x 110
+	Speedup with 1000 x 1000: 5.65 times
+	*/
+
 	//Setup
 	std::ofstream FILE;
 	FILE.open("matrix_Test.txt");
@@ -1407,6 +1443,7 @@ void CModelingandAnalysisofUncertaintyDoc::MatrixParallelTest() {
 		//assert(y.GetAt(i) == z.GetAt(i));
 	}
 	FILE << "\nResults are the same\n";
+	FILE.close();
 }
 
 // *** Gauss-Jordan elimination : A·x=y (x unknown)
@@ -6955,14 +6992,125 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN() {
 	CloseHandle(hEvent);
 }
 
+// *******************************************
+// ***      Matrix  Format  Conversion     ***
+// *******************************************
 
-//Experimental Stuff
+// These helper functions are for ANN, where they convert CArray/2D Vector Matrixs and vectors.
+// Two functions' return type are void because MFC prevent CArray from shallow copying. 
+
+// Matrix helper function that convert the CArray to 2D Vector
+// Input: 1D cArray Matrix, 1D cArray Matrix Spec
+// Output: 2D std Vector Matrix
+// Usage:
+// std::vector<std::vector<double>> myVMatrix = CarrayToVectorM(M, M_spec);
+std::vector<std::vector<double>> CModelingandAnalysisofUncertaintyDoc::CarrayToVectorM(CArray <double>& M, CArray <int>& M_spec) {
+	// std 2D vector to be returned
+	std::vector<std::vector<double>> matrix;
+	// Temp CArray to get a row
+	CArray<double> rowArray;
+	int numRows = M_spec.GetAt(0);
+
+	// For each row in the matrix, copy the row to 2D vector
+	for (int i = 0; i < numRows; ++i) {
+		GetRow(M, M_spec, rowArray, i);
+		std::vector<double> row(rowArray.GetSize());
+		for (int j = 0; j < rowArray.GetSize(); ++j) {
+			row[j] = rowArray.GetAt(j);
+		}
+		matrix.push_back(row);
+	}
+
+	return matrix;
+}
+
+// Matrix helper function that convert the 2D Vector Matrix to CArray Matrix
+// Input: 2D std Vector, 1D Carray M, 1D Carray M_spec
+// Usage:
+/* std::vector<double> myVector = {{1, 2, 3}, {3, 4, 5}, {6, 7, 8}};
+   CArray<double> myCArray, myCArray_spec;
+   VectorToCarrayM(myVector, myCArray, myCArray_spec);
+*/
+void CModelingandAnalysisofUncertaintyDoc::VectorToCarrayM(std::vector<std::vector<double>>& A, CArray <double>& M, CArray <int>& M_spec) {
+	// Clear any existing data in M and M_spec
+	M.RemoveAll();
+	M_spec.RemoveAll();
+
+	// Determine the dimensions of the matrix A
+	int numRows = A.size();
+	int numCols = A.empty() ? 0 : A[0].size();
+
+	// Populate M_spec with matrix specifications
+	M_spec.Add(numRows); // Number of rows
+	M_spec.Add(numCols); // Number of columns
+	M_spec.Add(0);       // Matrix type: 0 for general matrix
+
+	// Populate M with the data from the 2D vector A
+	for (const auto& row : A) {
+		for (double val : row) {
+			M.Add(val);
+		}
+	}
+}
+
+// Vector helper function that convert the CArray to Vector
+// Input: 1D cArray
+// Output: 1D std vector
+// Usage:
+// std::vector<double> myVector = VectorToCarrayV(myCArray)
+std::vector<double> CModelingandAnalysisofUncertaintyDoc::CarrayToVectorV(CArray <double>& V) {
+	// Get the size of the target vector
+	std::vector<double> vector(V.GetSize());
+	// Copy into CArray
+	for (int i = 0; i < V.GetSize(); ++i) {
+		vector[i] = V.GetAt(i);
+	}
+	return vector;
+}
+
+// Vector helper function that convert the Vector to CArray
+// Input: 1D vector, 1D CArrray
+// Output: None
+// Usage:
+/* std::vector<double> myVector = {1, 2, 3};
+   CArray<double> myCArray;
+   VectorToCarrayV(myVector, myCArray)
+*/
+ void CModelingandAnalysisofUncertaintyDoc::VectorToCarrayV(std::vector<double>& V, CArray <double>& output) {
+	// Clear the CArray
+	output.RemoveAll();
+	// Set Size for CArray
+	output.SetSize(V.size());
+	// Copying from vector to CArray vector
+	for (int i = 0; i < V.size(); ++i) {
+		output[i] = V[i];
+	}
+}
+
+// *******************************************
+// ***                ANN                  ***
+// *******************************************
 // Function to calculate the sum of squared errors
 double CModelingandAnalysisofUncertaintyDoc::sum_squared_error(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2) {
 	double error = 0.0;
 	int numRows = Y1.size();
 	int numCols = Y1[0].size();
 
+	for (int i = 0; i < numRows; ++i) {
+		for (int j = 0; j < numCols; ++j) {
+			error += pow(Y1[i][j] - Y2[i][j], 2);
+		}
+	}
+	return error / (numRows * numCols);
+}
+
+// Function to calculate the sum of squared errors in parallel
+double CModelingandAnalysisofUncertaintyDoc::sum_squared_error_parallel(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2) {
+	double error = 0.0;
+	int numRows = Y1.size();
+	int numCols = Y1[0].size();
+
+	#pragma omp parallel for reduction(+:error)
 	for (int i = 0; i < numRows; ++i) {
 		for (int j = 0; j < numCols; ++j) {
 			error += pow(Y1[i][j] - Y2[i][j], 2);
@@ -6994,6 +7142,39 @@ std::vector<std::vector<double>> CModelingandAnalysisofUncertaintyDoc::zscore(co
 			double normalizedValue = (data[i][j] - mean) / stdDev;
 			column.push_back(normalizedValue);
 		}
+		normalized.push_back(column);
+	}
+
+	return normalized;
+}
+
+// Function to calculate z-score normalization in parallel
+std::vector<std::vector<double>> CModelingandAnalysisofUncertaintyDoc::zscoreParallel(const std::vector<std::vector<double>>& data) {
+	std::vector<std::vector<double>> normalized;
+	int numRows = data.size();
+	int numCols = data[0].size();
+
+	double mean = 0.0;
+	double stdDev = 0.0;
+	int i = 0;
+	std::vector<double> column;
+	double normalizedValue;
+	#pragma omp parallel for private(mean, stdDev, i, column, normalizedValue)
+	for (int j = 0; j < numCols; ++j) {
+		for (i = 0; i < numRows; ++i) {
+			mean += data[i][j];
+		}
+		mean /= numRows;
+		for (i = 0; i < numRows; ++i) {
+			stdDev += pow(data[i][j] - mean, 2);
+		}
+		stdDev = sqrt(stdDev / (numRows - 1));
+		
+		for (i = 0; i < numRows; ++i) {
+			normalizedValue = (data[i][j] - mean) / stdDev;
+			column.push_back(normalizedValue);
+		}
+		#pragma omp critical
 		normalized.push_back(column);
 	}
 
@@ -7058,57 +7239,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	int batch_size = 5;
 	// Initialize random number generator seed
 	std::srand(1);
-
-	// Generate random data for three classes
-	//std::vector<std::vector<double>> Xclass1(N, std::vector<double>(M));
-	//std::vector<std::vector<double>> Xclass2(N, std::vector<double>(M));
-	//std::vector<std::vector<double>> Xclass3(N, std::vector<double>(M));
-
-	//for (int i = 0; i < N; ++i) {
-	//	for (int j = 0; j < M; ++j) {
-	//		Xclass1[i][j] = static_cast<double>(std::rand()) / RAND_MAX + 1.0;
-	//		Xclass2[i][j] = static_cast<double>(std::rand()) / RAND_MAX;
-	//		Xclass3[i][j] = static_cast<double>(std::rand()) / RAND_MAX - 1.0;
-	//	}
-	//}
-	//// Combine data for all classes
-	//std::vector<std::vector<double>> X = Xclass1;
-	//X.insert(X.end(), Xclass2.begin(), Xclass2.end());
-	//X.insert(X.end(), Xclass3.begin(), Xclass3.end());
-	////Normalize data
-	//X = zscore(X);
-
-	//VecTranspose(X);
-
-	//// Generate ytrue as described in MATLAB
-	//std::vector<int> ytrue;
-	//for (int c = 0; c < C; ++c) {
-	//	for (int i = 0; i < N; ++i) {
-	//		ytrue.push_back(c + 1);
-	//	}
-	//}
-
-	//// Generate y1, y2, and y3
-	//std::vector<double> y1(N, 1.0);
-	//std::vector<double> y2(N, 0.0);
-	//std::vector<double> y3(N, 0.0);
-
-
-	//for (int i = 0; i < 2000; i++) {
-	//	y1.push_back(0.0);
-	//	if (i < 1000) {
-	//		y2.push_back(1);
-	//		y3.push_back(0);
-	//		continue;
-	//	}
-	//	y2.push_back(0);
-	//	y3.push_back(1);
-	//}
-	//// Concatenate y1, y2, and y3 to create Y
-	//std::vector<std::vector<double>> Y;
-	//Y.push_back(y1);
-	//Y.push_back(y2);
-	//Y.push_back(y3);
 
 	CArray<double> Data0, bar, std;
 	Data0.RemoveAll();
@@ -7386,6 +7516,305 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	
 }
 
+//Update the biases and the weights
+void CModelingandAnalysisofUncertaintyDoc::UpdateBiases(int c, int n_weights, const int M, const int H, const int train,
+	std::vector<double> &yhat, std::vector<double>& private_w, const int eta, std::vector<std::vector<double>>&F, 
+	std::vector<std::vector<int>> &Ytrain, int n_biases, std::vector<std::vector<double> > &Xslice, std::vector<double>& private_b,
+	int slice_index, int Ntrain) {
+
+	// Compute the error (d) for the current class
+	std::vector<double> d(train, 0.0);
+	int d_index = 0;
+	for (int i = slice_index; i < slice_index + train; i++) {
+		if (i >= Ntrain) {
+			d[d_index] = Ytrain[i % Ntrain][c] - yhat[d_index];
+			continue;
+		}
+		d[d_index] = Ytrain[i][c] - yhat[d_index];
+		d_index++;
+	}
+	// Update weights and biases
+	int pos = c * n_weights + M * H;
+	std::vector<double> dphi_t(train, 0.0);
+	for (int i = 0; i < train; ++i) {
+		dphi_t[i] = yhat[i] * (1.0 - yhat[i]);
+	}
+
+	// Update weights connecting the hidden to the output layer
+	for (int h = 0; h < H; ++h) {
+		double sum = 0.0;
+		for (int i = 0; i < d.size(); i++) {
+			sum += dphi_t[i] * F[i][h] * d[i] * eta;
+		}
+		private_w[pos + h] += sum;
+	}
+
+	// Update bias term connecting hidden to output layer
+	int posB = c * H + (H + 1);
+	double sumB = 0.0;
+	for (int i = 0; i < train; i++)
+		sumB += dphi_t[i] * d[i] * eta;
+	private_b[posB] += sumB;
+
+	// Update weights connecting the input to the hidden layer
+	for (int h = 0; h < H; ++h) {
+		std::vector<double> dphi_fh(train, 0.0);
+		for (int i = 0; i < train; ++i) {
+			dphi_fh[i] = F[i][h] * (1.0 - F[i][h]);
+		}
+
+		for (int j = 0; j < M; ++j) {
+			double sumDphi = 0;
+			int posW = c * n_weights + j * H + h;
+			for (int i = 0; i < train; ++i) {
+				sumDphi += d[i] * (dphi_t[i] * dphi_fh[i] * Xslice[i][j]);
+			}
+			private_w[posW] += eta * private_w[c * n_weights + M * H + h] * sumDphi;
+		}
+
+		int posB = c * n_biases + h;
+		double sumB = 0;
+		for (int i = 0; i < train; i++) {
+			sumB += d[i] * (dphi_t[i] * dphi_fh[i]);
+		}
+		private_b[posB] += eta * private_w[c * n_weights + M * H + h] * sumB;
+	}
+
+}
+
+// OnANN function with OpenMP parallelization for batch processing
+void CModelingandAnalysisofUncertaintyDoc::OnANN_batchParallel() {
+	// Define constants
+	const int N = n_Obs;
+	const int M = n_Var - 1;
+	const int C = n_classes;
+	const int H = 5;
+	const int n_epochs = 1000;
+	const int train = 20;
+	const double eta = 1e-1 / train;
+	int batch_size = 5;
+	// Initialize random number generator seed
+	std::srand(1);
+
+	CArray<double> Data0, bar, std;
+	Data0.RemoveAll();
+	bar.RemoveAll();
+	std.RemoveAll();
+	StandardizeDataMatrix(Data0, bar, std);
+
+	std::vector<std::vector<double>> X(n_Obs, std::vector<double>(n_Var - 1));
+	std::vector<double> Input_Y(n_Obs);
+
+	for (int i = 0; i < n_Obs * (n_Var - 1); i++) {
+		int row = i % n_Obs;
+		int col = i / n_Obs;
+		X[row][col] = Data0[i];
+	}
+	for (int i = 0; i < n_Obs; i++) {
+		Input_Y[i] = Data[n_Obs * (n_Var - 1) + i];
+	}
+
+	std::vector<std::vector<int>> Y(n_Obs, std::vector<int>(C));
+	for (int i = 0; i < n_Obs; i++) {
+		Y[i][(Input_Y[i] - 1)] = 1;
+	}
+
+	// Initialize weight (w) and bias (b) matrices for the neural network
+	int n_weights = H * (M + 1);
+	int n_biases = H + 1;
+
+	const double trainFraction = 0.85;
+
+	// Calculate Ntrain
+	int Ntrain = static_cast<int>(round(N * trainFraction));
+	// Vector of 0-3000 shuffled
+
+	int Ntest = N - Ntrain;
+	std::vector<std::vector<double>> Xtrain(Ntrain, std::vector<double>(M));
+	std::vector<std::vector<int>> Ytrain(Ntrain, std::vector<int>(C));
+	std::vector<std::vector<double>> Xtest(Ntest, std::vector<double>(M));
+	std::vector<std::vector<int>> Ytest(Ntest, std::vector<int>(C));
+	std::vector<int> index = randsample(N, N);
+
+	for (int i = 0; i < Ntrain; i++) {
+		Xtrain[i] = X[index[i]];
+		for (int c = 0; c < C; c++) {
+			Ytrain[i][c] = Y[index[i]][c];
+		}
+	}
+	for (int i = Ntrain; i < N; i++) {
+		Xtest[i - Ntrain] = X[index[i]];
+		for (int c = 0; c < C; c++) {
+			Ytest[i - Ntrain][c] = Y[index[i]][c];
+		}
+	}
+	std::ofstream FILE_CHECK;
+	FILE_CHECK.open("check_file.txt");
+
+	for (int i = 0; i < Ytest.size(); i++) {
+		for (int j = 0; j < Ytest[i].size(); j++) {
+			FILE_CHECK << Ytest[i][j] << ", ";
+		}
+		FILE_CHECK << "\n";
+	}
+	FILE_CHECK.close();
+	std::vector<double> w(C * n_weights);
+	std::vector<double> b(C * n_biases);
+
+	for (int i = 0; i < C * n_weights; ++i) {
+		w[i] = 0.2 * static_cast<double>(std::rand()) / RAND_MAX - 0.1;
+	}
+
+	for (int i = 0; i < C * n_biases; ++i) {
+		b[i] = 0.2 * static_cast<double>(std::rand()) / RAND_MAX - 0.1;
+	}
+
+	// Calculates spe_old
+	double spe_old = 0.0;
+	for (int c = 0; c < C; ++c) {
+		for (int i = 0; i < Ntest; ++i) {
+			spe_old += std::pow(Ytest[i][c], 2);
+		}
+	}
+	spe_old /= N;
+
+	// Initialize MIN and other variables
+	double MIN = 1e7;
+
+	// 450x3 matrix of 0's
+	std::vector<std::vector<double>> yhat0(Ntest, std::vector<double>(C, 0.0));
+
+	// Create variables for Yhat0 and delta0
+	// These are both 450x3 uninitialized matrices
+	std::vector<std::vector<double>> Yhat0(Ntest, std::vector<double>(C));
+	std::vector<std::vector<double>> delta0(Ntest, std::vector<double>(C));
+
+	// Initialize global best weights and biases
+	std::vector<double> global_best_w = w;
+	std::vector<double> global_best_b = b;
+	double global_MIN = 1e7;
+
+	std::ofstream FILE;
+	FILE.open("outfile.txt");
+	int slice_index = 0;
+
+	#pragma omp parallel
+	{
+		// private weight and bias for each thread
+		std::vector<double> private_w = w;
+		std::vector<double> private_b = b;
+		double private_MIN = 1e7;
+
+		double spe_new, sumDelta;
+		int c;
+		std::vector<int> index;
+		std::vector<double> weights, biases, yhat, yhat0, delta0;
+		std::vector<std::vector<double>> F, Xslice, Ftemp;
+		// nowait to avoid unnecessary barrier at the end of the loop
+		#pragma omp for nowait private(spe_new,c, index, slice_index, weights, biases, F, yhat, Xslice, yhat0, delta0, Ftemp, sumDelta)
+		for (int epoch = 1; epoch <= n_epochs; ++epoch) {
+			spe_new = 0.0;
+
+			// Iterate through three times
+			for (c = 0; c < C; ++c) {
+				//Draw 20 random numbers from 0-2550
+				index = randsample(Ntrain, train);
+				slice_index += train;
+				slice_index %= Ntrain;
+				// Random numbers from w and b somehow
+				weights = std::vector<double>(private_w.begin() + c * n_weights, private_w.begin() + (c + 1) * n_weights);
+				biases = std::vector<double>(private_b.begin() + c * n_biases, private_b.begin() + (c + 1) * n_biases);
+
+				// Get network predictions for the training data
+				F = std::vector<std::vector<double>>(train, std::vector<double>(H, 0.0));
+				yhat = std::vector<double>(train, 0.0);
+
+				Xslice.empty();
+				for (int i = slice_index; i < slice_index + train; i++) {
+					if (i >= Ntrain) {
+						Xslice.push_back(Xtrain[i % Ntrain]);
+						continue;
+					}
+					Xslice.push_back(Xtrain[i]);
+				}
+
+				GetNetworkPredictionParallel(Xslice, H, weights, biases, F, yhat);
+
+				//Update the biases and the weights
+				UpdateBiases(c, n_weights, M, H, train, yhat, private_w, eta, F, Ytrain, n_biases, Xslice, private_b, slice_index, Ntrain);
+
+				// Update yhat0 for the current class (TODO: Implement GetNetworkPrediction)
+				yhat0 = std::vector<double>(Ntest, 0.0);
+				Ftemp = std::vector<std::vector<double>>(Ntest, std::vector<double>(H, 0.0));
+				GetNetworkPredictionParallel(Xtest, H, weights, biases, Ftemp, yhat0);
+
+				// Compute delta0 for the current class
+				delta0 = std::vector<double>(Ntest, 0.0);
+				sumDelta = 0;
+				for (int i = 0; i < Ntest; ++i) {
+					delta0[i] = Ytest[i][c] - yhat0[i];
+					sumDelta += delta0[i] * delta0[i];
+				}
+				// Update spe_new for the current class
+				spe_new += sumDelta / Ntest;
+				if (spe_new < MIN) {
+					for (int i = 0; i < yhat0.size(); i++) {
+						Yhat0[i][c] = yhat0[i];
+					}
+				}
+			}
+
+			// Critical section to combine updates from each thread
+			#pragma omp critical
+			{
+				if (spe_new < private_MIN) {
+					private_MIN = spe_new;
+				}
+			}
+
+			// Print the current epoch and spe_new
+			if (epoch % batch_size == 0) {
+				// Ensure only one thread writes to the file at a time
+				#pragma omp critical
+				{
+					FILE << epoch << "\t" << spe_new << "\n";
+				}
+			}
+		}
+
+		// Critical section for updating global best weights and biases
+		#pragma omp critical
+		{
+			if (private_MIN < global_MIN) {
+				global_MIN = private_MIN;
+				global_best_w = private_w;
+				global_best_b = private_b;
+			}
+		}
+	}
+
+	// Assign the best weights and biases back to the global variables
+	w = global_best_w;
+	b = global_best_b;
+
+	FILE << "Yhat0 (Prediction):\n";
+	for (int i = 0; i < Yhat0.size(); i++) {
+		for (int j = 0; j < Yhat0[i].size(); j++) {
+			FILE << Yhat0[i][j] << ", ";
+		}
+		FILE << "\n";
+	}
+
+	FILE << "YTest:\n";
+	for (int i = 0; i < Ytest.size(); i++) {
+		for (int j = 0; j < Ytest[i].size(); j++) {
+			FILE << Ytest[i][j] << ", ";
+		}
+		FILE << "\n";
+	}
+	FILE.close();
+}
+
 //GetNetworkPrediction(Xtrain, H, weights, biases, F, yhat);
 void CModelingandAnalysisofUncertaintyDoc::GetNetworkPrediction(const std::vector<std::vector<double>>& X, const int H,
 	const std::vector<double>& w, const std::vector<double>& b,
@@ -7419,6 +7848,45 @@ void CModelingandAnalysisofUncertaintyDoc::GetNetworkPrediction(const std::vecto
 		yhat[i] = 1.0 / (1.0 + exp(-yhat[i]));
 	}
 }
+
+////GetNetworkPrediction(Xtrain, H, weights, biases, F, yhat) in parallel
+void CModelingandAnalysisofUncertaintyDoc::GetNetworkPredictionParallel(const std::vector<std::vector<double>>& X, const int H,
+	const std::vector<double>& w, const std::vector<double>& b,
+	std::vector<std::vector<double>>& F, std::vector<double>& yhat) {
+
+	// 20, 
+	int N = X.size();
+	int M = X[0].size();
+	int pos;
+	int i;
+	int j;
+	std::vector<double> z(N, 0.0);
+	#pragma omp parallel for private(pos, z, i, j)
+	for (int h = 0; h < H; ++h) {
+		for (j = 0; j < M; ++j) {
+			pos = j * H + h;
+			for (i = 0; i < N; ++i) {
+				z[i] += w[pos] * X[i][j];
+			}
+		}
+
+		for (i = 0; i < N; ++i) {
+			z[i] += b[h];
+			F[i][h] = 1.0 / (1.0 + exp(-z[i]));
+		}
+
+		pos = M * H + h;
+		for (i = 0; i < N; ++i) {
+			#pragma omp atomic
+			yhat[i] += w[pos] * F[i][h];
+		}
+	}
+	#pragma omp parallel for
+	for (int i = 0; i < N; ++i) {
+		yhat[i] = 1.0 / (1.0 + exp(-yhat[i]));
+	}
+}
+
 // Enablers for modeling methods after datafile was read
 void CModelingandAnalysisofUncertaintyDoc::OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI) {
 	pCmdUI->Enable(FileOpen);
