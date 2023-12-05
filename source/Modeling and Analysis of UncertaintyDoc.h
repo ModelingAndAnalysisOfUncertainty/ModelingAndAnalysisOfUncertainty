@@ -1,10 +1,11 @@
-// Modeling and Analysis of UncertaintyDoc.h : interface of the CModelingandAnalysisofUncertaintyDoc class
+ // Modeling and Analysis of UncertaintyDoc.h : interface of the CModelingandAnalysisofUncertaintyDoc class
 //
 #include <fstream>
 #include <ctime>
 #include "ProbabilityDistributions.h"
 #include <vector>
 #include <omp.h>
+
 
 #pragma once
 
@@ -75,7 +76,9 @@ private:
 
 public:
 	// VARIABLES FOR DATA INFO
+	//number of x
 	int n_Var = 0;
+	//number of y data
 	int n_Obs = 0;
 	CString PathAndFileName;
 	bool FileOpen = false;
@@ -246,6 +249,13 @@ protected:
 	void GaussJordanEliminationParallel(CArray<double>&, CArray<int>&, CArray<double>&, CArray<double>&);
 	void MatrixParallelTest();
 	// *******************************************
+	// ***      Matrix  Format  Conversion     ***
+	// *******************************************
+	std::vector<std::vector<double>> CarrayToVectorM(CArray <double>&, CArray <int>&);
+	void VectorToCarrayM(std::vector<std::vector<double>>&, CArray <double>&, CArray <int>&);
+	std::vector<double> CarrayToVectorV(CArray <double>&);
+	void VectorToCarrayV(std::vector<double>&, CArray <double>&);
+	// *******************************************
 	// ***      Matrix     Decompositions      ***
 	// *******************************************
 	void QR(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, bool&);
@@ -266,6 +276,7 @@ protected:
 	void VPC(CArray <double>&, CArray <int>&, int&);
 	void VRE(CArray <double>&, CArray <int>&, int&);
 	// *** Additional functions
+	void QPPSolver();
 	double GetOptimalBandwidth(CArray <double>&);
 	double NumericalIntegration(CArray <double>&, double);
 	void SetUpFDAMatrices(CArray <double>&, CArray <double>&, CArray <int>&, CArray <double>&);
@@ -280,14 +291,23 @@ protected:
 	void GetStatisticalRegressorAnalysis(CArray <double>&);
 	void GetRegressionMetrics(CArray <double>&, CArray <double>&, CArray <double>&);
 	//Neural Network Functions
-	std::vector<int> CModelingandAnalysisofUncertaintyDoc::randsample(int n, int k);
-	void CModelingandAnalysisofUncertaintyDoc::GetNetworkPrediction(const std::vector<std::vector<double>>& X, const int H,
-		const std::vector<double>& w, const std::vector<double>& b,
-		std::vector<std::vector<double>>& F, std::vector<double>& yhat);
-	std::vector<std::vector<double>> CModelingandAnalysisofUncertaintyDoc::zscore(const std::vector<std::vector<double>>& data);
-	double CModelingandAnalysisofUncertaintyDoc::sum_squared_error(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2);
-	void CModelingandAnalysisofUncertaintyDoc::VecTranspose(std::vector<std::vector<double> >& b);
-	void CModelingandAnalysisofUncertaintyDoc::VecTransposeInt(std::vector<std::vector<int> >& b);
+	std::vector<int> randsample(int n, int k);
+	void GetNetworkPrediction(const std::vector<std::vector<double>>& X, const int H,
+		                      const std::vector<double>& w, const std::vector<double>& b,
+		                      std::vector<std::vector<double>>& F, std::vector<double>& yhat);
+	void GetNetworkPredictionParallel(const std::vector<std::vector<double>>& X, const int H,
+		                              const std::vector<double>& w, const std::vector<double>& b,
+		                              std::vector<std::vector<double>>& F, std::vector<double>& yhat);
+	std::vector<std::vector<double>> zscore(const std::vector<std::vector<double>>& data);
+	std::vector<std::vector<double>> zscoreParallel(const std::vector<std::vector<double>>& data);
+	double sum_squared_error(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2);
+	double sum_squared_error_parallel(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2);
+	void VecTranspose(std::vector<std::vector<double> >& b);
+	void VecTransposeInt(std::vector<std::vector<int> >& b);
+	void UpdateBiases(int c, int n_weights, const int M, const int H, const int train,
+		std::vector<double>& yhat, std::vector<double>& private_w, const int eta, std::vector<std::vector<double>>& F,
+		std::vector<std::vector<int>>& Ytrain, int n_biases, std::vector<std::vector<double> >& Xslice, std::vector<double>& private_b,
+		int slice_index, int Ntrain);
 
 	// Generated message map functions
 protected:
@@ -322,9 +342,10 @@ public:
 	afx_msg void OnL2_Regularization();
 	afx_msg void OnKPLS();
 	afx_msg void OnANN();
+	afx_msg void OnQPPSolver();
 	afx_msg void OnANN_MFC();
 	afx_msg void OnANN_MFC_layer1(double learningRate, int epochs, int batchSize,HANDLE hEvent);
-
+	afx_msg void OnANN_batchParallel();
 	afx_msg void OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateOnesample(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateTwosample(CCmdUI* pCmdUI);
