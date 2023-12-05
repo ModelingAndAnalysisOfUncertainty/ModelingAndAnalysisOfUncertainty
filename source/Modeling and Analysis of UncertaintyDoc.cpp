@@ -2673,84 +2673,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnDescriptiveStatistics() {
 	UpdateAllViews(NULL);
 }
 
-void CModelingandAnalysisofUncertaintyDoc::QPPSolver() {
-	quadprogpp::Matrix<double> G;
-	G.resize(2, 2);
-	G[0][0] = 2;
-	G[0][1] = 0;
-	G[1][0] = 0;
-	G[1][1] = 4;
-
-
-	quadprogpp::Vector<double> g0;
-	g0.resize(2);
-	g0[0] = -4;
-	g0[1] = -8;
-
-
-	quadprogpp::Matrix<double> CE;
-	CE.resize(2, 2); // 2 row, 1 column
-	CE[0][0] = 1;
-	CE[0][1] = 1;
-	CE[1][0] = -1;
-	// CE[1][1] = 0;
-	// CE[2][0] = 0;
-
-
-
-	quadprogpp::Vector<double> ce0;
-	ce0.resize(2);
-	ce0[0] = 3;
-	ce0[1] = 0;
-	// ce0[2] = 0;
-
-	quadprogpp::Matrix<double> CI;
-	CI.resize(2, 1);
-	CI[0][0] = 0;
-	CI[0][1] = 0;
-	CI[1][0] = 0;
-	CI[1][1] = 0;
-
-
-	quadprogpp::Vector<double> ci0;
-	ci0.resize(1);
-	ci0[0] = 0;
-	// ci0[1] = 0;
-
-	quadprogpp::Vector<double> x;
-	x.resize(2);
-
-
-	// try {
-	double result = solve_quadprog(G, g0, CE, ce0, CI, ci0, x);
-
-	std::ofstream outdata;
-
-	outdata.open("quadprogpp/qppOutput.txt");
-
-
-	outdata << result << std::endl;
-
-	outdata.close();
-
-
-
-	std::cout << "Optimal value: " << result << std::endl;
-
-
-	//std::cout << "Optimal solution (x): ";
-	//for (int i = 0; i < x.size(); i++) {
-	//	std::cout << x[i] << " ";
-	//}
-	//std::cout << std::endl;
-	// } 
-	// catch (const std::exception &e) {
-	//     std::cerr << "Error: " << e.what() << std::endl;
-	// }
-
-
-	return;
-}
 
 double CModelingandAnalysisofUncertaintyDoc::GetOptimalBandwidth(CArray <double>& sample) {
 	int nObs = (int)sample.GetSize();
@@ -6505,8 +6427,82 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN() {
 }
 
 // Enablers for modeling methods after datafile was read
-void CModelingandAnalysisofUncertaintyDoc::QPPSolver(CCmdUI* pCmdUI) {
-	pCmdUI->Enable(FileOpen);
+void CModelingandAnalysisofUncertaintyDoc::OnQPPSolver() {
+	quadprogpp::Matrix<double> G;
+	G.resize(2, 2);
+	G[0][0] = 2;
+	G[0][1] = 0;
+	G[1][0] = 0;
+	G[1][1] = 4;
+
+
+	quadprogpp::Vector<double> g0;
+	g0.resize(2);
+	g0[0] = -4;
+	g0[1] = -8;
+
+
+	// Constraint Equality LHS
+	quadprogpp::Matrix<double> CE;
+	CE.resize(2, 2); // must be 2 row, 1 column
+	CE[0][0] = 1;
+	CE[0][1] = 1;
+	CE[1][0] = -1;
+	// CE[1][1] = 0;
+	// CE[2][0] = 0;
+
+
+	// Constraint Equality RHS
+	quadprogpp::Vector<double> ce0;
+	ce0.resize(2);
+	ce0[0] = 3;
+	ce0[1] = 0;
+	// ce0[2] = 0;
+
+	// Constraint Inequality LHS
+	quadprogpp::Matrix<double> CI;
+	CI.resize(2, 1);
+	CI[0][0] = 0;
+	CI[0][1] = 0;
+	CI[1][0] = 0;
+	CI[1][1] = 0;
+
+	// Constraint Inequality RHS
+	quadprogpp::Vector<double> ci0;
+	ci0.resize(1);
+	ci0[0] = 0;
+	// ci0[1] = 0;
+
+	quadprogpp::Vector<double> x;
+	x.resize(2);
+
+	double result = solve_quadprog(G, g0, CE, ce0, CI, ci0, x);
+
+	std::ofstream outdata;
+
+	outdata.open("quadprogpp/qppOutput.txt");
+
+
+	outdata << result << std::endl;
+
+	outdata.close();
+
+
+
+	//std::cout << "Optimal value: " << result << std::endl;
+
+
+	//std::cout << "Optimal solution (x): ";
+	//for (int i = 0; i < x.size(); i++) {
+	//	std::cout << x[i] << " ";
+	//}
+	//std::cout << std::endl;
+	// } 
+
+
+
+	return;
+
 }
 void CModelingandAnalysisofUncertaintyDoc::OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI) {
 	pCmdUI->Enable(FileOpen);

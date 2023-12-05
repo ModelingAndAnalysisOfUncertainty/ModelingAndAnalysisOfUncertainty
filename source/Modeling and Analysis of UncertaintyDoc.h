@@ -298,8 +298,8 @@ public:
 	afx_msg void OnL2_Regularization();
 	afx_msg void OnKPLS();
 	afx_msg void OnANN();
+	afx_msg void OnQPPSolver();
 
-	afx_msg void QPPSolver(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateOnesample(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateTwosample(CCmdUI* pCmdUI);
