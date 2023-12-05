@@ -16,6 +16,9 @@
 #include <random>
 #include <chrono>
 
+
+
+
 // SHARED_HANDLERS can be defined in an ATL project implementing preview, thumbnail
 // and search filter handlers and allows sharing of document code with that project.
 #ifndef SHARED_HANDLERS
@@ -35,6 +38,10 @@
 //Dlib for Aritificial Neural Netowrk
 #include <dlib/dnn.h>
 #include <dlib/data_io.h>
+
+// QPP solver
+#include "quadprogpp/QuadProg++.hh"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -70,7 +77,7 @@ BEGIN_MESSAGE_MAP(CModelingandAnalysisofUncertaintyDoc, CDocument)
 	ON_COMMAND(ID_REGULARIZATION_L1NORM, &CModelingandAnalysisofUncertaintyDoc::OnL1_Regularization)
 	ON_COMMAND(ID_REGULARIZATION_L2NORM, &CModelingandAnalysisofUncertaintyDoc::OnL2_Regularization)
 	ON_COMMAND(ID_MACHINELEARNING_KERNELPARTIALLEASTSQUARES, &CModelingandAnalysisofUncertaintyDoc::OnKPLS)
-	ON_COMMAND(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORK, &CModelingandAnalysisofUncertaintyDoc::OnANN)
+	ON_COMMAND(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORK, &CModelingandAnalysisofUncertaintyDoc::OnANN_MFC)
 
 	ON_UPDATE_COMMAND_UI(ID_BASICSTATISTICS_DESCRIPTIVESTATISTICS, &CModelingandAnalysisofUncertaintyDoc::OnUpdateDescriptiveStatistics)
 	ON_UPDATE_COMMAND_UI(ID_HYPOTHESISTESTING_ONESAMPLE, &CModelingandAnalysisofUncertaintyDoc::OnUpdateOnesample)
@@ -813,7 +820,7 @@ void CModelingandAnalysisofUncertaintyDoc::AddingMatrices(CArray <double>& A, CA
 	}
 }
 
-// Adding two matrices : A - B = C
+// Subtracting two matrices : A - B = C
 void CModelingandAnalysisofUncertaintyDoc::SubtractingMatrices(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
 	if ((A_spec.GetAt(0) == B_spec.GetAt(0)) && (A_spec.GetAt(1) == B_spec.GetAt(1))) {
 		int row = A_spec.GetAt(0), col = A_spec.GetAt(1);
@@ -1013,6 +1020,439 @@ void CModelingandAnalysisofUncertaintyDoc::X_X_tr(CArray <double>& A, CArray <in
 	}
 }
 
+// Determining transpose of a matrix A -> A' using multithreading
+void CModelingandAnalysisofUncertaintyDoc::TransposeParallel(CArray <double>& A, CArray <int>& A_spec, CArray <double>& Atrans, CArray <int>& Atrans_spec) {
+	int row = A_spec.GetAt(0), col = A_spec.GetAt(1), pos_1, pos_2;
+	Atrans.RemoveAll(), Atrans_spec.RemoveAll();
+	Atrans.SetSize(A.GetSize()), Atrans_spec.SetSize(3);
+
+	if (A_spec.GetAt(2) == 1) {
+		Atrans_spec.SetAt(0, col), Atrans_spec.SetAt(1, row), Atrans_spec.SetAt(2, 1);
+		#pragma omp parallel for private(pos_1) collapse(2)
+		for (int i = 0; i < row; i++) {
+			for (int j = 0; j <= i; j++) {
+				pos_1 = GetPosition(i, j, A_spec);
+				Atrans.SetAt(pos_1, A.GetAt(pos_1));
+			}
+		}
+	}
+	else if (A_spec.GetAt(2) == 2) {
+		Atrans_spec.SetAt(0, col), Atrans_spec.SetAt(1, row), Atrans_spec.SetAt(2, 3);
+		#pragma omp parallel for private(pos_1, pos_2) collapse(2)
+		for (int i = 0; i < row; i++) {
+			for (int j = 0; j <= i; j++) {
+				pos_1 = GetPosition(j, i, Atrans_spec);
+				pos_2 = GetPosition(i, j, A_spec);
+				Atrans.SetAt(pos_1, A.GetAt(pos_2));
+			}
+		}
+	}
+	else if (A_spec.GetAt(2) == 3) {
+		Atrans_spec.SetAt(0, col), Atrans_spec.SetAt(1, row), Atrans_spec.SetAt(2, 2);
+		#pragma omp parallel for private(pos_1, pos_2) collapse(2)
+		for (int i = 0; i < row; i++) {
+			for (int j = i; j < col; j++) {
+				pos_1 = GetPosition(j, i, Atrans_spec);
+				pos_2 = GetPosition(i, j, A_spec);
+				Atrans.SetAt(pos_1, A.GetAt(pos_2));
+			}
+		}
+	}
+	else {
+		Atrans_spec.SetAt(0, col), Atrans_spec.SetAt(1, row), Atrans_spec.SetAt(2, 0);
+		#pragma omp parallel for private(pos_1, pos_2) collapse(2)
+		for (int i = 0; i < row; i++) {
+			for (int j = 0; j < col; j++) {
+				pos_1 = GetPosition(j, i, A_spec);
+				pos_2 = GetPosition(i, j, A_spec);
+				Atrans.SetAt(pos_1, A.GetAt(pos_2));
+			}
+		}
+	}
+}
+
+
+// Adding two matrices using multithreading : A + B = C
+void CModelingandAnalysisofUncertaintyDoc::AddingMatricesParallel(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
+	if ((A_spec.GetAt(0) == B_spec.GetAt(0)) && (A_spec.GetAt(1) == B_spec.GetAt(1))) {
+		int row = A_spec.GetAt(0), col = A_spec.GetAt(1);
+		double value_1, value_2;
+		C_spec.SetSize(3), C_spec.SetAt(0, row), C_spec.SetAt(1, col);
+		if (A_spec.GetAt(2) == B_spec.GetAt(2)) C_spec.SetAt(2, A_spec.GetAt(2));
+		if (A_spec.GetAt(2) == 0) C.SetSize(static_cast <int64_t>(row * col));
+		else C.SetSize(static_cast <int64_t>(row * (row + 1) / 2));
+		if ((A_spec.GetAt(2) == 1) || (A_spec.GetAt(2) == 2)) {
+			#pragma omp parallel for private(value_1, value_2) collapse(2)
+			for (int i = 0; i < row; i++)
+			{
+				for (int j = 0; j <= i; j++) {
+					value_1 = A.GetAt(GetPosition(i, j, A_spec));
+					value_2 = B.GetAt(GetPosition(i, j, B_spec));
+					C.SetAt(GetPosition(i, j, C_spec), value_1 + value_2);
+				}
+			}
+		}
+		else if (A_spec.GetAt(2) == 3) {
+			#pragma omp parallel for private(value_1, value_2) collapse(2)
+			for (int i = 0; i < row; i++)
+			{
+				for (int j = i; j < col; j++) {
+					value_1 = A.GetAt(GetPosition(i, j, A_spec));
+					value_2 = B.GetAt(GetPosition(i, j, B_spec));
+					C.SetAt(GetPosition(i, j, C_spec), value_1 + value_2);
+				}
+			}
+		}
+		else {
+			#pragma omp parallel for private(value_1, value_2) collapse(2)
+			for (int i = 0; i < row; i++)
+			{
+				for (int j = 0; j < col; j++) {
+					value_1 = A.GetAt(GetPosition(i, j, A_spec));
+					value_2 = B.GetAt(GetPosition(i, j, B_spec));
+					C.SetAt(GetPosition(i, j, C_spec), value_1 + value_2);
+				}
+			}
+		}
+	}
+}
+
+// Subtracting two matrices using multithreading : A - B = C
+void CModelingandAnalysisofUncertaintyDoc::SubtractingMatricesParallel(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
+	if ((A_spec.GetAt(0) == B_spec.GetAt(0)) && (A_spec.GetAt(1) == B_spec.GetAt(1))) {
+		int row = A_spec.GetAt(0), col = A_spec.GetAt(1);
+		double value_1, value_2;
+		C_spec.SetSize(3), C_spec.SetAt(0, row), C_spec.SetAt(1, col);
+		if (A_spec.GetAt(2) == B_spec.GetAt(2)) C_spec.SetAt(2, A_spec.GetAt(2));
+		if (A_spec.GetAt(2) == 0) C.SetSize(static_cast <int64_t>(row * col));
+		else C.SetSize(static_cast <int64_t>(row * (row + 1) / 2));
+		if ((A_spec.GetAt(2) == 1) || (A_spec.GetAt(2) == 2)) {
+			#pragma omp parallel for private(value_1, value_2) collapse(2)
+			for (int i = 0; i < row; i++)
+			{
+				for (int j = 0; j <= i; j++) {
+					value_1 = A.GetAt(GetPosition(i, j, A_spec));
+					value_2 = B.GetAt(GetPosition(i, j, B_spec));
+					C.SetAt(GetPosition(i, j, C_spec), value_1 - value_2);
+				}
+			}
+		}
+		else if (A_spec.GetAt(2) == 3) {
+			#pragma omp parallel for private(value_1, value_2) collapse(2)
+			for (int i = 0; i < row; i++)
+			{
+				for (int j = i; j < col; j++) {
+					value_1 = A.GetAt(GetPosition(i, j, A_spec));
+					value_2 = B.GetAt(GetPosition(i, j, B_spec));
+					C.SetAt(GetPosition(i, j, C_spec), value_1 - value_2);
+				}
+			}
+		}
+		else {
+			#pragma omp parallel for private(value_1, value_2) collapse(2)
+			for (int i = 0; i < row; i++)
+			{
+				for (int j = 0; j < col; j++) {
+					value_1 = A.GetAt(GetPosition(i, j, A_spec));
+					value_2 = B.GetAt(GetPosition(i, j, B_spec));
+					C.SetAt(GetPosition(i, j, C_spec), value_1 - value_2);
+				}
+			}
+		}
+	}
+}
+
+// Computing matrix-vector product using multithreading :  y = A � x 
+void CModelingandAnalysisofUncertaintyDoc::MatrixVectorProductParallel(CArray <double>& A, CArray <int>& A_spec, CArray <double>& x, CArray <double>& y) {
+	if (x.GetSize() == A_spec.GetAt(1)) {
+		y.SetSize(A_spec.GetAt(0));
+		int pos_A;
+		double temp;
+
+		#pragma omp parallel for private(pos_A, temp)
+		for (int i = 0; i < A_spec.GetAt(0); i++) {
+			temp = 0;
+			if ((A_spec.GetAt(2) == 0) || (A_spec.GetAt(2) == 1)) {
+				for (int j = 0; j < A_spec.GetAt(1); j++) {
+					pos_A = GetPosition(i, j, A_spec);
+					temp += A.GetAt(pos_A) * x.GetAt(j);
+				}
+			}
+			else if (A_spec.GetAt(2) == 2) {
+				for (int j = 0; j <= i; j++) {
+					pos_A = GetPosition(i, j, A_spec);
+					temp += A.GetAt(pos_A) * x.GetAt(j);
+				}
+			}
+			else if (A_spec.GetAt(2) == 3) {
+				for (int j = i; j < A_spec.GetAt(1); j++) {
+					pos_A = GetPosition(i, j, A_spec);
+					temp += A.GetAt(pos_A) * x.GetAt(j);
+				}
+			}
+			y.SetAt(i, temp);
+		}
+	}
+}
+
+// Computing matrix product using multithreading : C = A � B 
+void CModelingandAnalysisofUncertaintyDoc::MatrixProductParallel(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
+	if (A_spec.GetAt(1) == B_spec.GetAt(0)) {
+		int row = A_spec.GetAt(0);
+		int col = B_spec.GetAt(1);
+		C_spec.SetSize(3);
+		C_spec.SetAt(0, row);
+		C_spec.SetAt(1, col);
+		C_spec.SetAt(2, 0);
+		int64_t space = static_cast<int64_t>(A_spec.GetAt(0)) * col;
+		C.SetSize(space);
+		int pos_A, pos_B, pos_C;
+		double temp;
+
+		#pragma omp parallel for private(pos_A, pos_B, pos_C, temp) collapse(2)
+		for (int i = 0; i < row; i++) {
+			for (int j = 0; j < col; j++) {
+				temp = 0;
+				for (int k = 0; k < A_spec.GetAt(1); k++) {
+					pos_A = GetPosition(i, k, A_spec);
+					pos_B = GetPosition(k, j, B_spec);
+					temp += A.GetAt(pos_A) * B.GetAt(pos_B);
+				}
+				pos_C = GetPosition(i, j, C_spec);
+				C.SetAt(pos_C, temp);
+			}
+		}
+	}
+}
+
+// Computing transpose of matrix product using multithreading : X_tr_X = X' � X   
+void CModelingandAnalysisofUncertaintyDoc::X_tr_X_Parallel(CArray <double>& X, CArray <int>& X_spec, CArray <double>& X_tr_X, CArray <int>& X_tr_X_spec) {
+	int dim = X_spec.GetAt(1) + 1, pos_X1, pos_X2;
+	int64_t space = static_cast<int64_t>(X_spec.GetAt(1)) * dim;
+	X_tr_X.SetSize((int)(space / 2));
+	X_tr_X_spec.SetSize(3);
+	X_tr_X_spec.SetAt(0, X_spec.GetAt(1));
+	X_tr_X_spec.SetAt(1, X_spec.GetAt(1));
+	X_tr_X_spec.SetAt(2, 1);
+	double temp;
+
+	#pragma omp parallel for private(pos_X1, pos_X2, temp) collapse(2)
+	for (int i = 0; i < X_spec.GetAt(1); i++) {
+		for (int j = 0; j <= i; j++) {
+			temp = (double)0;
+			for (int k = 0; k < X_spec.GetAt(0); k++) {
+				pos_X1 = GetPosition(k, i, X_spec);
+				pos_X2 = GetPosition(k, j, X_spec);
+				temp += X.GetAt(pos_X1) * X.GetAt(pos_X2);
+			}
+			X_tr_X.SetAt(GetPosition(i, j, X_tr_X_spec), temp);
+		}
+	}
+}
+
+// Computing matrix product using multithreading : X_tr_Y = X' � Y        
+void CModelingandAnalysisofUncertaintyDoc::X_tr_Y_Parallel(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
+	if (A_spec.GetAt(0) == B_spec.GetAt(0)) {
+		int dim = A_spec.GetAt(1), pos_A, pos_B;
+		int64_t space = static_cast<int64_t>(B_spec.GetAt(1)) * dim;
+		C.SetSize(space);
+		C_spec.SetSize(3);
+		C_spec.SetAt(0, A_spec.GetAt(1));
+		C_spec.SetAt(1, B_spec.GetAt(1));
+		C_spec.SetAt(2, 0);
+		double temp;
+
+		#pragma omp parallel for private(pos_A, pos_B, temp) collapse(2)
+		for (int i = 0; i < A_spec.GetAt(1); i++) {
+			for (int j = 0; j < B_spec.GetAt(1); j++) {
+				temp = (double)0;
+				for (int k = 0; k < A_spec.GetAt(0); k++) {
+					pos_A = GetPosition(k, i, A_spec);
+					pos_B = GetPosition(k, j, B_spec);
+					temp += A.GetAt(pos_A) * B.GetAt(pos_B);
+				}
+				C.SetAt(GetPosition(i, j, C_spec), temp);
+			}
+		}
+	}
+}
+
+// Computing matrix product using multithreading : X_Y_tr = X � Y'
+void CModelingandAnalysisofUncertaintyDoc::X_Y_tr_Parallel(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec, CArray <double>& C, CArray <int>& C_spec) {
+	if (A_spec.GetAt(1) == B_spec.GetAt(1)) {
+		int dim = A_spec.GetAt(0), pos_A, pos_B;
+		int64_t space = static_cast<int64_t>(B_spec.GetAt(0)) * dim;
+		C.SetSize(space);
+		C_spec.SetSize(3);
+		C_spec.SetAt(0, A_spec.GetAt(0));
+		C_spec.SetAt(1, B_spec.GetAt(0));
+		C_spec.SetAt(2, 0);
+		double temp;
+
+		#pragma omp parallel for private(pos_A, pos_B, temp) collapse(2)
+		for (int i = 0; i < A_spec.GetAt(0); i++) {
+			for (int j = 0; j < B_spec.GetAt(0); j++) {
+				temp = (double)0;
+				for (int k = 0; k < A_spec.GetAt(1); k++) {
+					pos_A = GetPosition(i, k, A_spec);
+					pos_B = GetPosition(j, k, B_spec);
+					temp += A.GetAt(pos_A) * B.GetAt(pos_B);
+				}
+				C.SetAt(GetPosition(i, j, C_spec), temp);
+			}
+		}
+	}
+}
+
+// Computing matrix product using multithreading : X_X_tr = X � X'
+void CModelingandAnalysisofUncertaintyDoc::X_X_tr_Parallel(CArray <double>& A, CArray <int>& A_spec, CArray <double>& B, CArray <int>& B_spec) {
+	int col = A_spec.GetAt(1), row = A_spec.GetAt(0);
+	double temp, value_1, value_2;
+	B.RemoveAll(), B_spec.RemoveAll(), B_spec.SetSize(3);
+	B_spec.SetAt(0, row), B_spec.SetAt(1, row), B_spec.SetAt(2, 1);
+	B.SetSize(static_cast <int64_t>(row * (row + 1) / 2));
+
+	#pragma omp parallel for private(value_1, value_2, temp) collapse(2)
+	for (int i = 0; i < row; i++) {
+		for (int j = 0; j <= i; j++) {
+			temp = 0.0;
+			for (int k = 0; k < col; k++) {
+				value_1 = A.GetAt(GetPosition(i, k, A_spec));
+				value_2 = A.GetAt(GetPosition(j, k, A_spec));
+				temp += value_1 * value_2;
+			}
+			B.SetAt(GetPosition(i, j, B_spec), temp);
+		}
+	}
+}
+
+//Computes the time taken for normal and parallel functions and outputs the speed up of the parallel
+void CModelingandAnalysisofUncertaintyDoc::MatrixParallelTest() {
+	/*
+	Parallel size thresholds & speedup
+
+	Adding
+	Threshold: 350 x 350
+	Speedup with 10000 x 10000: 3.5 times
+
+	Subtracting
+	Threshold: 350 x 350
+	Speedup with 10000 x 10000: 3.5 times
+
+	Vector Product
+	Threshold: 450 x 450
+	Speedup with 10000 x 10000: 7.8 times
+
+	Matrix product
+	Threshold: 60 x 60
+	Speedup with 1000 x 1000 (100000 takes too long): 4 times
+
+	X_tr_X
+	Threshold: 80 x 80
+	Speedup with 1000 x 1000: 7.3 times
+
+	X_tr_Y
+	Threshold: 65 x 65
+	Speedup with 1000 x 1000: 8.9 times
+
+	X_Y_tr
+	Threshold: 75 x 75
+	Speedup with 1000 x 1000: 10.87 times
+
+	X_X_tr
+	Threshold: 110 x 110
+	Speedup with 1000 x 1000: 5.65 times
+	*/
+
+	//Setup
+	std::ofstream FILE;
+	FILE.open("matrix_Test.txt");
+	int size = 1000;
+	FILE << "Matrix Size: " << size << "\n";
+	CArray <double> A, B, C, D, x, y, z;
+	CArray <int> A_Spec, B_Spec, C_Spec, D_Spec;
+	A_Spec.SetSize(3), A_Spec.SetAt(0, size), A_Spec.SetAt(1, size), A_Spec.SetAt(2, 0);
+	B_Spec.SetSize(3), B_Spec.SetAt(0, size), B_Spec.SetAt(1, size), B_Spec.SetAt(2, 0);
+
+	A.SetSize(static_cast <int64_t>(size * size));
+	B.SetSize(static_cast <int64_t>(size * size));
+	x.SetSize(static_cast <int64_t>(size));
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size; j++) {
+			A.SetAt(GetPosition(i, j, A_Spec), i);
+			B.SetAt(GetPosition(i, j, B_Spec), i);
+		}
+		x.SetAt(i, i);
+	}
+
+	//For GausJorden Testing with matrix of 3x3
+	/*
+	A.SetAt(GetPosition(0, 0, A_Spec), 1);
+	A.SetAt(GetPosition(0, 1, A_Spec), 0);
+	A.SetAt(GetPosition(0, 2, A_Spec), 0);
+	A.SetAt(GetPosition(1, 0, A_Spec), 0);
+	A.SetAt(GetPosition(1, 1, A_Spec), 1);
+	A.SetAt(GetPosition(1, 2, A_Spec), 0);
+	A.SetAt(GetPosition(2, 0, A_Spec), 0);
+	A.SetAt(GetPosition(2, 1, A_Spec), 0);
+	A.SetAt(GetPosition(2, 2, A_Spec), 1);
+	*/
+
+	//Normal
+	auto t_start = std::chrono::high_resolution_clock::now();
+	std::clock_t c_start = std::clock();
+	//AddingMatrices(A, A_Spec, B, B_Spec, C, C_Spec);
+	//SubtractingMatrices(A, A_Spec, B, B_Spec, C, C_Spec);
+	//MatrixProduct(A, A_Spec, B, B_Spec, C, C_Spec);
+	//MatrixVectorProduct(A, A_Spec, x, y);
+	//X_tr_X(A, A_Spec, C, C_Spec);
+	//X_tr_Y(A, A_Spec, B, B_Spec, C, C_Spec);
+	//X_Y_tr(A, A_Spec, B, B_Spec, C, C_Spec);
+	//X_X_tr(A, A_Spec, C, C_Spec);
+	//ManipulateRowForwardPath(A, A_Spec, 500, 500);
+	//ManipulateRowBackwardPath(A, A_Spec, 500, 500);
+	//GaussJordanElimination(A, A_Spec, y, x);
+	auto t_end = std::chrono::high_resolution_clock::now();
+	std::clock_t c_end = std::clock();
+	auto elapsed_time_ms_normal = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
+	FILE << "Finished time of normal clock: " << elapsed_time_ms_normal << "ms" << std::endl;
+	FILE << "Finished time of normal CPU: " << 1000.0 * (c_end - c_start) / CLOCKS_PER_SEC << "ms\n\n";
+
+	//Parallel
+	t_start = std::chrono::high_resolution_clock::now();
+	c_start = std::clock();
+	//AddingMatricesParallel(A, A_Spec, B, B_Spec, D, D_Spec);
+	//SubtractingMatricesParallel(A, A_Spec, B, B_Spec, D, D_Spec);
+	//MatrixProductParallel(A, A_Spec, B, B_Spec, D, D_Spec);
+	//MatrixVectorProductParallel(A, A_Spec, x, z);
+	//X_tr_X_Parallel(A, A_Spec, D, D_Spec);
+	//X_tr_Y_Parallel(A, A_Spec, B, B_Spec, D, D_Spec);
+	//X_Y_tr_Parallel(A, A_Spec, B, B_Spec, D, D_Spec);
+	//X_X_tr_Parallel(A, A_Spec, D, D_Spec);
+	//ManipulateRowForwardPathParallel(B, B_Spec, 500, 500);
+	//ManipulateRowBackwardPathParallel(B, B_Spec, 500, 500);
+	//GaussJordanEliminationParallel(A, A_Spec, z, x);
+	t_end = std::chrono::high_resolution_clock::now();
+	c_end = std::clock();
+	auto elapsed_time_ms_parallel = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
+
+	//Speed up
+	double difference = double(elapsed_time_ms_normal) / double(elapsed_time_ms_parallel);
+	FILE << "Finished time of parallel clock: " << elapsed_time_ms_parallel << "ms" << std::endl;
+	FILE << "Finished time of parallel CPU: " << 1000.0 * (c_end - c_start) / CLOCKS_PER_SEC << "ms\n\n";
+	FILE << "Parallel is " << std::fixed << std::setprecision(2) << difference << " times faster" << "\n";
+
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size; j++) {
+			//assert(C.GetAt(GetPosition(i, j, C_Spec)) == D.GetAt(GetPosition(i, j, D_Spec)));
+			assert(A.GetAt(GetPosition(i, j, A_Spec)) == B.GetAt(GetPosition(i, j, B_Spec)));
+		}
+		//assert(y.GetAt(i) == z.GetAt(i));
+	}
+	FILE << "\nResults are the same\n";
+	FILE.close();
+}
+
 // *** Gauss-Jordan elimination : A톥=y (x unknown)
 // *** Modules : 1 -> Set up pivot for ith column  
 // ***           2 -> row operation  (forward path)
@@ -1066,11 +1506,44 @@ void CModelingandAnalysisofUncertaintyDoc::ManipulateRowForwardPath(CArray <doub
 	C.SetAt(pos_C, (double)0);
 }
 
+// Converts the matrix A in the Gauss-Jordan scheme 'C' into a upper triangular form in multithreading
+void CModelingandAnalysisofUncertaintyDoc::ManipulateRowForwardPathParallel(CArray <double>& C, CArray <int>& C_spec, int row, int col) {
+	CArray <double> c;
+	int pos_C = GetPosition(row, col, C_spec);
+	double Cji = C.GetAt(pos_C), temp;
+	GetRow(C, C_spec, c, col);
+	#pragma omp parallel for private(temp, pos_C)
+	for (int i = col + 1; i < C_spec.GetAt(1); i++) {
+		pos_C = GetPosition(row, i, C_spec);
+		temp = C.GetAt(pos_C) - Cji * c.GetAt(i);
+		C.SetAt(pos_C, temp);
+	}
+	pos_C = GetPosition(row, col, C_spec);
+	C.SetAt(pos_C, (double)0);
+}
+
 // Converts the upper triangular form of A in C to the identity matrix
 void CModelingandAnalysisofUncertaintyDoc::ManipulateRowBackwardPath(CArray <double>& C, CArray <int>& C_spec, int row, int col) {
 	int pos_C = GetPosition(row, col, C_spec), pos;
 	double Cij = C.GetAt(pos_C), temp = 0;
 	int dim = C_spec.GetAt(1) - C_spec.GetAt(0);
+	for (int i = 0; i < dim; i++) {
+		pos_C = GetPosition(row, C_spec.GetAt(0) + i, C_spec);
+		pos = GetPosition(col, C_spec.GetAt(0) + i, C_spec);
+		temp = C.GetAt(pos_C) - Cij * C.GetAt(pos);
+		pos = GetPosition(row, C_spec.GetAt(0) + i, C_spec);
+		C.SetAt(pos, temp);
+	}
+	pos_C = GetPosition(row, col, C_spec);
+	C.SetAt(pos_C, (double)0);
+}
+
+// Converts the upper triangular form of A in C to the identity matrix in multithreading
+void CModelingandAnalysisofUncertaintyDoc::ManipulateRowBackwardPathParallel(CArray <double>& C, CArray <int>& C_spec, int row, int col) {
+	int pos_C = GetPosition(row, col, C_spec), pos;
+	double Cij = C.GetAt(pos_C), temp = 0;
+	int dim = C_spec.GetAt(1) - C_spec.GetAt(0);
+	#pragma omp parallel for private(temp, pos_C, pos)
 	for (int i = 0; i < dim; i++) {
 		pos_C = GetPosition(row, C_spec.GetAt(0) + i, C_spec);
 		pos = GetPosition(col, C_spec.GetAt(0) + i, C_spec);
@@ -1181,6 +1654,114 @@ void CModelingandAnalysisofUncertaintyDoc::GaussJordanElimination(CArray<double>
 					C.SetAt(pos_C, C.GetAt(pos_C) / Cii);
 				}
 				for (int j = i - 1; j >= 0; j--) ManipulateRowBackwardPath(C, C_spec, j, i);
+			}
+			for (int i = 0; i < row; i++) {
+				pos_C = GetPosition(i, row, C_spec);
+				x.SetAt(i, C.GetAt(pos_C));
+			}
+		}
+	}
+}
+
+// Computes the Gauss-Jordan elimination with multithreading
+void CModelingandAnalysisofUncertaintyDoc::GaussJordanEliminationParallel(CArray<double>& A, CArray<int>& A_spec, CArray<double>& x, CArray<double>& y) {
+	if ((A_spec.GetAt(0) == A_spec.GetAt(1)) && (y.GetSize() == A_spec.GetAt(0))) {
+		x.SetSize(A_spec.GetAt(1));
+		CArray <double> C;
+		int dim = A_spec.GetAt(1) + 1;
+		int64_t space = static_cast<int64_t>(A_spec.GetAt(0)) * dim;
+		C.SetSize(space);
+		CArray <int> C_spec;
+		C_spec.SetSize(3);
+		C_spec.SetAt(0, A_spec.GetAt(0));
+		C_spec.SetAt(1, A_spec.GetAt(1) + 1);
+		C_spec.SetAt(2, 0);
+		int row = A_spec.GetAt(0);
+		int col = A_spec.GetAt(1);
+		int pos_C, pos_A;
+		if ((A_spec.GetAt(2) == 0) || (A_spec.GetAt(2) == 1)) {
+			// unspecified or symmetric matrix
+			for (int i = 0; i < row; i++) {
+				for (int j = 0; j < col; j++) {
+					pos_C = GetPosition(i, j, C_spec);
+					pos_A = GetPosition(i, j, A_spec);
+					C.SetAt(pos_C, A.GetAt(pos_A));
+				}
+				pos_C = GetPosition(i, row, C_spec);
+				C.SetAt(pos_C, y.GetAt(i));
+			}
+			for (int i = 0; i < row; i++) {
+				SetUpPivot(C, C_spec, i);
+				for (int j = i + 1; j < row; j++) ManipulateRowForwardPathParallel(C, C_spec, j, i);
+			}
+			for (int i = row - 1; i > 0; i--) {
+				for (int j = i - 1; j >= 0; j--) ManipulateRowBackwardPathParallel(C, C_spec, j, i);
+			}
+			for (int i = 0; i < row; i++) {
+				pos_C = GetPosition(i, row, C_spec);
+				x.SetAt(i, C.GetAt(pos_C));
+			}
+			for (int i = 0; i < row; i++) {
+				for (int j = 0; j <= col; j++) {
+					pos_C = GetPosition(i, j, C_spec);
+				}
+			}
+		}
+		else if (A_spec.GetAt(2) == 2) {
+			// lower triangular matrix
+			for (int i = 0; i < row; i++) {
+				for (int j = 0; j < col; j++) {
+					if (j <= i) {
+						pos_C = GetPosition(i, j, C_spec);
+						pos_A = GetPosition(i, j, A_spec);
+						C.SetAt(pos_C, A.GetAt(pos_A));
+					}
+					else {
+						pos_C = GetPosition(i, j, C_spec);
+						C.SetAt(pos_C, (double)0);
+					}
+				}
+				pos_C = GetPosition(i, row, C_spec);
+				C.SetAt(pos_C, y.GetAt(i));
+			}
+			for (int i = 0; i < row; i++) {
+				pos_C = GetPosition(i, i, C_spec);
+				double Cii = C.GetAt(pos_C);
+				C.SetAt(pos_C, (double)1);
+				pos_C = GetPosition(i, row, C_spec);
+				C.SetAt(pos_C, C.GetAt(pos_C) / Cii);
+				for (int j = i + 1; j < row; j++) ManipulateRowForwardPathParallel(C, C_spec, j, i);
+			}
+			for (int i = 0; i < row; i++) {
+				pos_C = GetPosition(i, row, C_spec);
+				x.SetAt(i, C.GetAt(pos_C));
+			}
+		}
+		else {
+			// upper triangular matrix
+			for (int i = 0; i < row; i++) {
+				for (int j = 0; j < col; j++) {
+					if (j >= i) {
+						pos_C = GetPosition(i, j, C_spec);
+						pos_A = GetPosition(i, j, A_spec);
+						C.SetAt(pos_C, A.GetAt(pos_A));
+					}
+					else {
+						pos_C = GetPosition(i, j, C_spec);
+						C.SetAt(pos_C, (double)0);
+					}
+				}
+				pos_C = GetPosition(i, row, C_spec);
+				C.SetAt(pos_C, y.GetAt(i));
+			}
+			for (int i = row - 1; i >= 0; i--) {
+				pos_C = GetPosition(i, i, C_spec);
+				double Cii = C.GetAt(pos_C);
+				for (int j = i; j < col + 1; j++) {
+					pos_C = GetPosition(i, j, C_spec);
+					C.SetAt(pos_C, C.GetAt(pos_C) / Cii);
+				}
+				for (int j = i - 1; j >= 0; j--) ManipulateRowBackwardPathParallel(C, C_spec, j, i);
 			}
 			for (int i = 0; i < row; i++) {
 				pos_C = GetPosition(i, row, C_spec);
@@ -2665,6 +3246,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnDescriptiveStatistics() {
 	}
 	UpdateAllViews(NULL);
 }
+
 
 double CModelingandAnalysisofUncertaintyDoc::GetOptimalBandwidth(CArray <double>& sample) {
 	int nObs = (int)sample.GetSize();
@@ -5558,7 +6140,7 @@ void record_acc(const std::string& message) {
    Learning rate, total number of epoch, batch size, and the frequency
    of training status */
 
-// Data Structure for user input
+   // Data Structure for user input
 struct ANNStruct {
 	double lr;
 	int total_epoch;
@@ -6323,9 +6905,9 @@ void ANN_EEA5(double lr, int total_epoch, int batch_sizes, HANDLE hEvent) {
 	// Calculate total number of mini-batches
 	int total_batches = (training_data.size() + batch_size - 1) / batch_size;
 
-	for (int epoch = 0; epoch < num_epochs; ++epoch){
+	for (int epoch = 0; epoch < num_epochs; ++epoch) {
 		// Loop over mini-batches
-		for (int batch_idx = 0; batch_idx < total_batches; ++batch_idx){
+		for (int batch_idx = 0; batch_idx < total_batches; ++batch_idx) {
 			// clear the previous batch
 			batch_data.clear();
 			batch_labels.clear();
@@ -6333,7 +6915,7 @@ void ANN_EEA5(double lr, int total_epoch, int batch_sizes, HANDLE hEvent) {
 			// Create a batch
 			int start_idx = batch_idx * batch_size;
 			batch_loss = 0.0;
-			for (int idx = start_idx; idx < std::min(start_idx + batch_size, (int)training_data.size()); ++idx){
+			for (int idx = start_idx; idx < std::min(start_idx + batch_size, (int)training_data.size()); ++idx) {
 				batch_data.push_back(training_data[idx]);
 				batch_labels.push_back(training_labels[idx]);
 			}
@@ -6548,7 +7130,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN() {
 	pData->total_epoch = epoch_num;
 	pData->batch_sizes = batch_num;
 	pData->hEvent = hEvent;
-	
+
 	if (Selection.m_selectedTask == 1) {
 		AfxBeginThread(ANN_EEA1_ThreadProc, pData);
 	}
@@ -6577,7 +7159,979 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN() {
 	CloseHandle(hEvent);
 }
 
+// *******************************************
+// ***      Matrix  Format  Conversion     ***
+// *******************************************
+
+// These helper functions are for ANN, where they convert CArray/2D Vector Matrixs and vectors.
+// Two functions' return type are void because MFC prevent CArray from shallow copying. 
+
+// Matrix helper function that convert the CArray to 2D Vector
+// Input: 1D cArray Matrix, 1D cArray Matrix Spec
+// Output: 2D std Vector Matrix
+// Usage:
+// std::vector<std::vector<double>> myVMatrix = CarrayToVectorM(M, M_spec);
+std::vector<std::vector<double>> CModelingandAnalysisofUncertaintyDoc::CarrayToVectorM(CArray <double>& M, CArray <int>& M_spec) {
+	// std 2D vector to be returned
+	std::vector<std::vector<double>> matrix;
+	// Temp CArray to get a row
+	CArray<double> rowArray;
+	int numRows = M_spec.GetAt(0);
+
+	// For each row in the matrix, copy the row to 2D vector
+	for (int i = 0; i < numRows; ++i) {
+		GetRow(M, M_spec, rowArray, i);
+		std::vector<double> row(rowArray.GetSize());
+		for (int j = 0; j < rowArray.GetSize(); ++j) {
+			row[j] = rowArray.GetAt(j);
+		}
+		matrix.push_back(row);
+	}
+
+	return matrix;
+}
+
+// Matrix helper function that convert the 2D Vector Matrix to CArray Matrix
+// Input: 2D std Vector, 1D Carray M, 1D Carray M_spec
+// Usage:
+/* std::vector<double> myVector = {{1, 2, 3}, {3, 4, 5}, {6, 7, 8}};
+   CArray<double> myCArray, myCArray_spec;
+   VectorToCarrayM(myVector, myCArray, myCArray_spec);
+*/
+void CModelingandAnalysisofUncertaintyDoc::VectorToCarrayM(std::vector<std::vector<double>>& A, CArray <double>& M, CArray <int>& M_spec) {
+	// Clear any existing data in M and M_spec
+	M.RemoveAll();
+	M_spec.RemoveAll();
+
+	// Determine the dimensions of the matrix A
+	int numRows = A.size();
+	int numCols = A.empty() ? 0 : A[0].size();
+
+	// Populate M_spec with matrix specifications
+	M_spec.Add(numRows); // Number of rows
+	M_spec.Add(numCols); // Number of columns
+	M_spec.Add(0);       // Matrix type: 0 for general matrix
+
+	// Populate M with the data from the 2D vector A
+	for (const auto& row : A) {
+		for (double val : row) {
+			M.Add(val);
+		}
+	}
+}
+
+// Vector helper function that convert the CArray to Vector
+// Input: 1D cArray
+// Output: 1D std vector
+// Usage:
+// std::vector<double> myVector = VectorToCarrayV(myCArray)
+std::vector<double> CModelingandAnalysisofUncertaintyDoc::CarrayToVectorV(CArray <double>& V) {
+	// Get the size of the target vector
+	std::vector<double> vector(V.GetSize());
+	// Copy into CArray
+	for (int i = 0; i < V.GetSize(); ++i) {
+		vector[i] = V.GetAt(i);
+	}
+	return vector;
+}
+
+// Vector helper function that convert the Vector to CArray
+// Input: 1D vector, 1D CArrray
+// Output: None
+// Usage:
+/* std::vector<double> myVector = {1, 2, 3};
+   CArray<double> myCArray;
+   VectorToCarrayV(myVector, myCArray)
+*/
+ void CModelingandAnalysisofUncertaintyDoc::VectorToCarrayV(std::vector<double>& V, CArray <double>& output) {
+	// Clear the CArray
+	output.RemoveAll();
+	// Set Size for CArray
+	output.SetSize(V.size());
+	// Copying from vector to CArray vector
+	for (int i = 0; i < V.size(); ++i) {
+		output[i] = V[i];
+	}
+}
+
+// *******************************************
+// ***                ANN                  ***
+// *******************************************
+// Function to calculate the sum of squared errors
+double CModelingandAnalysisofUncertaintyDoc::sum_squared_error(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2) {
+	double error = 0.0;
+	int numRows = Y1.size();
+	int numCols = Y1[0].size();
+
+	for (int i = 0; i < numRows; ++i) {
+		for (int j = 0; j < numCols; ++j) {
+			error += pow(Y1[i][j] - Y2[i][j], 2);
+		}
+	}
+	return error / (numRows * numCols);
+}
+
+// Function to calculate the sum of squared errors in parallel
+double CModelingandAnalysisofUncertaintyDoc::sum_squared_error_parallel(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2) {
+	double error = 0.0;
+	int numRows = Y1.size();
+	int numCols = Y1[0].size();
+
+	#pragma omp parallel for reduction(+:error)
+	for (int i = 0; i < numRows; ++i) {
+		for (int j = 0; j < numCols; ++j) {
+			error += pow(Y1[i][j] - Y2[i][j], 2);
+		}
+	}
+	return error / (numRows * numCols);
+}
+
+// Function to calculate z-score normalization
+std::vector<std::vector<double>> CModelingandAnalysisofUncertaintyDoc::zscore(const std::vector<std::vector<double>>& data) {
+	std::vector<std::vector<double>> normalized;
+	int numRows = data.size();
+	int numCols = data[0].size();
+
+	for (int j = 0; j < numCols; ++j) {
+		double mean = 0.0;
+		double stdDev = 0.0;
+		for (int i = 0; i < numRows; ++i) {
+			mean += data[i][j];
+		}
+		mean /= numRows;
+		for (int i = 0; i < numRows; ++i) {
+			stdDev += pow(data[i][j] - mean, 2);
+		}
+		stdDev = sqrt(stdDev / (numRows - 1));
+
+		std::vector<double> column;
+		for (int i = 0; i < numRows; ++i) {
+			double normalizedValue = (data[i][j] - mean) / stdDev;
+			column.push_back(normalizedValue);
+		}
+		normalized.push_back(column);
+	}
+
+	return normalized;
+}
+
+// Function to calculate z-score normalization in parallel
+std::vector<std::vector<double>> CModelingandAnalysisofUncertaintyDoc::zscoreParallel(const std::vector<std::vector<double>>& data) {
+	std::vector<std::vector<double>> normalized;
+	int numRows = data.size();
+	int numCols = data[0].size();
+
+	double mean = 0.0;
+	double stdDev = 0.0;
+	int i = 0;
+	std::vector<double> column;
+	double normalizedValue;
+	#pragma omp parallel for private(mean, stdDev, i, column, normalizedValue)
+	for (int j = 0; j < numCols; ++j) {
+		for (i = 0; i < numRows; ++i) {
+			mean += data[i][j];
+		}
+		mean /= numRows;
+		for (i = 0; i < numRows; ++i) {
+			stdDev += pow(data[i][j] - mean, 2);
+		}
+		stdDev = sqrt(stdDev / (numRows - 1));
+		
+		for (i = 0; i < numRows; ++i) {
+			normalizedValue = (data[i][j] - mean) / stdDev;
+			column.push_back(normalizedValue);
+		}
+		#pragma omp critical
+		normalized.push_back(column);
+	}
+
+	return normalized;
+}
+
+// Function to get a random sample from a vector
+std::vector<int> CModelingandAnalysisofUncertaintyDoc::randsample(int n, int k) {
+	std::vector<int> indices(n);
+	for (int i = 0; i < n; ++i) {
+		indices[i] = i;
+	}
+	std::random_shuffle(indices.begin(), indices.end());
+	indices.resize(k);
+	return indices;
+}
+
+void CModelingandAnalysisofUncertaintyDoc::VecTranspose(std::vector<std::vector<double> >& b)
+{
+	if (b.size() == 0)
+		return;
+
+	std::vector<std::vector<double> > trans_vec(b[0].size(), std::vector<double>());
+
+	for (int i = 0; i < b.size(); i++)
+	{
+		for (int j = 0; j < b[i].size(); j++)
+		{
+			trans_vec[j].push_back(b[i][j]);
+		}
+	}
+
+	b = trans_vec;    // <--- reassign here
+}
+void CModelingandAnalysisofUncertaintyDoc::VecTransposeInt(std::vector<std::vector<int> >& b)
+{
+	if (b.size() == 0)
+		return;
+
+	std::vector<std::vector<int> > trans_vec(b[0].size(), std::vector<int>());
+
+	for (int i = 0; i < b.size(); i++)
+	{
+		for (int j = 0; j < b[i].size(); j++)
+		{
+			trans_vec[j].push_back(b[i][j]);
+		}
+	}
+
+	b = trans_vec;    // <--- reassign here
+}
+
+void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
+	// Define constants
+	const int N = n_Obs;
+	const int M = n_Var - 1;
+	const int C = n_classes;
+	const int H = 5;
+	const int n_epochs = 1000;
+	const int train = 20;
+	const double eta = 1e-1 / train;  
+	int batch_size = 5;
+	// Initialize random number generator seed
+	std::srand(1);
+
+	CArray<double> Data0, bar, std;
+	Data0.RemoveAll();
+	bar.RemoveAll();
+	std.RemoveAll();
+	StandardizeDataMatrix(Data0, bar, std);
+
+	//std::ofstream FILE_CHECK;
+	//FILE_CHECK.open("check_file.txt");
+
+	std::vector<std::vector<double>> X(n_Obs, std::vector<double>(n_Var-1));
+	std::vector<double> Input_Y(n_Obs);
+
+	for (int i = 0; i < n_Obs * (n_Var-1); i++) {
+		int row = i % n_Obs;
+		int col = i / n_Obs;
+		X[row][col] = Data0[i];
+	}
+	for (int i = 0; i < n_Obs; i++) {
+		Input_Y[i] = Data[n_Obs * (n_Var - 1) + i];
+	}
+
+	std::vector<std::vector<int>> Y(n_Obs, std::vector<int>(C));
+	for (int i = 0; i < n_Obs; i++) {
+		Y[i][(Input_Y[i] - 1)] = 1;
+	}
+	//FILE_CHECK << "n_Obs: " << n_Obs << "\nn_Var: " << n_Var << "\nn_Classes: " << n_classes << "\n";
+	//FILE_CHECK.close();
+
+
+	//VecTranspose(Y);
+
+	// Initialize weight (w) and bias (b) matrices for the neural network
+	//n_weights = 20; n_biases = 6;
+	int n_weights = H * (M + 1);
+	int n_biases = H + 1;
+
+	const double trainFraction = 0.85;
+
+	// Calculate Ntrain as described in MATLAB
+	int Ntrain = static_cast<int>(round(N * trainFraction));
+	// Vector of 0-3000 shuffled
+
+	int Ntest = N - Ntrain;
+	std::vector<std::vector<double>> Xtrain(Ntrain, std::vector<double>(M));
+	std::vector<std::vector<int>> Ytrain(Ntrain, std::vector<int>(C));
+	std::vector<std::vector<double>> Xtest(Ntest, std::vector<double>(M));
+	std::vector<std::vector<int>> Ytest(Ntest, std::vector<int>(C));
+	std::vector<int> index = randsample(N, N);
+
+	for (int i = 0; i < Ntrain; i++) {
+		Xtrain[i] = X[index[i]];
+		for (int c = 0; c < C; c++) {
+			Ytrain[i][c] = Y[index[i]][c];
+		}
+	}
+	for (int i = Ntrain; i < N; i++) {
+		Xtest[i - Ntrain] = X[index[i]];
+		for (int c = 0; c < C; c++) {
+			Ytest[i - Ntrain][c] = Y[index[i]][c];
+		}
+	}
+	std::ofstream FILE_CHECK;
+	FILE_CHECK.open("check_file.txt");
+
+	for (int i = 0; i < Ytest.size(); i++) {
+		for (int j = 0; j < Ytest[i].size(); j++) {
+			FILE_CHECK << Ytest[i][j] << ", ";
+		}
+		FILE_CHECK << "\n";
+	}
+	FILE_CHECK.close();
+	// 1x60, 1x18
+	std::vector<double> w(C * n_weights);
+	std::vector<double> b(C * n_biases);
+
+	// Looks like matlab code ?? 
+	for (int i = 0; i < C * n_weights; ++i) {
+		w[i] = 0.2 * static_cast<double>(std::rand()) / RAND_MAX - 0.1;
+	}
+
+	for (int i = 0; i < C * n_biases; ++i) {
+		b[i] = 0.2 * static_cast<double>(std::rand()) / RAND_MAX - 0.1;
+	}
+
+	// Calculates spe_old
+	double spe_old = 0.0;
+	for (int c = 0; c < C; ++c) {
+		for (int i = 0; i < Ntest; ++i) {
+			spe_old += std::pow(Ytest[i][c], 2);
+		}
+	}
+	// Might just be 1/3
+	spe_old /= N;
+
+	// Initialize MIN and other variables
+	double MIN = 1e7;
+	//double eta = 1e-1 / train;
+
+	// 450x3 matrix of 0's
+	std::vector<std::vector<double>> yhat0(Ntest, std::vector<double>(C, 0.0));
+	//Need to fix
+	/*
+	// Initialize some variables for tracking training progress
+	*/
+
+	// Create variables for Yhat0 and delta0
+	// These are both 450x3 uninitialized matrices
+	std::vector<std::vector<double>> Yhat0(Ntest, std::vector<double>(C));
+	std::vector<std::vector<double>> delta0(Ntest, std::vector<double>(C));
+
+	std::ofstream FILE;
+	FILE.open("outfile.txt");
+	int slice_index = 0;
+	// Iterate through 200000 times
+	for (int epoch = 1; epoch <= n_epochs; ++epoch) {
+		double spe_new = 0.0;
+		// Iterate through three times
+		for (int c = 0; c < C; ++c) {
+			//Draw 20 random numbers from 0-2550
+			std::vector<int> index = randsample(Ntrain, train);
+			slice_index += train;
+			slice_index %= Ntrain;
+			// Random numbers from w and b somehow
+			std::vector<double> weights(w.begin() + c * n_weights, w.begin() + (c + 1) * n_weights);
+			std::vector<double> biases(b.begin() + c * n_biases, b.begin() + (c + 1) * n_biases);
+
+			// Get network predictions for the training data
+			//CString version;
+			//version.Append(L"classification");
+			//What is F and yhat
+			// F = 1000x5
+			std::vector<std::vector<double>> F = std::vector<std::vector<double>>(train, std::vector<double>(H, 0.0));
+			std::vector<double> yhat = std::vector<double>(train, 0.0);
+
+			std::vector<std::vector<double> > Xslice;
+			/*for (int i = 0; i < train; i++)
+				Xslice.push_back(Xtrain[index[i]]);*/
+			for (int i = slice_index; i < slice_index + train; i++) {
+				if (i >= Ntrain) {
+					Xslice.push_back(Xtrain[i % Ntrain]);
+					continue;
+				}
+				Xslice.push_back(Xtrain[i]);
+			}
+
+			GetNetworkPrediction(Xslice, H, weights, biases, F, yhat);
+			/*for (int i = 0; i < yhat.size(); i++) {
+				FILE << yhat[i] << ", ";
+			}
+			FILE << "\n";*/
+			// Compute the error (d) for the current class
+			//If we replaced Ytrain with Y slice we would be chilling
+			std::vector<double> d(train, 0.0);
+			/*for (int i = 0; i < train; ++i) {
+				d[i] = Ytrain[index[i]][c] - yhat[i];
+			}*/
+			int d_index = 0;
+			for (int i = slice_index; i < slice_index + train; i++) {
+				if (i >= Ntrain) {
+					d[d_index] = Ytrain[i % Ntrain][c] - yhat[d_index];
+					continue;
+				}
+				d[d_index] = Ytrain[i][c] - yhat[d_index];
+				d_index++;
+			}
+
+
+			// Update weights and biases
+			int pos = c * n_weights + M * H;
+			std::vector<double> dphi_t(train, 0.0);
+			for (int i = 0; i < train; ++i) {
+				dphi_t[i] = yhat[i] * (1.0 - yhat[i]);
+			}
+
+			// Update weights connecting the hidden to the output layer
+			for (int h = 0; h < H; ++h) {
+				double sum = 0.0;
+				for (int i = 0; i < d.size(); i++) {
+					sum += dphi_t[i] * F[i][h] * d[i] * eta;
+				}
+				w[pos + h] += sum;
+			}
+
+			// Update bias term connecting hidden to output layer
+			int posB = c * H + (H + 1);
+			double sumB = 0.0;
+			for (int i = 0; i < train; i++)
+				sumB += dphi_t[i] * d[i] * eta;
+			b[posB] += sumB;
+
+			// Update weights connecting the input to the hidden layer
+			for (int h = 0; h < H; ++h) {
+				std::vector<double> dphi_fh(train, 0.0);
+				for (int i = 0; i < train; ++i) {
+					dphi_fh[i] = F[i][h] * (1.0 - F[i][h]);
+				}
+
+				for (int j = 0; j < M; ++j) {
+					double sumDphi = 0;
+					int posW = c * n_weights + j * H + h;
+					for (int i = 0; i < train; ++i) {
+						sumDphi += d[i] * (dphi_t[i] * dphi_fh[i] * Xslice[i][j]);
+					}
+					w[posW] += eta * w[c * n_weights + M * H + h] * sumDphi;
+				}
+
+				int posB = c * n_biases + h;
+				double sumB = 0;
+				for (int i = 0; i < train; i++) {
+					sumB += d[i] * (dphi_t[i] * dphi_fh[i]);
+				}
+				b[posB] += eta * w[c * n_weights + M * H + h] * sumB;
+			}
+
+			// Update yhat0 for the current class (TODO: Implement GetNetworkPrediction)
+			std::vector<double> yhat0(Ntest, 0.0);
+			std::vector<std::vector<double> > Ftemp = std::vector<std::vector<double>>(Ntest, std::vector<double>(H, 0.0));
+			GetNetworkPrediction(Xtest, H, weights, biases, Ftemp, yhat0);
+			
+
+			/*for (int i = 0; i < yhat0.size(); i++) {
+				FILE << yhat0[i] << ", ";
+			}
+			FILE << "\n";*/
+
+			// Compute delta0 for the current class
+			std::vector<double> delta0(Ntest, 0.0);
+			double sumDelta = 0;
+			for (int i = 0; i < Ntest; ++i) {
+				delta0[i] = Ytest[i][c] - yhat0[i];
+				sumDelta += delta0[i] * delta0[i];
+			}
+			// Update spe_new for the current class
+			spe_new += sumDelta / Ntest;
+			if (spe_new < MIN) {
+				for (int i = 0; i < yhat0.size(); i++) {
+					Yhat0[i][c] = yhat0[i];
+				}
+			}
+		}
+
+		// Check if spe_new is smaller than MIN and update wopt, bopt, and Yhat0 accordingly
+		if (spe_new < MIN) {
+			std::vector<double> wopt;
+			wopt.empty();
+			wopt = w;
+			std::vector<double> bopt;
+			bopt.empty();
+			bopt = b;
+			MIN = spe_new;
+			//Yhat0 = yhat0;
+		}
+		// Print the current epoch and spe_new
+		if (epoch % batch_size == 0) {
+			FILE << epoch << "\t" << spe_new << "\n";
+		}
+	}
+	FILE << "Yhat0 (Prediction):\n";
+	for (int i = 0; i < Yhat0.size(); i++) {
+		for (int j = 0; j < Yhat0[i].size(); j++) {
+			FILE << Yhat0[i][j] << ", ";
+		}
+		FILE << "\n";
+	}
+
+	FILE << "YTest:\n";
+	for (int i = 0; i < Ytest.size(); i++) {
+		for (int j = 0; j < Ytest[i].size(); j++) {
+			FILE << Ytest[i][j] << ", ";
+		}
+		FILE << "\n";
+	}
+	FILE.close();
+	
+}
+
+//Update the biases and the weights
+void CModelingandAnalysisofUncertaintyDoc::UpdateBiases(int c, int n_weights, const int M, const int H, const int train,
+	std::vector<double> &yhat, std::vector<double>& private_w, const int eta, std::vector<std::vector<double>>&F, 
+	std::vector<std::vector<int>> &Ytrain, int n_biases, std::vector<std::vector<double> > &Xslice, std::vector<double>& private_b,
+	int slice_index, int Ntrain) {
+
+	// Compute the error (d) for the current class
+	std::vector<double> d(train, 0.0);
+	int d_index = 0;
+	for (int i = slice_index; i < slice_index + train; i++) {
+		if (i >= Ntrain) {
+			d[d_index] = Ytrain[i % Ntrain][c] - yhat[d_index];
+			continue;
+		}
+		d[d_index] = Ytrain[i][c] - yhat[d_index];
+		d_index++;
+	}
+	// Update weights and biases
+	int pos = c * n_weights + M * H;
+	std::vector<double> dphi_t(train, 0.0);
+	for (int i = 0; i < train; ++i) {
+		dphi_t[i] = yhat[i] * (1.0 - yhat[i]);
+	}
+
+	// Update weights connecting the hidden to the output layer
+	for (int h = 0; h < H; ++h) {
+		double sum = 0.0;
+		for (int i = 0; i < d.size(); i++) {
+			sum += dphi_t[i] * F[i][h] * d[i] * eta;
+		}
+		private_w[pos + h] += sum;
+	}
+
+	// Update bias term connecting hidden to output layer
+	int posB = c * H + (H + 1);
+	double sumB = 0.0;
+	for (int i = 0; i < train; i++)
+		sumB += dphi_t[i] * d[i] * eta;
+	private_b[posB] += sumB;
+
+	// Update weights connecting the input to the hidden layer
+	for (int h = 0; h < H; ++h) {
+		std::vector<double> dphi_fh(train, 0.0);
+		for (int i = 0; i < train; ++i) {
+			dphi_fh[i] = F[i][h] * (1.0 - F[i][h]);
+		}
+
+		for (int j = 0; j < M; ++j) {
+			double sumDphi = 0;
+			int posW = c * n_weights + j * H + h;
+			for (int i = 0; i < train; ++i) {
+				sumDphi += d[i] * (dphi_t[i] * dphi_fh[i] * Xslice[i][j]);
+			}
+			private_w[posW] += eta * private_w[c * n_weights + M * H + h] * sumDphi;
+		}
+
+		int posB = c * n_biases + h;
+		double sumB = 0;
+		for (int i = 0; i < train; i++) {
+			sumB += d[i] * (dphi_t[i] * dphi_fh[i]);
+		}
+		private_b[posB] += eta * private_w[c * n_weights + M * H + h] * sumB;
+	}
+
+}
+
+// OnANN function with OpenMP parallelization for batch processing
+void CModelingandAnalysisofUncertaintyDoc::OnANN_batchParallel() {
+	// Define constants
+	const int N = n_Obs;
+	const int M = n_Var - 1;
+	const int C = n_classes;
+	const int H = 5;
+	const int n_epochs = 1000;
+	const int train = 20;
+	const double eta = 1e-1 / train;
+	int batch_size = 5;
+	// Initialize random number generator seed
+	std::srand(1);
+
+	CArray<double> Data0, bar, std;
+	Data0.RemoveAll();
+	bar.RemoveAll();
+	std.RemoveAll();
+	StandardizeDataMatrix(Data0, bar, std);
+
+	std::vector<std::vector<double>> X(n_Obs, std::vector<double>(n_Var - 1));
+	std::vector<double> Input_Y(n_Obs);
+
+	for (int i = 0; i < n_Obs * (n_Var - 1); i++) {
+		int row = i % n_Obs;
+		int col = i / n_Obs;
+		X[row][col] = Data0[i];
+	}
+	for (int i = 0; i < n_Obs; i++) {
+		Input_Y[i] = Data[n_Obs * (n_Var - 1) + i];
+	}
+
+	std::vector<std::vector<int>> Y(n_Obs, std::vector<int>(C));
+	for (int i = 0; i < n_Obs; i++) {
+		Y[i][(Input_Y[i] - 1)] = 1;
+	}
+
+	// Initialize weight (w) and bias (b) matrices for the neural network
+	int n_weights = H * (M + 1);
+	int n_biases = H + 1;
+
+	const double trainFraction = 0.85;
+
+	// Calculate Ntrain
+	int Ntrain = static_cast<int>(round(N * trainFraction));
+	// Vector of 0-3000 shuffled
+
+	int Ntest = N - Ntrain;
+	std::vector<std::vector<double>> Xtrain(Ntrain, std::vector<double>(M));
+	std::vector<std::vector<int>> Ytrain(Ntrain, std::vector<int>(C));
+	std::vector<std::vector<double>> Xtest(Ntest, std::vector<double>(M));
+	std::vector<std::vector<int>> Ytest(Ntest, std::vector<int>(C));
+	std::vector<int> index = randsample(N, N);
+
+	for (int i = 0; i < Ntrain; i++) {
+		Xtrain[i] = X[index[i]];
+		for (int c = 0; c < C; c++) {
+			Ytrain[i][c] = Y[index[i]][c];
+		}
+	}
+	for (int i = Ntrain; i < N; i++) {
+		Xtest[i - Ntrain] = X[index[i]];
+		for (int c = 0; c < C; c++) {
+			Ytest[i - Ntrain][c] = Y[index[i]][c];
+		}
+	}
+	std::ofstream FILE_CHECK;
+	FILE_CHECK.open("check_file.txt");
+
+	for (int i = 0; i < Ytest.size(); i++) {
+		for (int j = 0; j < Ytest[i].size(); j++) {
+			FILE_CHECK << Ytest[i][j] << ", ";
+		}
+		FILE_CHECK << "\n";
+	}
+	FILE_CHECK.close();
+	std::vector<double> w(C * n_weights);
+	std::vector<double> b(C * n_biases);
+
+	for (int i = 0; i < C * n_weights; ++i) {
+		w[i] = 0.2 * static_cast<double>(std::rand()) / RAND_MAX - 0.1;
+	}
+
+	for (int i = 0; i < C * n_biases; ++i) {
+		b[i] = 0.2 * static_cast<double>(std::rand()) / RAND_MAX - 0.1;
+	}
+
+	// Calculates spe_old
+	double spe_old = 0.0;
+	for (int c = 0; c < C; ++c) {
+		for (int i = 0; i < Ntest; ++i) {
+			spe_old += std::pow(Ytest[i][c], 2);
+		}
+	}
+	spe_old /= N;
+
+	// Initialize MIN and other variables
+	double MIN = 1e7;
+
+	// 450x3 matrix of 0's
+	std::vector<std::vector<double>> yhat0(Ntest, std::vector<double>(C, 0.0));
+
+	// Create variables for Yhat0 and delta0
+	// These are both 450x3 uninitialized matrices
+	std::vector<std::vector<double>> Yhat0(Ntest, std::vector<double>(C));
+	std::vector<std::vector<double>> delta0(Ntest, std::vector<double>(C));
+
+	// Initialize global best weights and biases
+	std::vector<double> global_best_w = w;
+	std::vector<double> global_best_b = b;
+	double global_MIN = 1e7;
+
+	std::ofstream FILE;
+	FILE.open("outfile.txt");
+	int slice_index = 0;
+
+	#pragma omp parallel
+	{
+		// private weight and bias for each thread
+		std::vector<double> private_w = w;
+		std::vector<double> private_b = b;
+		double private_MIN = 1e7;
+
+		double spe_new, sumDelta;
+		int c;
+		std::vector<int> index;
+		std::vector<double> weights, biases, yhat, yhat0, delta0;
+		std::vector<std::vector<double>> F, Xslice, Ftemp;
+		// nowait to avoid unnecessary barrier at the end of the loop
+		#pragma omp for nowait private(spe_new,c, index, slice_index, weights, biases, F, yhat, Xslice, yhat0, delta0, Ftemp, sumDelta)
+		for (int epoch = 1; epoch <= n_epochs; ++epoch) {
+			spe_new = 0.0;
+
+			// Iterate through three times
+			for (c = 0; c < C; ++c) {
+				//Draw 20 random numbers from 0-2550
+				index = randsample(Ntrain, train);
+				slice_index += train;
+				slice_index %= Ntrain;
+				// Random numbers from w and b somehow
+				weights = std::vector<double>(private_w.begin() + c * n_weights, private_w.begin() + (c + 1) * n_weights);
+				biases = std::vector<double>(private_b.begin() + c * n_biases, private_b.begin() + (c + 1) * n_biases);
+
+				// Get network predictions for the training data
+				F = std::vector<std::vector<double>>(train, std::vector<double>(H, 0.0));
+				yhat = std::vector<double>(train, 0.0);
+
+				Xslice.empty();
+				for (int i = slice_index; i < slice_index + train; i++) {
+					if (i >= Ntrain) {
+						Xslice.push_back(Xtrain[i % Ntrain]);
+						continue;
+					}
+					Xslice.push_back(Xtrain[i]);
+				}
+
+				GetNetworkPredictionParallel(Xslice, H, weights, biases, F, yhat);
+
+				//Update the biases and the weights
+				UpdateBiases(c, n_weights, M, H, train, yhat, private_w, eta, F, Ytrain, n_biases, Xslice, private_b, slice_index, Ntrain);
+
+				// Update yhat0 for the current class (TODO: Implement GetNetworkPrediction)
+				yhat0 = std::vector<double>(Ntest, 0.0);
+				Ftemp = std::vector<std::vector<double>>(Ntest, std::vector<double>(H, 0.0));
+				GetNetworkPredictionParallel(Xtest, H, weights, biases, Ftemp, yhat0);
+
+				// Compute delta0 for the current class
+				delta0 = std::vector<double>(Ntest, 0.0);
+				sumDelta = 0;
+				for (int i = 0; i < Ntest; ++i) {
+					delta0[i] = Ytest[i][c] - yhat0[i];
+					sumDelta += delta0[i] * delta0[i];
+				}
+				// Update spe_new for the current class
+				spe_new += sumDelta / Ntest;
+				if (spe_new < MIN) {
+					for (int i = 0; i < yhat0.size(); i++) {
+						Yhat0[i][c] = yhat0[i];
+					}
+				}
+			}
+
+			// Critical section to combine updates from each thread
+			#pragma omp critical
+			{
+				if (spe_new < private_MIN) {
+					private_MIN = spe_new;
+				}
+			}
+
+			// Print the current epoch and spe_new
+			if (epoch % batch_size == 0) {
+				// Ensure only one thread writes to the file at a time
+				#pragma omp critical
+				{
+					FILE << epoch << "\t" << spe_new << "\n";
+				}
+			}
+		}
+
+		// Critical section for updating global best weights and biases
+		#pragma omp critical
+		{
+			if (private_MIN < global_MIN) {
+				global_MIN = private_MIN;
+				global_best_w = private_w;
+				global_best_b = private_b;
+			}
+		}
+	}
+
+	// Assign the best weights and biases back to the global variables
+	w = global_best_w;
+	b = global_best_b;
+
+	FILE << "Yhat0 (Prediction):\n";
+	for (int i = 0; i < Yhat0.size(); i++) {
+		for (int j = 0; j < Yhat0[i].size(); j++) {
+			FILE << Yhat0[i][j] << ", ";
+		}
+		FILE << "\n";
+	}
+
+	FILE << "YTest:\n";
+	for (int i = 0; i < Ytest.size(); i++) {
+		for (int j = 0; j < Ytest[i].size(); j++) {
+			FILE << Ytest[i][j] << ", ";
+		}
+		FILE << "\n";
+	}
+	FILE.close();
+}
+
+//GetNetworkPrediction(Xtrain, H, weights, biases, F, yhat);
+void CModelingandAnalysisofUncertaintyDoc::GetNetworkPrediction(const std::vector<std::vector<double>>& X, const int H,
+	const std::vector<double>& w, const std::vector<double>& b,
+	std::vector<std::vector<double>>& F, std::vector<double>& yhat) {
+
+	// 20, 
+	int N = X.size();
+	int M = X[0].size();
+
+
+	for (int h = 0; h < H; ++h) {
+		std::vector<double> z(N, 0.0);
+		for (int j = 0; j < M; ++j) {
+			int pos = j * H + h;
+			for (int i = 0; i < N; ++i) {
+				z[i] += w[pos] * X[i][j];
+			}
+		}
+
+		for (int i = 0; i < N; ++i) {
+			z[i] += b[h];
+			F[i][h] = 1.0 / (1.0 + exp(-z[i]));
+		}
+
+		int pos = M * H + h;
+		for (int i = 0; i < N; ++i) {
+			yhat[i] += w[pos] * F[i][h];
+		}
+	}
+	for (int i = 0; i < N; ++i) {
+		yhat[i] = 1.0 / (1.0 + exp(-yhat[i]));
+	}
+}
+
+////GetNetworkPrediction(Xtrain, H, weights, biases, F, yhat) in parallel
+void CModelingandAnalysisofUncertaintyDoc::GetNetworkPredictionParallel(const std::vector<std::vector<double>>& X, const int H,
+	const std::vector<double>& w, const std::vector<double>& b,
+	std::vector<std::vector<double>>& F, std::vector<double>& yhat) {
+
+	// 20, 
+	int N = X.size();
+	int M = X[0].size();
+	int pos;
+	int i;
+	int j;
+	std::vector<double> z(N, 0.0);
+	#pragma omp parallel for private(pos, z, i, j)
+	for (int h = 0; h < H; ++h) {
+		for (j = 0; j < M; ++j) {
+			pos = j * H + h;
+			for (i = 0; i < N; ++i) {
+				z[i] += w[pos] * X[i][j];
+			}
+		}
+
+		for (i = 0; i < N; ++i) {
+			z[i] += b[h];
+			F[i][h] = 1.0 / (1.0 + exp(-z[i]));
+		}
+
+		pos = M * H + h;
+		for (i = 0; i < N; ++i) {
+			#pragma omp atomic
+			yhat[i] += w[pos] * F[i][h];
+		}
+	}
+	#pragma omp parallel for
+	for (int i = 0; i < N; ++i) {
+		yhat[i] = 1.0 / (1.0 + exp(-yhat[i]));
+	}
+}
+
 // Enablers for modeling methods after datafile was read
+void CModelingandAnalysisofUncertaintyDoc::OnQPPSolver() {
+	quadprogpp::Matrix<double> G;
+	G.resize(2, 2);
+	G[0][0] = 2;
+	G[0][1] = 0;
+	G[1][0] = 0;
+	G[1][1] = 4;
+
+
+	quadprogpp::Vector<double> g0;
+	g0.resize(2);
+	g0[0] = -4;
+	g0[1] = -8;
+
+
+	// Constraint Equality LHS
+	quadprogpp::Matrix<double> CE;
+	CE.resize(2, 2); // must be 2 row, 1 column
+	CE[0][0] = 1;
+	CE[0][1] = 1;
+	CE[1][0] = -1;
+	// CE[1][1] = 0;
+	// CE[2][0] = 0;
+
+
+	// Constraint Equality RHS
+	quadprogpp::Vector<double> ce0;
+	ce0.resize(2);
+	ce0[0] = 3;
+	ce0[1] = 0;
+	// ce0[2] = 0;
+
+	// Constraint Inequality LHS
+	quadprogpp::Matrix<double> CI;
+	CI.resize(2, 1);
+	CI[0][0] = 0;
+	CI[0][1] = 0;
+	CI[1][0] = 0;
+	CI[1][1] = 0;
+
+	// Constraint Inequality RHS
+	quadprogpp::Vector<double> ci0;
+	ci0.resize(1);
+	ci0[0] = 0;
+	// ci0[1] = 0;
+
+	quadprogpp::Vector<double> x;
+	x.resize(2);
+
+	double result = solve_quadprog(G, g0, CE, ce0, CI, ci0, x);
+
+	std::ofstream outdata;
+
+	outdata.open("quadprogpp/qppOutput.txt");
+
+
+	outdata << result << std::endl;
+
+	outdata.close();
+
+
+
+	//std::cout << "Optimal value: " << result << std::endl;
+
+
+	//std::cout << "Optimal solution (x): ";
+	//for (int i = 0; i < x.size(); i++) {
+	//	std::cout << x[i] << " ";
+	//}
+	//std::cout << std::endl;
+	// } 
+
+
+
+	return;
+
+}
 void CModelingandAnalysisofUncertaintyDoc::OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI) {
 	pCmdUI->Enable(FileOpen);
 }

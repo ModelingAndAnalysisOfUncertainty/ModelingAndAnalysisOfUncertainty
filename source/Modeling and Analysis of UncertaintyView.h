@@ -80,6 +80,8 @@ protected:
 	afx_msg void On_Display_Factor_Loadings();
 	afx_msg void On_Display_Factor_Scores();
 	afx_msg void On_Display_Factor_Matrices();
+
+
 	DECLARE_MESSAGE_MAP()
 public:
 	void PlotLossCurve();
@@ -126,6 +128,8 @@ private:
 	void ShowRegressionCoefficients(CModelingandAnalysisofUncertaintyDoc*, CDC*, CPoint&, CPoint&, int);
 	void ShowModelPrediction(CModelingandAnalysisofUncertaintyDoc*, CDC*, CPoint&, CPoint&);
 	void ShowPredictionError(CModelingandAnalysisofUncertaintyDoc*, CDC*, CArray <double>&, CPoint&, CPoint&);
+	//----------------------------------
+
 public:
 	CButton Next_Variable;
 	CButton Previous_Variable;
