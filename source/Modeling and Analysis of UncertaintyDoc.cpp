@@ -630,7 +630,7 @@ void CModelingandAnalysisofUncertaintyDoc::Transpose(CArray <double>& A, CArray 
 		Atrans_spec.SetAt(0, col), Atrans_spec.SetAt(1, row), Atrans_spec.SetAt(2, 0);
 		for (int i = 0; i < row; i++) {
 			for (int j = 0; j < col; j++) {
-				pos_1 = GetPosition(j, i, A_spec);
+				pos_1 = GetPosition(j, i, Atrans_spec);
 				pos_2 = GetPosition(i, j, A_spec);
 				Atrans.SetAt(pos_1, A.GetAt(pos_2));
 			}
@@ -5759,6 +5759,165 @@ void CModelingandAnalysisofUncertaintyDoc::OnKPCA() {
 
 void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	AfxMessageBox(L"Now we are working on establishing logistic regression model");
+	AfxMessageBox(L"We are looking at for the Hessian Matrix and Gradient");
+	CArray<double> w;
+	int w_size = n_Var;
+	w.SetSize(w_size);
+	for (int i = 0; i < w_size; i++) {
+		w.SetAt(i, 0);
+	}
+
+	CArray<double> z;
+	std::ofstream FILE;
+	FILE.open("example.txt");
+	z.SetSize(Data.GetSize());
+	
+	CArray<int> z_spec;
+	z_spec.SetSize(3);
+	z_spec.SetAt(0, Data_spec.GetAt(0));
+	z_spec.SetAt(1, Data_spec.GetAt(1));
+	z_spec.SetAt(2, Data_spec.GetAt(2));
+	
+	for (int x = 0; x < Data_spec.GetAt(0); x++) {
+		for (int y = 0; y < Data_spec.GetAt(1); y++) {
+			double temp = Data.GetAt(GetPosition(x, y, Data_spec));			
+			z.SetAt(GetPosition(x, y, Data_spec), temp);
+			if (y == Data_spec.GetAt(1)-1) {
+				z.SetAt(GetPosition(x, y, z_spec), 1);
+				
+			}
+		}
+		
+	}
+	CArray <double> label;
+	label.SetSize(Data_spec.GetAt(0));
+	
+	double val_1 = Data.GetAt(GetPosition(0, Data_spec.GetAt(1) - 1, Data_spec));
+	for (int x = 0; x < Data_spec.GetAt(0); x++) {
+		double temp = Data.GetAt(GetPosition(x, Data_spec.GetAt(1) - 1, Data_spec));
+		
+		label.SetAt(x, 1);
+		
+		if (temp != val_1) {
+			label.SetAt(x, 0);
+		}
+		
+	}
+	
+	CArray<double> predictor;
+	predictor.SetSize(label.GetSize());
+
+	CArray<double> z_trans;
+	z_trans.SetSize(z.GetSize());
+
+	CArray<int> z_t_specs;
+	z_t_specs.SetSize(3);
+	z_t_specs.SetAt(0, z_spec.GetAt(1));
+	z_t_specs.SetAt(1, z_spec.GetAt(0));
+	z_t_specs.SetAt(2, z_spec.GetAt(2));
+
+	Transpose(z, z_spec, z_trans, z_t_specs);
+		
+	for (int i = 0; i < n_Obs; i++) {
+		double t = 0;
+		
+		for (int j = 0; j < n_Var - 1; j++) {
+			t += Data.GetAt(GetPosition(i, j, Data_spec)) * w.GetAt(j);
+		}
+		t += w.GetAt(n_Var - 1);
+		
+		predictor.SetAt(i, 1 / (1 + std::exp(-t)));
+		
+	}
+	
+	CArray<double> B;
+	B.SetSize(label.GetSize());
+	for (int i = 0; i < label.GetSize(); i++) {
+		B.SetAt(i, label.GetAt(i) - predictor.GetAt(i));
+	}
+	
+	CArray<double> gradient;
+	MatrixVectorProduct(z_trans, z_t_specs, B, gradient);
+	CArray<int> g_spec;
+	g_spec.SetSize(3);
+	g_spec.SetAt(0, z_spec.GetAt(1));
+	g_spec.SetAt(1, 1);
+	g_spec.SetAt(2, z_spec.GetAt(2));
+	
+	CArray<double> diag;
+	diag.SetSize(z_trans.GetSize());
+	CArray<int> diag_spec;
+	diag_spec.SetSize(3);
+	diag_spec.SetAt(0, z_t_specs.GetAt(0));
+	diag_spec.SetAt(1, z_t_specs.GetAt(1));
+	diag_spec.SetAt(2, z_t_specs.GetAt(2));
+	
+	for (int x = 0; x < z_t_specs.GetAt(0); x++) {
+		for (int y = 0; y < z_t_specs.GetAt(1); y++) {
+			diag.SetAt(GetPosition(x, y, diag_spec), z_trans.GetAt(GetPosition(x, y, z_t_specs))*(predictor.GetAt(x)*(1-predictor.GetAt(x))));
+		}
+	}
+	
+	CArray<double> Hessian;
+	
+	MatrixVectorProduct(z, z_spec, diag, Hessian);
+	CArray<int> H_spec;
+	
+	H_spec.SetSize(3);
+	H_spec.SetAt(0, z_spec.GetAt(1));
+	H_spec.SetAt(1, z_spec.GetAt(1));
+	H_spec.SetAt(2, z_spec.GetAt(2));
+	
+	AfxMessageBox(L"Finished Finding Hessian Matrix and Gradient");
+	AfxMessageBox(L"Beginning Levenburg-Marquardt");
+	
+	CArray<double> y;
+
+	double error = 1;
+	double lambda = 0.1;
+	int i = 0;
+	while (error > 0.00001) {
+		///
+		///get position
+		///j = hessian --> inverse hessian + lambda*i
+		///f = gradient
+		for (int x = 0; x < H_spec.GetAt(0); x++) {
+			for (int y = 0; y < H_spec.GetAt(1); y++) {
+				if (x == y) {
+					Hessian.SetAt(GetPosition(x, y, H_spec), Hessian.GetAt(GetPosition(x, y, H_spec)) + lambda*x);
+				}
+			}
+		}
+		///
+		//AfxMessageBox(L"h1");
+		CArray<double> H_inverse;
+		CArray<int> H_inv_specs;
+		H_inv_specs.SetSize(3);
+		H_inv_specs.SetAt(0, H_spec.GetAt(0));
+		H_inv_specs.SetAt(1, H_spec.GetAt(1));
+		H_inv_specs.SetAt(2, H_spec.GetAt(2));
+		Inverse(Hessian, H_spec, H_inverse, H_inv_specs);
+
+		MatrixVectorProduct(H_inverse, H_inv_specs, gradient, y);
+
+		CArray<double> temp_w;
+		temp_w.SetSize(w_size);
+		//AfxMessageBox(L"h2");
+		for (int i = 0; i < temp_w.GetSize(); i++) {
+			temp_w.SetAt(i, w.GetAt(i));
+		}
+		for (int i = 0; i < w.GetSize(); i++) {
+			w.SetAt(i, w.GetAt(i) - y.GetAt(i));
+		}
+		double hold = 0;
+		for (int i = 0; i < w.GetSize(); i++) {
+			hold += std::pow(w.GetAt(i) - temp_w.GetAt(i), 2);
+		}
+		error = sqrt(hold);
+		i += 1;
+		lambda = lambda / i;
+	}
+	AfxMessageBox(L"Finished");
 }
 
 //*****************************************************************
