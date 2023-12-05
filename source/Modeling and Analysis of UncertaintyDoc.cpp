@@ -1321,6 +1321,42 @@ void CModelingandAnalysisofUncertaintyDoc::X_X_tr_Parallel(CArray <double>& A, C
 
 //Computes the time taken for normal and parallel functions and outputs the speed up of the parallel
 void CModelingandAnalysisofUncertaintyDoc::MatrixParallelTest() {
+	/*
+	Parallel size thresholds & speedup
+
+	Adding
+	Threshold: 350 x 350
+	Speedup with 10000 x 10000: 3.5 times
+
+	Subtracting
+	Threshold: 350 x 350
+	Speedup with 10000 x 10000: 3.5 times
+
+	Vector Product
+	Threshold: 450 x 450
+	Speedup with 10000 x 10000: 7.8 times
+
+	Matrix product
+	Threshold: 60 x 60
+	Speedup with 1000 x 1000 (100000 takes too long): 4 times
+
+	X_tr_X
+	Threshold: 80 x 80
+	Speedup with 1000 x 1000: 7.3 times
+
+	X_tr_Y
+	Threshold: 65 x 65
+	Speedup with 1000 x 1000: 8.9 times
+
+	X_Y_tr
+	Threshold: 75 x 75
+	Speedup with 1000 x 1000: 10.87 times
+
+	X_X_tr
+	Threshold: 110 x 110
+	Speedup with 1000 x 1000: 5.65 times
+	*/
+
 	//Setup
 	std::ofstream FILE;
 	FILE.open("matrix_Test.txt");
