@@ -5077,9 +5077,198 @@ void CModelingandAnalysisofUncertaintyDoc::SetUpFDAMatrices(CArray <double>& Sb,
 //***            Compute linear classification model            ***
 //*****************************************************************
 
+
 void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
-	AfxMessageBox(L"Now we are working on establishing an linear classification model");
-}
+	
+	//AfxMessageBox(L"Now we are working on establishing an linear classification model");
+	//curent data 
+	//get data to parse through
+
+	/// CArray <double>& Data_0, CArray <double>& bar, CArray <double>& std
+	//CArray for 3 classification
+	CArray<double> y;
+	y.SetSize(n_Obs);
+	CArray<double> value;
+	std::vector<int> indices(n_Obs);
+	std::iota(indices.begin(), indices.end(), 0);  // Fill with 0, 1, ..., data.size() - 1
+
+	std::random_device rd;
+	std::mt19937 g(rd());
+	std::shuffle(indices.begin(), indices.end(), g);
+	//shuffle the data
+	//We want to train with 85% of the data
+	int y_train = (int)floor(n_Obs * 0.85);
+	value.SetSize(y_train);
+
+	//Declare the train data array and the specifications of it
+	CArray<double> data2;
+	CArray<double> label;
+	data2.SetSize(static_cast <int64_t> (n_Var*y_train));
+	label.SetSize(static_cast <int64_t> (y_train));
+    //new data size with new n object
+	CArray <int> Traindata_spec;
+	Traindata_spec.SetSize(3);
+	Traindata_spec.SetAt(0, y_train), Traindata_spec.SetAt(1, n_Var), Traindata_spec.SetAt(2, 0);
+	double temp_1, temp_3, temp_2, temp_4, temp_5;
+	//test data 15 percent
+	CArray<double> testData;
+	testData.SetSize(static_cast <int64_t> (n_Var * (n_Obs - y_train)));
+	CArray <int> testData_spec;
+	testData_spec.SetSize(3);
+	//Declare the test data array and the specifications of it
+	CArray<double> testlabel1;
+	testlabel1.SetSize(static_cast <int64_t> ((n_Obs - y_train)));
+	CArray<double> testlabel2;
+	testlabel2.SetSize(static_cast <int64_t> ((n_Obs - y_train)));
+	CArray<double> testlabel3;
+	testlabel3.SetSize(static_cast <int64_t> ((n_Obs - y_train)));
+	int k = 0;
+	testData_spec.SetAt(0, (n_Obs - y_train)), testData_spec.SetAt(1, n_Var), testData_spec.SetAt(2, 0);
+	 for (int i = y_train; i < n_Obs; i++) {
+		
+		 for (int j = 0; j < n_Var - 1; j++) {
+	     	int val_pos = static_cast <int64_t>(GetPosition(k, j, testData_spec));
+	    	temp_2 = Data.GetAt(static_cast <int64_t>(GetPosition(indices[i], j, Data_spec)));
+	    	testData.SetAt(val_pos, temp_2);
+			}
+	//	///*int val_posconstant = static_cast <int64_t>(GetPosition(k, n_Var - 1, testData_spec));
+	//	//data2.SetAt(val_posconstant, (double)1);*/
+	      k++;
+	 }
+
+
+
+	 //time to test data and create 3 models
+
+	// For loop gets new test train vector data
+
+
+	 //3 model data coeficient declare array declare 3 label 
+	 CArray<double> label2;
+	 label2.SetSize(static_cast <int64_t> (y_train));
+	 CArray<double> label3;
+	 label3.SetSize(static_cast <int64_t> (y_train));
+
+
+	for (int i = 0; i < y_train; i++) {
+
+		temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(indices[i], n_Var - 1, Data_spec)));
+		temp_4 = temp_1;
+		temp_5 = temp_4;
+
+		if (temp_1 != 1) temp_1 = -1;
+		if (temp_4 != 2) temp_4 = -1;
+		if (temp_5 != 3) temp_4 = -3;
+		for (int j = 0; j < n_Var - 1; j++) {
+			int val_pos = static_cast <int64_t>(GetPosition(i, j, Traindata_spec));
+			temp_2 = Data.GetAt(static_cast <int64_t>(GetPosition(indices[i], j, Data_spec)));
+			data2.SetAt(val_pos, temp_2);
+		}
+		label.SetAt(i, temp_1);
+		label2.SetAt(i, temp_4);
+		label3.SetAt(i, temp_5);
+		int val_posconstant = static_cast <int64_t>(GetPosition(i, n_Var - 1, Traindata_spec));
+		data2.SetAt(val_posconstant, (double)1);
+
+	}
+	CArray <double> Sww;
+
+	GetRegressionVector(data2, Traindata_spec, label, Sww, true);
+	SaveVector("Model1_coefficient.txt", w);
+	MatrixVectorProduct(testData, testData_spec, w, testlabel1);
+	SaveVector("testlabel1.txt", testlabel1);
+
+
+	GetRegressionVector(data2, Traindata_spec, label2, Sww, true);
+	SaveVector("Model1_coefficient2.txt", w);
+	MatrixVectorProduct(testData, testData_spec, w, testlabel2);
+	SaveVector("testlabel2.txt", testlabel2);
+
+	GetRegressionVector(data2, Traindata_spec, label2, Sww, true);
+	SaveVector("Model1_coefficient3.txt", w);
+	MatrixVectorProduct(testData, testData_spec, w, testlabel3);
+	SaveVector("testlabel3.txt", testlabel3);
+
+
+
+
+	SaveVector("test7.txt", value);
+	SaveVector("label.txt", label);
+	SaveMatrix("traindata.txt", data2, Traindata_spec);
+
+		SaveMatrix("traindata.txt", data2, Traindata_spec);
+
+	//We need standardized data
+	//Classification metrics
+	//member matrix vector product
+	
+	//MatrixVectorProduct(Data, Data_spec, w, y_hat);
+
+	//SaveVector("ypredv.txt", n_classes);
+	//SaveVector("swwvalue.txt", Sww);
+	//SaveVector("yvalue.txt", y);
+	//SaveVector("yhatvalue.txt", y_hat);
+	//MatrixVectorProduct(z, z_spec, w, y_hat)
+
+	//GetRegressionVector
+	//GetStandardRegressionModel(data2, Traindata_spec, label, Sww, w);
+	
+	
+	//Sww.SetSize(y_train * n_Var);
+	CArray<double> W;
+	CArray<int> W_spec;
+	CArray<double> y_hat;
+	W.SetSize(n_Var*3);
+	W_spec.SetSize(3);
+	W_spec.SetAt(0, n_Var); W_spec.SetAt(1, 3); W_spec.SetAt(2, 0);
+
+	for (int j = 1; j <= 3;j++) {
+		//(n_Obs * n_Var) - n_Obs; i < n_Obs * n_Var; i++
+		for (int i = 0; i < n_Obs; i++) {
+			double setValue;
+			if (Data.GetAt((n_Obs * n_Var) - n_Obs + i) == j) {
+				setValue = 1;
+			}
+			else {
+				setValue = -1;
+			}
+			y.SetAt(i, setValue);
+		}
+		SaveVector("yvalue.txt", y);
+		GetRegressionVector(Data, Data_spec, y, Sww, true);
+		MatrixVectorProduct(Data, Data_spec, w, y_hat);
+		for (int i = 0; i < w.GetSize(); i++) {
+			W.SetAt(i + w.GetSize() * (j-1), w.GetAt(i));
+		}
+	}
+
+	SaveMatrix("resultValue.txt", W, W_spec);
+	SaveMatrix("traindata2.txt", W, W_spec);
+
+	SaveVector("wvalue.txt", w);
+	SaveVector("swwvalue.txt", Sww);
+	SaveVector("yvalue.txt", y);
+	SaveVector("yhatvalue.txt", y_hat);
+	//MatrixVectorProduct(z, z_spec, w, y_hat)
+
+	
+	
+
+	//SaveVector("data3.txt", Data);
+	SaveVector("test2.txt", label);
+	//SaveMatrix("traindata.txt", data2, Traindata_spec);
+
+	AfxMessageBox(L"I believe I have just saved a file!");
+
+	//if w is the matci
+	// 
+	//w matrix for coefficent 
+	//Response vector is x w coefficient  and b multiplied by the input data araay to get the coreesponsing clasifcatuin 
+	//if y i 1 or0 in ebtwenn round
+
+	//CArray <double>& X, CArray <int>& X_spec, CArray <double>& y
+} //insert data thw iwll have x muTIple by w to get y value remebet for x array to add 1 at ebd bases on predictir decide class 1 or ,-1 
+
 
 //*****************************************************************
 //***              Compute linear regression model              ***
@@ -5112,6 +5301,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnMultivariateRegression() {
 			CArray <double> ResponseVector;
 			CArray <int> PredictorMatrix_spec;
 			PredictorMatrix.SetSize(static_cast <int64_t>(n_Obs) * n_predictor);
+			//x 
 			ResponseVector.SetSize(static_cast <int64_t>(n_Obs));
 			PredictorMatrix_spec.SetSize(3);
 			PredictorMatrix_spec.SetAt(0, n_Obs), PredictorMatrix_spec.SetAt(1, n_predictor), PredictorMatrix_spec.SetAt(2, 0);
@@ -5671,6 +5861,7 @@ void CModelingandAnalysisofUncertaintyDoc::GetRegressionVector(CArray <double>& 
 	Inverse(Rx, Rx_spec, Rx_inv, Rx_spec);
 	if (validation == true) MatrixVectorProduct(Rx_inv, Rx_spec, rxy, w);
 	else MatrixVectorProduct(Rx_inv, Rx_spec, rxy, w_raw);
+	SaveVector("w_inside.txt", w);
 	if (validation == false) {
 		double se = GetSquaredLength(y) - GetSquaredLength(rxy), value, temp;
 		se /= (double)(n_obs - n_var - 1);
@@ -6079,7 +6270,7 @@ void standardize_data(int num_features, std::vector<dlib::matrix<float>>& data) 
 void split_data(const std::vector<dlib::matrix<float>>& data, const std::vector<unsigned long>& labels,
 	std::vector<dlib::matrix<float>>& training_data, std::vector<unsigned long>& training_labels,
 	std::vector<dlib::matrix<float>>& testing_data, std::vector<unsigned long>& testing_labels, float ratio = 0.85) {
-
+	//generating number y variable
 	std::vector<int> indices(data.size());
 	std::iota(indices.begin(), indices.end(), 0);  // Fill with 0, 1, ..., data.size() - 1
 

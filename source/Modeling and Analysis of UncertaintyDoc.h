@@ -1,4 +1,4 @@
-// Modeling and Analysis of UncertaintyDoc.h : interface of the CModelingandAnalysisofUncertaintyDoc class
+ // Modeling and Analysis of UncertaintyDoc.h : interface of the CModelingandAnalysisofUncertaintyDoc class
 //
 #include <fstream>
 #include <ctime>
@@ -76,7 +76,9 @@ private:
 
 public:
 	// VARIABLES FOR DATA INFO
+	//number of x
 	int n_Var = 0;
+	//number of y data
 	int n_Obs = 0;
 	CString PathAndFileName;
 	bool FileOpen = false;
