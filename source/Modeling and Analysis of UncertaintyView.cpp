@@ -9612,7 +9612,7 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 		dc.TextOutW(startX - 40, endY - 25, L"Loss Value");
 
 
-		DrawGrid(dc, startX, startY, endX, endY, xTickInterval, yTickInterval, numXTicks, numYTicks);
+		//DrawGrid(dc, startX, startY, endX, endY, xTickInterval, yTickInterval, numXTicks, numYTicks);
 	}
 }
 

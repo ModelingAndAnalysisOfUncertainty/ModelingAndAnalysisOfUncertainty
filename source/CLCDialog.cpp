@@ -6,7 +6,6 @@
 #include "afxdialogex.h"
 #include "CLCDialog.h"
 
-
 // CLCDialog dialog
 
 IMPLEMENT_DYNAMIC(CLCDialog, CDialogEx)
@@ -19,6 +18,8 @@ CLCDialog::CLCDialog(int numLayers, CWnd* pParent /*=nullptr*/)
 
 CLCDialog::~CLCDialog()
 {
+    if (m_EditCtrl.GetSafeHwnd())
+        m_EditCtrl.DestroyWindow();
 }
 
 void CLCDialog::DoDataExchange(CDataExchange* pDX)
@@ -39,6 +40,7 @@ BOOL CLCDialog::OnInitDialog()
 
 void CLCDialog::SetNumLayers(int numLayers)
 {
+    m_NodeCounts.resize(numLayers);
     m_LayerNodeList.DeleteAllItems();
     for (int i = 0; i < numLayers; ++i)
     {
@@ -70,15 +72,73 @@ void CLCDialog::OnLvnEndlabeleditList(NMHDR* pNMHDR, LRESULT* pResult)
 
     if (pItem->pszText != NULL)
     {
-        // update the inside structure
         int layerIndex = pItem->iItem;
-        int nodeCount = _ttoi(pItem->pszText);
-        // assume m_NodeCounts already has enough space
-        m_NodeCounts[layerIndex] = nodeCount;
+        ASSERT(layerIndex >= 0 && layerIndex < m_NodeCounts.size()); // Ensure the index is within bounds
+        if (layerIndex >= 0 && layerIndex < m_NodeCounts.size()) {
+            int nodeCount = _ttoi(pItem->pszText);
+            m_NodeCounts[layerIndex] = nodeCount;
+        }
     }
 
     *pResult = 0;
 }
+
+void CLCDialog::OnNMDblclkList(NMHDR* pNMHDR, LRESULT* pResult)
+{
+    LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+    int nItem = pNMItemActivate->iItem;
+    int nSubItem = pNMItemActivate->iSubItem;
+
+    // Only proceed if the second column is clicked and item is valid
+    if (nSubItem == 1 && nItem != -1)
+    {
+        CRect rect;
+        m_LayerNodeList.GetSubItemRect(nItem, nSubItem, LVIR_LABEL, rect);
+
+        // Create or use an existing CEdit control to receive the input
+        if(!::IsWindow(m_EditCtrl.GetSafeHwnd()))
+        {
+            m_EditCtrl.Create(WS_BORDER | WS_CHILD | ES_AUTOHSCROLL | ES_NUMBER, rect, this, IDC_EDIT1);
+        }
+
+        m_EditCtrl.SetWindowText(m_LayerNodeList.GetItemText(nItem, nSubItem));
+        m_EditCtrl.MoveWindow(rect);
+        m_EditCtrl.SetSel(0, -1); // Select all text
+        m_EditCtrl.ShowWindow(SW_SHOW);
+        m_EditCtrl.SetFocus(); // Set focus to the edit box
+    }
+
+    *pResult = 0;
+}
+
+void CLCDialog::OnEnKillfocusEdit()
+{
+    CString strValue;
+    m_EditCtrl.GetWindowText(strValue); // Get the value from the edit control
+
+    int nItem = m_LayerNodeList.GetSelectionMark(); // Get the selected item index
+    if (nItem != -1) // Check if an item is actually selected
+    {
+        int nSubItem = 1; // We know it's the second column for "Nodes"
+
+        m_LayerNodeList.SetItemText(nItem, nSubItem, strValue); // Update the list control item text
+
+        // Now update the vector with the new value, if it's within range
+        if (nItem >= 0 && nItem < m_NodeCounts.size())
+        {
+            m_NodeCounts[nItem] = _ttoi(strValue); // Convert and update the node count
+        }
+        else
+        {
+            // Handle the error case where the index is out of bounds
+            // This could be an ASSERT or some error handling code
+            ASSERT(FALSE);
+        }
+    }
+
+    m_EditCtrl.ShowWindow(SW_HIDE); // Hide the edit control
+}
+
 
 std::vector<int> CLCDialog::GetNodeCounts() const
 {
@@ -86,8 +146,11 @@ std::vector<int> CLCDialog::GetNodeCounts() const
 }
 
 
-BEGIN_MESSAGE_MAP(CLCDialog, CDialogEx) 
+
+BEGIN_MESSAGE_MAP(CLCDialog, CDialogEx)
     ON_NOTIFY(LVN_ENDLABELEDIT, IDC_LIST1, &CLCDialog::OnLvnEndlabeleditList)
+    ON_NOTIFY(NM_DBLCLK, IDC_LIST1, &CLCDialog::OnNMDblclkList)
+    ON_EN_KILLFOCUS(IDC_EDIT1, &CLCDialog::OnEnKillfocusEdit)
     ON_NOTIFY(LVN_ITEMCHANGED, IDC_LIST1, &CLCDialog::OnLvnItemchangedList1)
 END_MESSAGE_MAP()
 
@@ -98,6 +161,6 @@ END_MESSAGE_MAP()
 void CLCDialog::OnLvnItemchangedList1(NMHDR* pNMHDR, LRESULT* pResult)
 {
     LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
-    // TODO: Add your control notification handler code here
+    // This can be used if additional actions are needed when the selection changes.
     *pResult = 0;
 }

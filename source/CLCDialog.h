@@ -28,11 +28,14 @@ protected:
 	std::vector<int> m_NodeCounts;
 	virtual void OnOK();
 	afx_msg void OnLvnEndlabeleditList(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnNMDblclkList(NMHDR* pNMHDR, LRESULT* pResult); 
+	afx_msg void OnEnKillfocusEdit();
 
 	DECLARE_MESSAGE_MAP()
 
 public:
 	CListCtrl m_LayerNodeList;
+	CEdit m_EditCtrl;
 
 private:
 	int m_numLayers;
