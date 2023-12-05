@@ -10,6 +10,7 @@ class CANNForm : public CDialogEx
 
 public:
 	CANNForm(CWnd* pParent = nullptr);   // standard constructor
+	BOOL OnInitDialog();
 	virtual ~CANNForm();
 
 // Dialog Data
