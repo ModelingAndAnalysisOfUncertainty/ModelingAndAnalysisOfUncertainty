@@ -2575,7 +2575,7 @@ void CModelingandAnalysisofUncertaintyDoc::GEVD(CArray <double>& A, CArray <int>
 			int col = B_spec.GetAt(1);
 			CArray <double> Temp, L, Linv, Z, Ltrans;
 			CArray <double> z, x, lambda;
-			CArray <int> Temp_spec, L_spec, Linv_spec, Z_spec;
+			CArray <int> Temp_spec, L_spec, Linv_spec, Z_spec, Ltrans_spec;
 			int64_t space = static_cast <int64_t> (row) * n;
 			X.RemoveAll();
 			X_spec.RemoveAll();
@@ -2591,21 +2591,22 @@ void CModelingandAnalysisofUncertaintyDoc::GEVD(CArray <double>& A, CArray <int>
 			Inverse(L, L_spec, Linv, Linv_spec);
 			SaveMatrix("inv(L).txt", Linv, Linv_spec);
 			Transformation(Temp, Temp_spec, B, B_spec, Linv, Linv_spec);
+			SaveMatrix("Test_inv(L).txt", Temp, Temp_spec);
 			bool EV = true;
 			EVD(Temp, Temp_spec, Z, Z_spec, lambda, EV, flag);
-			/*			Transpose(Linv, Linv_spec, Ltrans, Linv_spec);
-						CString Text;
-						Text.Empty(), Text.Format(L"%d \t %d \t%d", Linv_spec.GetAt(0), Linv_spec.GetAt(1), Linv_spec.GetAt(2));
-						SaveMatrix("inv(Ltrans).txt", Ltrans, Linv_spec);
-						for (int i = 0; i < n; i++) {
-							GetColumn(Z, Z_spec, z, i);
-							MatrixVectorProduct(Ltrans, Linv_spec, z, x);
-							z.RemoveAll();
-							NormalizeVector(x);
-							InsertColumn(X, X_spec, x, i);
-							x.RemoveAll();
-							s.SetAt(i, lambda.GetAt(i));
-						}*/
+			//SaveMatrix("X.txt", Z, Z_spec);
+			//SaveVector("lambda.txt", lambda);
+			Transpose(Linv, Linv_spec, Ltrans, Ltrans_spec);
+			SaveMatrix("inv(Ltrans).txt", Ltrans, Linv_spec);
+			for (int i = 0; i < n; i++) {
+				GetColumn(Z, Z_spec, z, i);
+				MatrixVectorProduct(Ltrans, Ltrans_spec, z, x);
+				z.RemoveAll();
+				NormalizeVector(x);
+				InsertColumn(X, X_spec, x, i);
+				x.RemoveAll();
+				s.SetAt(i, lambda.GetAt(i));
+			}
 		}
 	}
 	else flag = true;

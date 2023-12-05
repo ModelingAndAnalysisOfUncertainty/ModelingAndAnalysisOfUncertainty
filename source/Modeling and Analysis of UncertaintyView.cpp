@@ -1110,14 +1110,159 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 
 	}
 	else if (pDoc->FDA) {
+		if (counter > pDoc->n_classes - 2) counter = 0;
+		if (counter < 0) counter = pDoc->n_classes - 2;
 		DisplayPCA.ShowWindow(SW_HIDE);
-		Next_Variable.ShowWindow(SW_HIDE);
-		Previous_Variable.ShowWindow(SW_HIDE);
+		Next_Variable.ShowWindow(SW_SHOW);
+		Previous_Variable.ShowWindow(SW_SHOW);
 		Ind_Ass_Regression.ShowWindow(SW_HIDE);
 		Sta_Ass_Regression.ShowWindow(SW_HIDE);
 		Settings_Descriptive_Statistics.ShowWindow(SW_HIDE);
+		pDC->TextOutW(118, 20, _T("Previous"));
+		pDC->TextOutW(201, 20, _T("Next"));
+
 		TopLeftCorner.x = 20, TopLeftCorner.y = 20, BottomRightCorner.x = 100, BottomRightCorner.y = 50;
-		pDC->TextOutW(100, 100, _T("Here we go"));
+		//Displaying Elements of W per variable
+		pDC->TextOutW(50, 50, _T("Elements of W: "));
+		CString Text, Temp;
+		CPoint TEMP;
+		TEMP.x = 100, TEMP.y = 75;
+		//Loop for each w
+		for (int j = 0; j < pDoc->n_Var - 1; j++) {
+			Text.Empty(), Temp.Empty();
+			Temp.Format(L"%4f", pDoc->P.GetAt(((((pDoc->n_Var) - 1) * counter) + j))), Text.Append(Temp);
+			TEMP.y += 25;
+			//setting up the variable names
+			pDC->TextOutW(50, TEMP.y, pDoc->Tag.GetAt(j));
+			//Output the W variables
+			pDC->TextOutW(TEMP.x, TEMP.y, Text);
+		}
+
+		//Setting Up a Score Table
+		CPoint TopLeftCorner, BottomRightCorner;
+		TopLeftCorner.x = 400, TopLeftCorner.y = 75, BottomRightCorner.x = 1000, BottomRightCorner.y = 350;
+		Text.Empty(), Text.Append(_T("FDA Score variable "));
+		CArray <double> T_temp;
+		T_temp.RemoveAll();
+		T_temp.SetSize(pDoc->n_Obs);
+		for (int i = 0; i < pDoc->n_Obs; i++) {
+			T_temp.SetAt(i, pDoc->T.GetAt(((pDoc->n_Obs) * counter) + i));
+		}
+		FDADisplayScores(pDoc, pDC, T_temp, TopLeftCorner, BottomRightCorner, Text);
+		CPoint LoadingTop, LoadingBottom;
+		LoadingTop.x = 400, LoadingTop.y = 400, LoadingBottom.x = 1000, LoadingBottom.y = 800;
+		Text.Empty(), Temp.Empty(), Text.Append(_T("Eigenvector ")), Temp.Format(L"%d", counter + 1), Text.Append(Temp);
+		CArray <double> P_temp;
+		P_temp.RemoveAll();
+		P_temp.SetSize((pDoc->n_Var) - 1);
+		for (int i = 0; i < pDoc->n_Var - 1; i++) {
+			P_temp.SetAt(i, pDoc->P.GetAt((((pDoc->n_Var) - 1) * counter) + i));
+		}
+		DisplayLoadings(pDoc, pDC, P_temp, LoadingTop, LoadingBottom, Text);
+		if (pDoc->n_classes == 2) {
+			//Outputting Class Data
+			TEMP.x = 1100, TEMP.y = 75;
+			Text.Empty(), Text.Append(_T("Classification Data: "));
+			pDC->TextOutW(TEMP.x, TEMP.y, Text);
+			Text.Empty(), Temp.Empty();
+			Temp.Format(L"%d", pDoc->TP), Text.Append(L"True Positive: " + Temp);
+			TEMP.y += 25;
+			pDC->TextOutW(TEMP.x, TEMP.y, Text);
+			Text.Empty(), Temp.Empty();
+			Temp.Format(L"%d", pDoc->FP), Text.Append(L"False Positive: " + Temp);
+			TEMP.y += 25;
+			pDC->TextOutW(TEMP.x, TEMP.y, Text);
+			Text.Empty(), Temp.Empty();
+			Temp.Format(L"%d", pDoc->TN), Text.Append(L"True Negative: " + Temp);
+			TEMP.y += 25;
+			pDC->TextOutW(TEMP.x, TEMP.y, Text);
+			Text.Empty(), Temp.Empty();
+			Temp.Format(L"%d", pDoc->FN), Text.Append(L"False Negative: " + Temp);
+			TEMP.y += 25;
+			pDC->TextOutW(TEMP.x, TEMP.y, Text);
+			Text.Empty(), Temp.Empty();
+			Temp.Format(L"%4f", pDoc->sensitivity), Text.Append(L"Sensitivity: " + Temp);
+			TEMP.y += 25;
+			pDC->TextOutW(TEMP.x, TEMP.y, Text);
+			Text.Empty(), Temp.Empty();
+			Temp.Format(L"%4f", pDoc->specificity), Text.Append(L"Specificity: " + Temp);
+			TEMP.y += 25;
+			pDC->TextOutW(TEMP.x, TEMP.y, Text);
+			Text.Empty(), Temp.Empty();
+			Temp.Format(L"%4f", pDoc->mcc_test), Text.Append(L"Matthew's Coefficient: " + Temp);
+			TEMP.y += 25;
+			pDC->TextOutW(TEMP.x, TEMP.y, Text);
+			Text.Empty(), Temp.Empty();
+			Temp.Format(L"%4f", pDoc->ppv_test), Text.Append(L"Positive Predictive Value: " + Temp);
+			TEMP.y += 25;
+			pDC->TextOutW(TEMP.x, TEMP.y, Text);
+			Text.Empty(), Temp.Empty();
+			Temp.Format(L"%4f", pDoc->F1_test), Text.Append(L"F1 Test: " + Temp);
+			TEMP.y += 25;
+			pDC->TextOutW(TEMP.x, TEMP.y, Text);
+			Text.Empty(), Temp.Empty();
+			Temp.Format(L"%4f", pDoc->acc_test), Text.Append(L"Accuracy Test: " + Temp);
+			TEMP.y += 25;
+			pDC->TextOutW(TEMP.x, TEMP.y, Text);
+			//Working on ROC curve
+			Text.Empty(), Temp.Empty();
+			Temp.Format(L"%4f", pDoc->AUC_Total), Text.Append(L"AUC Value: " + Temp);
+			TEMP.y += 25;
+			pDC->TextOutW(TEMP.x, TEMP.y, Text);
+			CPoint ROC_Top, ROC_Bottom;
+			ROC_Top.x = 1500;
+			ROC_Top.y = 50;
+			ROC_Bottom.x = 1800;
+			ROC_Bottom.y = 350;
+			CString ROC_Title;
+			ROC_Title.Empty(), ROC_Title.Append(_T("ROC Plot "));
+			DisplayROC(pDoc, pDC, pDoc->ROC_X, pDoc->ROC_Y, ROC_Top, ROC_Bottom, ROC_Title);
+		}
+		else if (pDoc->n_classes > 2) {
+			TEMP.x = 1100, TEMP.y = 25;
+			Text.Empty(), Text.Append(_T("Classification Numbers: "));
+			pDC->TextOutW(TEMP.x, TEMP.y, Text);
+			CPoint Conf_Top, Conf_Bottom;
+			Conf_Top.x = 1100, Conf_Top.y = 50, Conf_Bottom.x = 1425, Conf_Bottom.y = 375;
+			CString Conf_Title;
+			Conf_Title.Empty(), Conf_Title.Append(_T("Confusion Matrix"));
+			ConfusionMatrix(pDoc, pDC, pDoc->Confusion_Label, Conf_Top, Conf_Bottom, Conf_Title);
+
+			//Setting up a score plot (should be rewritten to be more generic in the future)
+			CArray <double> T1_vec, T2_vec;
+			T1_vec.RemoveAll(), T2_vec.RemoveAll();
+			T1_vec.SetSize(pDoc->n_Obs), T2_vec.SetSize(pDoc->n_Obs);
+			for (int i = 0; i < pDoc->n_Obs; i++) {
+				T1_vec.SetAt(i, pDoc->T.GetAt(i));
+				T2_vec.SetAt(i, pDoc->T.GetAt(i + pDoc->n_Obs));
+			}
+			CPoint ScoreTop, ScoreBottom;
+			ScoreTop.x = 1000, ScoreTop.y = 400, ScoreBottom.x = 1400, ScoreBottom.y = 800;
+			CString Label_x, Label_y;
+			Label_x.Empty(), Label_x.Append(_T("T1 Score"));
+			Label_y.Empty(), Label_y.Append(_T("T2 Score"));
+			bool Task = true;
+			bool Display = false;
+			bool flag = true;
+			DisplayFDAScatterPlot(pDoc, pDC, T1_vec, T2_vec, ScoreTop, ScoreBottom, 1, 1, Label_x, Label_y, Task, Display, flag);
+			//Display Loadings Plot
+			CPoint LoadTop, LoadBottom;
+			LoadTop.x = 1450, LoadTop.y = 400, LoadBottom.x = 1850, LoadBottom.y = 800;
+			CArray <double> P1_vec, P2_vec;
+			P1_vec.RemoveAll(), P2_vec.RemoveAll();
+			P1_vec.SetSize(pDoc->n_Var - 1), P2_vec.SetSize(pDoc->n_Var - 1);
+			for (int i = 0; i < pDoc->n_Var - 1; i++) {
+				P1_vec.SetAt(i, pDoc->P.GetAt(i));
+				P2_vec.SetAt(i, pDoc->P.GetAt(i + (pDoc->n_Var - 1)));
+			}
+			Label_x.Empty(), Label_x.Append(_T("Loading 1"));
+			Label_y.Empty(), Label_y.Append(_T("Loading 2"));
+			bool Load_Task = false;
+			bool Load_Display = true;
+			bool Load_flag = true;
+			double f_crit = 0;
+			DisplayScatterPlot(pDoc, pDC, P1_vec, P2_vec, LoadTop, LoadBottom, 1, 1, Label_x, Label_y, Load_Task, Load_Display, Load_flag, f_crit);
+		}
 	}
 	else if (pDoc->RegressionAnalysis) {
 		DisplayPCA.ShowWindow(SW_HIDE);
@@ -3207,6 +3352,295 @@ void CModelingandAnalysisofUncertaintyView::ConfusionMatrix(CModelingandAnalysis
 		pDC->TextOutW(Point.x, Point.y + 5, Text);
 		y_relative += y_increment;
 	}
+}
+
+//FDA Scatter
+void CModelingandAnalysisofUncertaintyView::DisplayFDAScatterPlot(CModelingandAnalysisofUncertaintyDoc* pDoc, CDC* pDC, CArray <double>& Values_x, CArray <double>& Values_y, CPoint TopLeft, CPoint BottomRight, int x, int y, CString Label_x, CString Label_y, bool Type, bool Display, bool Show) {
+	int x0 = TopLeft.x + 20, y0 = TopLeft.y, Length = BottomRight.x - TopLeft.x - 20, Height = BottomRight.y - TopLeft.y - 20;
+	double x_relative, y_relative, min_x, max_x, min_y, max_y, value, range_x, range_y;
+	int pos;
+	CArray <double> XTicks, YTicks, XTickLabels, YTickLabels;
+	CPoint Point;
+	CFont Label_x_text, Label_y_text;
+	CString Text;
+	CPen Standard;
+	Standard.CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
+	pDC->SelectObject(&Standard);
+	x_relative = 0.5, y_relative = 1.0;
+	Label_x_text.CreateFont(20, 10, 0, 0, FALSE, FALSE, FALSE, 0, ARABIC_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_ROMAN, _T("Courier New"));
+	pDC->SelectObject(&Label_x_text);
+	pDC->SetTextAlign(TA_CENTER | TA_TOP);
+	Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height);
+	if (Show == true) pDC->TextOutW(Point.x, Point.y, Label_x);
+	x_relative = 0.0, y_relative = 0.5;
+	Label_y_text.CreateFont(20, 10, 900, 0, FALSE, FALSE, FALSE, 0, ARABIC_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_ROMAN, _T("Courier New"));
+	if (Show == true) pDC->SelectObject(&Label_y_text);
+	pDC->SetTextAlign(TA_CENTER | TA_BOTTOM);
+	Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height);
+	if (Show == true) pDC->TextOutW(Point.x, Point.y, Label_y);
+	x0 = x0 + 30, Length -= 30, Height -= 30;
+	pDC->SetTextAlign(TA_LEFT | TA_TOP);
+	CFont Standard_Font;
+	Standard_Font.CreateStockObject(SYSTEM_FONT);
+	pDC->SelectObject(&Standard_Font);
+	double nObs = (double)pDoc->n_Obs;
+	ProbabilityDistributions F('F', (double)2, (double)(pDoc->n_Obs - 2));
+	double f_crit = F.CriticalValue(pDoc->alpha);
+	f_crit *= (2.0 * (nObs - 1.0 / nObs)) / (nObs - 2.0);
+	double SemiMajor = 0.0, SemiMinor = 0.0;
+	if ((Type == true) && (Display == true)) {
+		SemiMinor = sqrt(pDoc->lambda.GetAt(x) * f_crit), SemiMajor = sqrt(pDoc->lambda.GetAt(y) * f_crit);
+	}
+	x_relative = 0.0, y_relative = 0.0;
+	Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point.x, Point.y);
+	y_relative = 1.0;
+	Point.y = y0 + (int)(y_relative * Height), pDC->LineTo(Point.x, Point.y);
+	x_relative = 1.0;
+	Point.x = x0 + (int)(x_relative * Length), pDC->LineTo(Point.x, Point.y);
+	GetMinimum(Values_x, pos, min_x), GetMaximum(Values_x, pos, max_x);
+	GetMinimum(Values_y, pos, min_y), GetMaximum(Values_y, pos, max_y);
+	if (min_x > 0) min_x = 0.0;
+	if (max_x < 0) max_x = 0.0;
+	if (min_y > 0) min_y = 0.0;
+	if (max_y < 0) max_y = 0.0;
+	range_x = max_x - min_x;
+	range_y = max_y - min_y;
+	if ((Type == true) && (Display == true)) {
+		if (SemiMinor > max_x) max_x = SemiMinor;
+		if (-SemiMinor < min_x) min_x = -SemiMinor;
+		if (SemiMajor > max_y) max_y = SemiMajor;
+		if (-SemiMajor < min_y) min_y = -SemiMajor;
+		range_x = max_x - min_x;
+		range_y = max_y - min_y;
+		double x1, x2, y1, y2, xbar = -min_x / range_x, ybar = 1 + min_y / range_y;
+		x1 = 0.05 + 0.9 * (xbar - SemiMinor / range_x);
+		x2 = 0.05 + 0.9 * (xbar + SemiMinor / range_x);
+		y1 = 0.05 + 0.9 * (ybar - SemiMajor / range_y);
+		y2 = 0.05 + 0.9 * (ybar + SemiMajor / range_y);
+		int X1, X2, Y1, Y2;
+		X1 = x0 + (int)(x1 * Length), X2 = x0 + (int)(x2 * Length);
+		Y1 = y0 + (int)(y1 * Height), Y2 = y0 + (int)(y2 * Height);
+		pDC->Ellipse(X1, Y1, X2, Y2);
+	}
+
+	GetTicks(min_x, max_x, XTicks, XTickLabels);
+	GetTicks(min_y, max_y, YTicks, YTickLabels);
+	y_relative = 1.0, Point.y = y0 + (int)(y_relative * Height);
+	pDC->SetTextAlign(TA_CENTER | TA_TOP);
+	for (int i = 0; i < XTicks.GetSize(); i++) {
+		x_relative = 0.05 + 0.9 * XTicks.GetAt(i), Point.x = x0 + (int)(x_relative * Length), pDC->MoveTo(Point);
+		pDC->LineTo(Point.x, Point.y - 10);
+		if (Show == true) {
+			FormatTickLabel(Text, XTickLabels.GetAt(i), 0);
+			pDC->TextOutW(Point.x, Point.y, Text);
+		}
+	}
+	x_relative = 0.0, Point.x = x0 + (int)(x_relative * Length);
+	pDC->SetTextAlign(TA_TOP | TA_RIGHT);
+	for (int i = 0; i < YTicks.GetSize(); i++) {
+		y_relative = 0.05 + 0.9 * (1 - YTicks.GetAt(i)), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+		pDC->LineTo(Point.x + 10, Point.y);
+		if (Show == true) {
+			FormatTickLabel(Text, YTickLabels.GetAt(i), 0);
+			pDC->TextOutW(Point.x - 2, Point.y - 7, Text);
+		}
+	}
+
+	CFont hFont;
+	hFont.CreateFont(10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, _T("SYSTEM_FIXED_FONT"));
+	pDC->SelectObject(hFont);
+	pDC->SetTextAlign(TA_CENTER | TA_BOTTOM);
+	for (int i = 0; i < Values_x.GetSize(); i++) {
+		CPen Marks;
+		if (pDoc->Label_Y[i] - 1 == 0) {
+			Marks.CreatePen(PS_SOLID, 2, RGB(243, 102, 25));
+		}
+		if (pDoc->Label_Y[i] - 1 == 1) {
+			Marks.CreatePen(PS_SOLID, 2, RGB(0, 0, 255));
+		}
+		if (pDoc->Label_Y[i] - 1 == 2) {
+			Marks.CreatePen(PS_SOLID, 2, RGB(0, 255, 0));
+		}
+		pDC->SelectObject(&Marks);
+		value = Values_x.GetAt(i);
+		value -= min_x;
+		value /= range_x;
+		x_relative = 0.05 + 0.9 * value;
+		value = Values_y.GetAt(i);
+		value -= min_y;
+		value /= range_y;
+		y_relative = 0.05 + 0.9 * (1 - value);
+		Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height);
+		pDC->Ellipse(Point.x - 3, Point.y - 3, Point.x + 3, Point.y + 3);
+		if ((Type == false) && (Display == true)) pDC->TextOutW(Point.x, Point.y - 5, pDoc->Tag.GetAt(i));
+	}
+	pDC->SetTextAlign(TA_LEFT | TA_TOP);
+	pDC->SelectObject(&Standard_Font);
+}
+
+//Attempting to produce a ROC curve
+void CModelingandAnalysisofUncertaintyView::DisplayROC(CModelingandAnalysisofUncertaintyDoc* pDoc, CDC* pDC, CArray <double>& ROC_X, CArray <double>& ROC_Y, CPoint TopLeft, CPoint BottomRight, CString Label) {
+	CPen Standard;
+	Standard.CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
+	pDC->SelectObject(&Standard);
+	int Length = BottomRight.x - TopLeft.x - 25, Height = BottomRight.y - TopLeft.y - 25, x0 = TopLeft.x, y0 = TopLeft.y + 25, nObs = pDoc->n_Obs, pos;
+	double min, max, value, range, x_relative, y_relative;
+	CPoint Point;
+	CRect rectA(TopLeft.x, TopLeft.y, TopLeft.x + 125, TopLeft.y + 20);
+	CString Text;
+	pDC->Rectangle(rectA);
+	CBrush Brush_Header;
+	Brush_Header.CreateSolidBrush(RGB(238, 228, 50));
+	pDC->FillRect(&rectA, &Brush_Header);
+	pDC->SetBkMode(TRANSPARENT);
+	CFont Standard_Font;
+	Standard_Font.CreateStockObject(SYSTEM_FONT);
+	pDC->SelectObject(&Standard_Font);
+	pDC->SetTextAlign(TA_LEFT);
+	pDC->TextOutW(TopLeft.x + 3, TopLeft.y + 3, Label);
+	x_relative = 0.0, y_relative = 0.0;
+	Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+	y_relative = 1.0, Point.y = y0 + (int)(y_relative * Height), pDC->LineTo(Point);
+	GetMaximum(ROC_X, pos, max), GetMinimum(ROC_X, pos, min);
+	if (min > 0.0) min = 0.0;
+	if (max < 0.0) max = 0.0;
+	CArray <double> XTicks, YTicks, XTickLabels, YTickLabels;
+	GetTicks(min, max, YTicks, YTickLabels);
+	x_relative = 0.0, Point.x = x0 + (int)(x_relative * Length);
+	int digit_old = 0, digit_new;
+	double temp, abscissa;
+	range = max - min, abscissa = 1 + min / range;
+	GetMinimum(YTickLabels, pos, temp);
+	digit_new = FormatTickLabel(Text, YTickLabels.GetAt(pos), digit_old);
+	if (digit_new > digit_old) digit_old = digit_new;
+	pDC->SetTextAlign(TA_RIGHT | TA_TOP);
+	for (int i = 0; i < YTicks.GetSize(); i++) {
+		y_relative = 0.05 + 0.9 * (1 - YTicks.GetAt(i)), Point.y = y0 + (int)(y_relative * Height);
+		pDC->MoveTo(Point.x + 10, Point.y), pDC->LineTo(Point);
+		digit_new = FormatTickLabel(Text, YTickLabels.GetAt(i), digit_old);
+		pDC->TextOutW(Point.x - 2, Point.y - 7, Text);
+	}
+	x_relative = 0.0, y_relative = 1.0;
+	Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+	x_relative = 1.0, Point.x = x0 + (int)(x_relative * Length), pDC->LineTo(Point);
+	GetTicks((double)0, (double)1, XTicks, XTickLabels);
+	pDC->SetTextAlign(TA_CENTER | TA_TOP);
+	for (int i = 0; i < XTicks.GetSize(); i++) {
+		x_relative = XTicks.GetAt(i), Point.x = x0 + (int)(x_relative * Length);
+		pDC->MoveTo(Point.x, Point.y - 10), pDC->LineTo(Point);
+		FormatTickLabel(Text, XTickLabels.GetAt(i), 0);
+		pDC->TextOutW(Point.x, Point.y, Text);
+	}
+	double dx = 0;
+	x_relative = 0.0;
+	int x1, x2, y1, y2;
+	CPen Connect;
+	Connect.CreatePen(PS_SOLID, 2, RGB(243, 102, 25));
+	for (int i = 0; i < ROC_Y.GetSize(); i++) {
+		if (i > 0) {
+			dx = ROC_Y[i] - ROC_Y[i - 1];
+		}
+		x_relative += dx;
+		value = ROC_X.GetAt(i);
+		value -= min;
+		value /= range;
+		y_relative = 0.05 + 0.9 * (1 - value);
+		x1 = x0 + (int)(x_relative * Length) - 5, x2 = x1 + 10, y1 = y0 + (int)(y_relative * Height) - 5, y2 = y1 + 10;
+		if (i == 0) {
+			pDC->SelectObject(&Connect);
+			pDC->MoveTo(x1, y1);
+		}
+		pDC->SelectObject(&Connect);
+		pDC->LineTo(x2, y2);
+	}
+	pDC->SelectObject(&Standard_Font);
+	pDC->SelectObject(&Standard);
+	pDC->SetTextAlign(TA_LEFT | TA_TOP);
+}
+
+void CModelingandAnalysisofUncertaintyView::FDADisplayScores(CModelingandAnalysisofUncertaintyDoc* pDoc, CDC* pDC, CArray <double>& Scores, CPoint TopLeft, CPoint BottomRight, CString Label) {
+	CPen Standard;
+	Standard.CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
+	pDC->SelectObject(&Standard);
+	int Length = BottomRight.x - TopLeft.x - 25, Height = BottomRight.y - TopLeft.y - 25, x0 = TopLeft.x, y0 = TopLeft.y + 25, nObs = pDoc->n_Obs, pos;
+	double min, max, value, range, x_relative, y_relative;
+	CPoint Point;
+	CRect rectA(TopLeft.x, TopLeft.y, TopLeft.x + 125, TopLeft.y + 20);
+	CString Text;
+	pDC->Rectangle(rectA);
+	CBrush Brush_Header;
+	Brush_Header.CreateSolidBrush(RGB(238, 228, 50));
+	pDC->FillRect(&rectA, &Brush_Header);
+	pDC->SetBkMode(TRANSPARENT);
+	CFont Standard_Font;
+	Standard_Font.CreateStockObject(SYSTEM_FONT);
+	pDC->SelectObject(&Standard_Font);
+	pDC->SetTextAlign(TA_LEFT);
+	pDC->TextOutW(TopLeft.x + 3, TopLeft.y + 3, Label);
+	x_relative = 0.0, y_relative = 0.0;
+	Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+	y_relative = 1.0, Point.y = y0 + (int)(y_relative * Height), pDC->LineTo(Point);
+	GetMaximum(Scores, pos, max), GetMinimum(Scores, pos, min);
+	if (min > 0.0) min = 0.0;
+	if (max < 0.0) max = 0.0;
+	CArray <double> XTicks, YTicks, XTickLabels, YTickLabels;
+	GetTicks(min, max, YTicks, YTickLabels);
+	x_relative = 0.0, Point.x = x0 + (int)(x_relative * Length);
+	int digit_old = 0, digit_new;
+	double temp, abscissa;
+	range = max - min, abscissa = 1 + min / range;
+	GetMinimum(YTickLabels, pos, temp);
+	digit_new = FormatTickLabel(Text, YTickLabels.GetAt(pos), digit_old);
+	if (digit_new > digit_old) digit_old = digit_new;
+	pDC->SetTextAlign(TA_RIGHT | TA_TOP);
+	for (int i = 0; i < YTicks.GetSize(); i++) {
+		y_relative = 0.05 + 0.9 * (1 - YTicks.GetAt(i)), Point.y = y0 + (int)(y_relative * Height);
+		pDC->MoveTo(Point.x + 10, Point.y), pDC->LineTo(Point);
+		digit_new = FormatTickLabel(Text, YTickLabels.GetAt(i), digit_old);
+		pDC->TextOutW(Point.x - 2, Point.y - 7, Text);
+	}
+	x_relative = 0.0, y_relative = 1.0;
+	Point.x = x0 + (int)(x_relative * Length), Point.y = y0 + (int)(y_relative * Height), pDC->MoveTo(Point);
+	x_relative = 1.0, Point.x = x0 + (int)(x_relative * Length), pDC->LineTo(Point);
+	GetTicks((double)1, (double)pDoc->n_Obs, XTicks, XTickLabels);
+	pDC->SetTextAlign(TA_CENTER | TA_TOP);
+	for (int i = 0; i < XTicks.GetSize(); i++) {
+		x_relative = XTicks.GetAt(i), Point.x = x0 + (int)(x_relative * Length);
+		pDC->MoveTo(Point.x, Point.y - 10), pDC->LineTo(Point);
+		FormatTickLabel(Text, XTickLabels.GetAt(i), 0);
+		pDC->TextOutW(Point.x, Point.y, Text);
+	}
+	double dx = 1 / (double)Scores.GetSize();
+	x_relative = 0.0;
+	int x1, x2, y1, y2;
+	for (int i = 0; i < pDoc->n_Obs; i++) {
+		x_relative += dx;
+		value = Scores.GetAt(i);
+		value -= min;
+		value /= range;
+		y_relative = 0.05 + 0.9 * (1 - value);
+		x1 = x0 + (int)(x_relative * Length) - 5, x2 = x1 + 10, y1 = y0 + (int)(y_relative * Height) - 5, y2 = y1 + 10;
+		CPen Marks;
+		if (pDoc->Label_Y[i] - 1 == 0) {
+			Marks.CreatePen(PS_SOLID, 2, RGB(243, 102, 25));
+		}
+		if (pDoc->Label_Y[i] - 1 == 1) {
+			Marks.CreatePen(PS_SOLID, 2, RGB(0, 0, 255));
+		}
+		if (pDoc->Label_Y[i] - 1 == 2) {
+			Marks.CreatePen(PS_SOLID, 2, RGB(0, 255, 0));
+		}
+		pDC->SelectObject(&Marks);
+		pDC->Ellipse(x1, y1, x2, y2);
+		CRect rect(x1 + 2, y1 + 2, x2 - 2, y2 - 2);
+		pDC->Rectangle(rect);
+		CBrush brush;
+		brush.CreateSolidBrush(RGB(255, 224, 146));
+		pDC->FillRect(&rect, &brush);
+	}
+	pDC->SelectObject(&Standard_Font);
+	pDC->SelectObject(&Standard);
+	pDC->SetTextAlign(TA_LEFT | TA_TOP);
 }
 
 void CModelingandAnalysisofUncertaintyView::DisplayScores(CModelingandAnalysisofUncertaintyDoc* pDoc, CDC* pDC, CArray <double>& Scores, CPoint TopLeft, CPoint BottomRight, CString Label) {
