@@ -1182,7 +1182,7 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		DisplayFileAndDataSetInformation(pDoc, pDC, true);
 		PlotLossCurve();
 		//StartDrawing();
-		//PlotAccuraciesCurve();
+		PlotAccuraciesCurve();
 		//m_nCurrentIndex = 0;
 		//m_nTimerID = SetTimer(1, 10, NULL);
 		//OnTimer(m_nTimerID);
@@ -9472,7 +9472,7 @@ void CModelingandAnalysisofUncertaintyView::OnTimer(UINT_PTR nIDEvent)
 		CRect rc;
 		GetClientRect(&rc);
 		int graphHeight = (rc.Height() - 3 * margin - spacingBetweenGraphs) / 2;
-		int graphWidth = rc.Width() - 2 * margin;
+		int graphWidth = rc.Width()/2 - 2 * margin;
 
 		int startX = margin;
 		int startY = (2 * graphHeight) + (2 * margin) + spacingBetweenGraphs;
@@ -9543,7 +9543,7 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 	int margin = 70;  // Increased margin for more space
 	int spacingBetweenGraphs = 50;  // spacing between graphs
 	int graphHeight = (rc.Height() - 3 * margin - spacingBetweenGraphs) / 2;
-	int graphWidth = rc.Width() - 2 * margin;
+	int graphWidth = rc.Width()/2 - 2 * margin;
 
 	int startX = margin;
 	int startY = (2 * graphHeight) + (2 * margin) + spacingBetweenGraphs;
@@ -9612,7 +9612,7 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 		dc.TextOutW(startX - 40, endY - 25, L"Loss Value");
 
 
-		//DrawGrid(dc, startX, startY, endX, endY, xTickInterval, yTickInterval, numXTicks, numYTicks);
+		DrawGrid(dc, startX, startY, endX, endY, xTickInterval, yTickInterval, numXTicks, numYTicks);
 	}
 }
 
@@ -9645,11 +9645,11 @@ void CModelingandAnalysisofUncertaintyView::PlotAccuraciesCurve() {
 	int margin = 70;  // Increased margin for more space
 	int spacingBetweenGraphs = 50;  // spacing between graphs
 	int graphHeight = (rc.Height() - 3 * margin - spacingBetweenGraphs) / 2;
-	int graphWidth = rc.Width() - 2 * margin;
+	int graphWidth = rc.Width()/2 - 2 * margin;
 
-	int startX = margin;
+	int startX = 2*margin+graphWidth;
 	int startY = (2 * graphHeight) + (2 * margin) + spacingBetweenGraphs;
-	int endX = startX + graphWidth;
+	int endX = startX + 2*graphWidth;
 	int endY = startY - graphHeight;
 
 	double scaleX = static_cast<double>(graphWidth) / training_accuracies.size();
