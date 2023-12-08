@@ -137,6 +137,7 @@ private:
 	void ShowRegressionCoefficients(CModelingandAnalysisofUncertaintyDoc*, CDC*, CPoint&, CPoint&, int);
 	void ShowModelPrediction(CModelingandAnalysisofUncertaintyDoc*, CDC*, CPoint&, CPoint&);
 	void ShowPredictionError(CModelingandAnalysisofUncertaintyDoc*, CDC*, CArray <double>&, CPoint&, CPoint&);
+	void CModelingandAnalysisofUncertaintyView::DisplayConfusionMatrix();
 	//----------------------------------
 
 public:

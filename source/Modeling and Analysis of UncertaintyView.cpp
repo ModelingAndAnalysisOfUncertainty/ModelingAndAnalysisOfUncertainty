@@ -1328,6 +1328,7 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		PlotLossCurve();
 		//StartDrawing();
 		PlotAccuraciesCurve();
+		DisplayConfusionMatrix();
 		//m_nCurrentIndex = 0;
 		//m_nTimerID = SetTimer(1, 10, NULL);
 		//OnTimer(m_nTimerID);
@@ -10169,6 +10170,10 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 
 		DrawGrid(dc, startX, startY, endX, endY, xTickInterval, yTickInterval, numXTicks, numYTicks);
 	}
+
+
+
+	
 }
 
 
@@ -10306,4 +10311,63 @@ void CModelingandAnalysisofUncertaintyView::OnMachinelearningArtificialneuralnet
 		Sec_Dlg.DoModal();
 		std::vector<int> nodeCounts = Sec_Dlg.GetNodeCounts();
 	}
+}
+
+
+
+void CModelingandAnalysisofUncertaintyView::DisplayConfusionMatrix() {
+	/*
+	std::ifstream inFile("confusionMatrix.txt");
+	if (!inFile.is_open()) {
+		AfxMessageBox(_T("Unable to open confusionMatrix.txt"));
+		return;
+	}
+
+
+	int TP, FP, FN, TN;
+	inFile >> TP >> FP >> FN >> TN;
+	inFile.close();
+	*/
+	CClientDC dc(this);
+	CRect clientRect;
+	GetClientRect(&clientRect);
+	int matrixTop = 50;
+	int matrixRight = clientRect.right - 50;
+	int matrixCellWidth = 150;
+	int matrixCellHeight = 100;
+	int matrixLeft = matrixRight - 2 * matrixCellWidth;
+	CRect matrixRect(matrixLeft, matrixTop, matrixLeft + 2 * matrixCellWidth, matrixTop + 2 * matrixCellHeight);
+	dc.Rectangle(matrixRect);
+
+
+	//Draw confusion matrix
+	
+	int TP = 0, FP = 0, FN = 0, TN = 0;
+
+
+	
+	// Draw the confusion matrix internal lines
+	dc.MoveTo(matrixLeft + matrixCellWidth, matrixTop);
+	dc.LineTo(matrixLeft + matrixCellWidth, matrixTop + 2 * matrixCellHeight);
+	dc.MoveTo(matrixLeft, matrixTop + matrixCellHeight);
+	dc.LineTo(matrixRight, matrixTop + matrixCellHeight);
+
+	// Add labels for confusion matrix
+	dc.TextOutW(matrixLeft + 10, matrixTop - 20, L"Actually Positive");
+	dc.TextOutW(matrixLeft + matrixCellWidth + 10, matrixTop - 20, L"Actually Negative");
+	dc.TextOutW(matrixLeft - 150, matrixTop + 10, L"Predicted Positive");
+	dc.TextOutW(matrixLeft - 150, matrixTop + matrixCellHeight + 10, L"Predicted Negative");
+
+	// Assuming you have the values for TP, FP, FN, TN already calculated
+	CString strTP, strFP, strFN, strTN;
+	strTP.Format(_T("TP: %d"), TP);  // True Positives
+	strFP.Format(_T("FP: %d"), FP);  // False Positives
+	strFN.Format(_T("FN: %d"), FN);  // False Negatives
+	strTN.Format(_T("TN: %d"), TN);  // True Negatives
+
+	// Output the values in the corresponding cells
+	dc.TextOutW(matrixLeft + 10, matrixTop + 10, strTP);
+	dc.TextOutW(matrixLeft + matrixCellWidth + 10, matrixTop + 10, strFP);
+	dc.TextOutW(matrixLeft + 10, matrixTop + matrixCellHeight + 10, strFN);
+	dc.TextOutW(matrixLeft + matrixCellWidth + 10, matrixTop + matrixCellHeight + 10, strTN);
 }
