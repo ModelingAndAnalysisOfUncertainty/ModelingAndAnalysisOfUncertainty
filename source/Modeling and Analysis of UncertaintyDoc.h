@@ -159,6 +159,10 @@ public:
 	bool FA_Display_Matrices = false;
 	// FLAGS FOR FISHER DISCRIMINANT ANALYSIS
 	bool FDA = false;
+	CArray <double> Class_Y, Label_Y, avg_ClassY, ROC_Y, ROC_X;
+	CArray <int> Class_count, Confusion_Label;
+	int TP, FP, TN, FN;// True_Label, False_Label;
+	double sensitivity, specificity, mcc_test, ppv_test, F1_test, acc_test, AUC_Total;
 	// FLAGS FOR LINEAR MULTIPLE REGRESSION ANALYSIS
 	bool RegressionAnalysis = false;
 	bool RegressionAnalysis_Independent = false;
@@ -176,6 +180,22 @@ public:
 	void QuickSort(CArray <double>&, int, int);
 	void GetColumn(CArray <double>&, CArray <int>&, CArray <double>&, int);
 	void GetLargestElement(CArray <double>&, CArray <int>&, double&);
+	// Variables for Neural Network Model
+	double Model_MCC;
+	double Model_F1_Micro;
+	double Model_F1_Macro;
+	double Model_F1_Weighted;
+	double Model_Accuracy;
+	double Model_ARI;
+	double Model_RI;
+	double Model_FMI;
+	double Model_JI;
+	double Model_F1;
+	double Model_SEN;
+	double Model_SPE;
+
+
+
 public:
 
 	// Overrides
@@ -304,10 +324,19 @@ protected:
 	double sum_squared_error_parallel(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2);
 	void VecTranspose(std::vector<std::vector<double> >& b);
 	void VecTransposeInt(std::vector<std::vector<int> >& b);
+  void getTrainTestData(std::vector<std::vector<double> >& X,
+		std::vector<std::vector<double> >& Xtrain, std::vector<std::vector<double> >& Xtest,
+		std::vector<std::vector<int>>& Y, std::vector<std::vector<int>>& Ytrain,
+		std::vector<std::vector<int>>& Ytest, double trainFraction, const int M, const int C);
 	void UpdateBiases(int c, int n_weights, const int M, const int H, const int train,
 		std::vector<double>& yhat, std::vector<double>& private_w, const int eta, std::vector<std::vector<double>>& F,
 		std::vector<std::vector<int>>& Ytrain, int n_biases, std::vector<std::vector<double> >& Xslice, std::vector<double>& private_b,
 		int slice_index, int Ntrain);
+	void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(std::vector<int>& yass0, std::vector<int>& ytrue);
+	int CModelingandAnalysisofUncertaintyDoc::n_choose_k(int n, int k);
+	int CModelingandAnalysisofUncertaintyDoc::factorial(int m);
+	void CModelingandAnalysisofUncertaintyDoc::GetConfusionMatrix(CArray<int>& ConfusionMatrix,
+		std::vector<int>& yass0, std::vector<int>& ytrue);
 
 	// Generated message map functions
 protected:
