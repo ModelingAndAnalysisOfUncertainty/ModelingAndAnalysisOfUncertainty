@@ -1,4 +1,4 @@
-25,206,5/2/2021,21:03:34,12/8/2023,17:37:48,Metabolites
+25,206,5/2/2021,21:03:34,12/5/2023,16:21:28,Metabolites
 x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,x17,x18,x19,x20,x21,x22,x23,x24,y
 Methionine,SAM,SAH,SAM/SAH,% DNA methylation,8-OHG,Adenosine,Homocysteine,Cysteine,Glu.-Cys.,Cys.-Gly.,tGSH,fGSH,GSSG,fGSH/GSSG,tGSH/GSSG,Chlorotyrosine,Nitrotyrosine,Tyrosine,Tryptophane,fCystine,fCysteine,fCystine/fCysteine,%oxidized,label
 uM,nM,nM,,,nmol/mg DNA,uM,uM,uM,uM,uM,uM,uM,uM,,,nM,nM,uM,uM,nM,nM,,,
