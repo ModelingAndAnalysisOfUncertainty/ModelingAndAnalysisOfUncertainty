@@ -36,11 +36,14 @@ private:
 	double Normal(double, double, double);
 	void TwoSampleSequencePlot(CModelingandAnalysisofUncertaintyDoc*, CDC*, CArray <double>&, CPoint, CPoint, CString, int, int);
 	
-
+// Add the timer for real time drawing
+	UINT_PTR m_nTimerID;
+	size_t m_nCurrentIndex;
 
 // Operations
 public:
 	int nHt, nWt;
+
 
 // Overrides
 public:
@@ -86,6 +89,8 @@ protected:
 public:
 	void PlotLossCurve();
 	void PlotAccuraciesCurve();
+	void StartDrawing();
+	virtual void OnTimer(UINT_PTR nIDEvent);
 private:
 	int counter = 0, bins = 2, Distribution = 0, n = 1, n_Grid = 1;
 	bool Type = false, Flag_Select = true;
@@ -154,6 +159,7 @@ public:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	// Thread Messenger for ANN
 	afx_msg LRESULT OnTrainingComplete(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnMachinelearningArtificialneuralnetworkwithaccuracy();
 };
 #ifndef _DEBUG  // debug version in Modeling and Analysis of UncertaintyView.cpp
 inline CModelingandAnalysisofUncertaintyDoc* CModelingandAnalysisofUncertaintyView::GetDocument() const

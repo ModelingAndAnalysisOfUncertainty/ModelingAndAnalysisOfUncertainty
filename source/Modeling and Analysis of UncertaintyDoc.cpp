@@ -50,6 +50,7 @@
 // Thread Handler for ANN
 #define WM_USER_THREAD_FINISHED WM_APP + 1
 
+
 // CModelingandAnalysisofUncertaintyDoc
 
 IMPLEMENT_DYNCREATE(CModelingandAnalysisofUncertaintyDoc, CDocument)
@@ -102,6 +103,7 @@ BEGIN_MESSAGE_MAP(CModelingandAnalysisofUncertaintyDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(ID_REGULARIZATION_L2NORM, &CModelingandAnalysisofUncertaintyDoc::OnUpdateL2_Regularization)
 	ON_UPDATE_COMMAND_UI(ID_MACHINELEARNING_KERNELPARTIALLEASTSQUARES, &CModelingandAnalysisofUncertaintyDoc::OnUpdateKPLS)
 	ON_UPDATE_COMMAND_UI(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORK, &CModelingandAnalysisofUncertaintyDoc::OnUpdateKPLS)
+	ON_UPDATE_COMMAND_UI(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORKWITHACCURACY, &CModelingandAnalysisofUncertaintyDoc::OnUpdateMachinelearningArtificialneuralnetworkwithaccuracy)
 END_MESSAGE_MAP()
 
 // CModelingandAnalysisofUncertaintyDoc construction/destruction
@@ -7435,6 +7437,7 @@ UINT ANN_EEA5_ThreadProc(LPVOID pParam) {
 	return 0;
 }
 
+
 // Wait for processing message
 void ProcessPendingMessages() {
 	MSG msg;
@@ -7443,6 +7446,7 @@ void ProcessPendingMessages() {
 		DispatchMessage(&msg);
 	}
 }
+
 
 
 void CModelingandAnalysisofUncertaintyDoc::OnANN() {
@@ -7791,17 +7795,107 @@ int CModelingandAnalysisofUncertaintyDoc::factorial(int m) {
 	return result;
 }
 
+struct ANNParams {
+	double learningRate;
+	int epochs;
+	int batchSize;
+	HANDLE hEvent;
+	CModelingandAnalysisofUncertaintyDoc* pDoc;
+};
+
+
+UINT __cdecl ANN_MFC1_Thread(LPVOID pParam)
+{
+	ANNParams* params = (ANNParams*)pParam;
+	CModelingandAnalysisofUncertaintyDoc* pDoc = params->pDoc;
+
+
+	pDoc->OnANN_MFC_layer1(params->learningRate, params->epochs, params->batchSize , params->hEvent);
+	
+
+	
+
+	delete params;
+	return 0;
+}
+
 void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
+	CWnd* pParent = nullptr;
+	CANNForm Selection(pParent);
+	OnOpenedFile = false;
+	DescriptiveStatistics = false;
+	HypothesisTesting_OneSample = false;
+	HypothesisTesting_TwoSample = false;
+	ShapiroWilkTest = false;
+	AndersonDarlingTest = false;
+	ANOVA = false;
+	PCA_Select_PCs = false;
+	PCA_Display_PCs_Standard = false;
+	PCA_Display_Scores = false;
+	PCA_Display_Loadings = false;
+	FA_Display_Standard = false;
+	FA_Display_Loadings = false;
+	FA_Display_Scores = false;
+	FA_Display_Matrices = false;
+	FDA = false;
+	ANN_Training = true;
+
+	Loss_Ann.clear();
+	// Get training setting from user
+	Selection.DoModal();
+	HANDLE hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	if (hEvent == NULL) {
+		AfxMessageBox(_T("Failed to create synchronization event."));
+		return; 
+	}
+	//double lr = Selection.learning_rate;
+	//int epoch_num = Selection.total_epoch;
+	//int batch_num = Selection.batch_size;
+	int epoch = Selection.total_epoch;
+	int count = epoch / 100;
+	ANNParams* params = new ANNParams{ Selection.learning_rate, epoch, Selection.batch_size,hEvent, this };
+	AfxBeginThread(ANN_MFC1_Thread, params);
+	for (int i = 0; i < epoch; ++i) {
+		DWORD dwResult = WaitForSingleObject(hEvent, 800);
+		if (dwResult == WAIT_OBJECT_0) {
+			ProcessPendingMessages();
+			// The event is signaled, so update the views
+			
+			if (i % count == 0) {
+				UpdateAllViews(NULL);
+			}
+	
+			ResetEvent(hEvent);  // Reset the event for the next epoch
+		}
+		else if (dwResult == WAIT_TIMEOUT) {
+			//AfxMessageBox(_T("Operation timed out."));
+			break; 
+		}
+	}
+	UpdateAllViews(NULL);
+	CloseHandle(hEvent);
+
+
+	//  Move Training methods to the OnANN_MFC_layer1. Then run training in different thread.
+	
+	
+	
+}
+
+
+void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC_layer1(double learningRate, int epochs, int batchSize, HANDLE hEvent) {
+
 	// Define constants
 	const int N = n_Obs;
 	const int M = n_Var - 1;
 	const int C = n_classes;
 	const int H = 5;
-	const int n_epochs = 500;
+	const int n_epochs = epochs;
 	const int train = 20;
-	const double eta = 1e-1 / train;  
-	int batch_size = 5;
-	// Initialize random number generator seed
+	//const double eta = 1e-1 / train;    Not sure here; divide by train or not
+	const double eta = learningRate;
+	int batch_size = batchSize;
+	Loss_Ann.clear();
 	std::srand(1);
 
 	CArray<double> Data0, bar, std;
@@ -7813,10 +7907,10 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	//std::ofstream FILE_CHECK;
 	//FILE_CHECK.open("check_file.txt");
 
-	std::vector<std::vector<double>> X(n_Obs, std::vector<double>(n_Var-1));
+	std::vector<std::vector<double>> X(n_Obs, std::vector<double>(n_Var - 1));
 	std::vector<double> Input_Y(n_Obs);
 
-	for (int i = 0; i < n_Obs * (n_Var-1); i++) {
+	for (int i = 0; i < n_Obs * (n_Var - 1); i++) {
 		int row = i % n_Obs;
 		int col = i / n_Obs;
 		X[row][col] = Data0[i];
@@ -7829,6 +7923,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	for (int i = 0; i < n_Obs; i++) {
 		Y[i][(Input_Y[i] - 1)] = 1;
 	}
+
 
 	// Initialize weight (w) and bias (b) matrices for the neural network
 	int n_weights = H * (M + 1);
@@ -7912,7 +8007,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 	// 450x3 matrix of 0's
 	std::vector<std::vector<double>> yhat0(Ntest, std::vector<double>(C, 0.0));
 
-
 	// Create variables for Yhat0 and delta0
 	// These are both 450x3 uninitialized matrices
 	std::vector<std::vector<double>> Yhat0(Ntest, std::vector<double>(C));
@@ -7947,8 +8041,10 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			}
 
 			GetNetworkPrediction(Xslice, H, weights, biases, F, yhat);
+
 		
 			std::vector<double> d(train, 0.0);
+
 			int d_index = 0;
 			for (int i = slice_index; i < slice_index + train; i++) {
 				if (i >= Ntrain) {
@@ -8011,7 +8107,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			std::vector<double> yhat0(Ntest, 0.0);
 			std::vector<std::vector<double> > Ftemp = std::vector<std::vector<double>>(Ntest, std::vector<double>(H, 0.0));
 			GetNetworkPrediction(Xtest, H, weights, biases, Ftemp, yhat0);
-			
+
 
 			// Compute delta0 for the current class
 			std::vector<double> delta0(Ntest, 0.0);
@@ -8041,9 +8137,16 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 			//Yhat0 = yhat0;
 		}
 		// Print the current epoch and spe_new
+		
 		if (epoch % batch_size == 0) {
 			FILE << epoch << "\t" << spe_new << "\n";
+
+			//UpdateAllViews(NULL);
+			//UpdateAllViews();
 		}
+		Loss_Ann.push_back(spe_new);
+		SetEvent(hEvent);
+
 	}
 	FILE << "Yhat0 (Prediction):\n";
 	for (int i = 0; i < Yhat0.size(); i++) {
@@ -8793,5 +8896,11 @@ void CModelingandAnalysisofUncertaintyDoc::OnUpdateKPLS(CCmdUI* pCmdUI) {
 }
 
 void CModelingandAnalysisofUncertaintyDoc::OnUpdateANN(CCmdUI* pCmdUI) {
+	pCmdUI->Enable(FileOpen);
+}
+
+
+void CModelingandAnalysisofUncertaintyDoc::OnUpdateMachinelearningArtificialneuralnetworkwithaccuracy(CCmdUI* pCmdUI)
+{
 	pCmdUI->Enable(FileOpen);
 }
