@@ -8185,7 +8185,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC_layer1(double learningRate,
 	}
 	FILE.close();
 
-	EvaluateModel(yass0, Ytrue_Test);
+	//EvaluateModel(yass0, Ytrue_Test);
 }
 
 void CModelingandAnalysisofUncertaintyDoc::GetConfusionMatrix(CArray<int>& ConfusionMatrix,
