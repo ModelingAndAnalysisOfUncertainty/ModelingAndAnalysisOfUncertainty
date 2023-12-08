@@ -1327,7 +1327,8 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		DisplayFileAndDataSetInformation(pDoc, pDC, true);
 		PlotLossCurve();
 		//StartDrawing();
-		//PlotAccuraciesCurve();
+		PlotAccuraciesCurve();
+		DisplayConfusionMatrix();
 		//m_nCurrentIndex = 0;
 		//m_nTimerID = SetTimer(1, 10, NULL);
 		//OnTimer(m_nTimerID);
@@ -10027,7 +10028,7 @@ void CModelingandAnalysisofUncertaintyView::OnTimer(UINT_PTR nIDEvent)
 		CRect rc;
 		GetClientRect(&rc);
 		int graphHeight = (rc.Height() - 3 * margin - spacingBetweenGraphs) / 2;
-		int graphWidth = rc.Width() - 2 * margin;
+		int graphWidth = rc.Width()/2 - 2 * margin;
 
 		int startX = margin;
 		int startY = (2 * graphHeight) + (2 * margin) + spacingBetweenGraphs;
@@ -10098,7 +10099,7 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 	int margin = 70;  // Increased margin for more space
 	int spacingBetweenGraphs = 50;  // spacing between graphs
 	int graphHeight = (rc.Height() - 3 * margin - spacingBetweenGraphs) / 2;
-	int graphWidth = rc.Width() - 2 * margin;
+	int graphWidth = rc.Width()/2 - 2 * margin;
 
 	int startX = margin;
 	int startY = (2 * graphHeight) + (2 * margin) + spacingBetweenGraphs;
@@ -10167,7 +10168,7 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 		dc.TextOutW(startX - 40, endY - 25, L"Loss Value");
 
 
-		//DrawGrid(dc, startX, startY, endX, endY, xTickInterval, yTickInterval, numXTicks, numYTicks);
+		DrawGrid(dc, startX, startY, endX, endY, xTickInterval, yTickInterval, numXTicks, numYTicks);
 	}
 }
 
@@ -10200,11 +10201,11 @@ void CModelingandAnalysisofUncertaintyView::PlotAccuraciesCurve() {
 	int margin = 70;  // Increased margin for more space
 	int spacingBetweenGraphs = 50;  // spacing between graphs
 	int graphHeight = (rc.Height() - 3 * margin - spacingBetweenGraphs) / 2;
-	int graphWidth = rc.Width() - 2 * margin;
+	int graphWidth = rc.Width()/2 - 2 * margin;
 
-	int startX = margin;
+	int startX = 2*margin+graphWidth;
 	int startY = (2 * graphHeight) + (2 * margin) + spacingBetweenGraphs;
-	int endX = startX + graphWidth;
+	int endX = startX + 2*graphWidth;
 	int endY = startY - graphHeight;
 
 	double scaleX = static_cast<double>(graphWidth) / training_accuracies.size();
@@ -10306,4 +10307,62 @@ void CModelingandAnalysisofUncertaintyView::OnMachinelearningArtificialneuralnet
 		Sec_Dlg.DoModal();
 		std::vector<int> nodeCounts = Sec_Dlg.GetNodeCounts();
 	}
+}
+
+
+void CModelingandAnalysisofUncertaintyView::DisplayConfusionMatrix() {
+	/*
+	std::ifstream inFile("confusionMatrix.txt");
+	if (!inFile.is_open()) {
+		AfxMessageBox(_T("Unable to open confusionMatrix.txt"));
+		return;
+	}
+
+
+	int TP, FP, FN, TN;
+	inFile >> TP >> FP >> FN >> TN;
+	inFile.close();
+	*/
+	CClientDC dc(this);
+	CRect clientRect;
+	GetClientRect(&clientRect);
+	int matrixTop = 50;
+	int matrixRight = clientRect.right - 50;
+	int matrixCellWidth = 150;
+	int matrixCellHeight = 100;
+	int matrixLeft = matrixRight - 2 * matrixCellWidth;
+	CRect matrixRect(matrixLeft, matrixTop, matrixLeft + 2 * matrixCellWidth, matrixTop + 2 * matrixCellHeight);
+	dc.Rectangle(matrixRect);
+
+
+	//Draw confusion matrix
+
+	int TP = 0, FP = 0, FN = 0, TN = 0;
+
+
+
+	// Draw the confusion matrix internal lines
+	dc.MoveTo(matrixLeft + matrixCellWidth, matrixTop);
+	dc.LineTo(matrixLeft + matrixCellWidth, matrixTop + 2 * matrixCellHeight);
+	dc.MoveTo(matrixLeft, matrixTop + matrixCellHeight);
+	dc.LineTo(matrixRight, matrixTop + matrixCellHeight);
+
+	// Add labels for confusion matrix
+	dc.TextOutW(matrixLeft + 10, matrixTop - 20, L"Actually Positive");
+	dc.TextOutW(matrixLeft + matrixCellWidth + 10, matrixTop - 20, L"Actually Negative");
+	dc.TextOutW(matrixLeft - 150, matrixTop + 10, L"Predicted Positive");
+	dc.TextOutW(matrixLeft - 150, matrixTop + matrixCellHeight + 10, L"Predicted Negative");
+
+	// Assuming you have the values for TP, FP, FN, TN already calculated
+	CString strTP, strFP, strFN, strTN;
+	strTP.Format(_T("TP: %d"), TP);  // True Positives
+	strFP.Format(_T("FP: %d"), FP);  // False Positives
+	strFN.Format(_T("FN: %d"), FN);  // False Negatives
+	strTN.Format(_T("TN: %d"), TN);  // True Negatives
+
+	// Output the values in the corresponding cells
+	dc.TextOutW(matrixLeft + 10, matrixTop + 10, strTP);
+	dc.TextOutW(matrixLeft + matrixCellWidth + 10, matrixTop + 10, strFP);
+	dc.TextOutW(matrixLeft + 10, matrixTop + matrixCellHeight + 10, strFN);
+	dc.TextOutW(matrixLeft + matrixCellWidth + 10, matrixTop + matrixCellHeight + 10, strTN);
 }
