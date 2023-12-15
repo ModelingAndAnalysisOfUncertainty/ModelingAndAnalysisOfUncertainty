@@ -1,3 +1,4 @@
+
 #include "pch.h"
 #include "framework.h"
 #ifndef SHARED_HANDLERS
@@ -11,9 +12,14 @@
 #include "CDisplayPCs.h"
 #include "CSettingsDescriptiveStatistics.h"
 #include "CSelectScatterDiagrams.h"
+#include "NewANN.h"
+#include "CLCDialog.h"
+
 
 #include <vector>
 #include <iostream>
+#include <cstddef>
+#include <algorithm>
 #include <fstream>
 
 #ifdef _DEBUG
@@ -48,6 +54,10 @@ BEGIN_MESSAGE_MAP(CModelingandAnalysisofUncertaintyView, CView)
 	ON_BN_CLICKED(IDC_FACTOR_SCORES, On_Display_Factor_Scores)
 	ON_BN_CLICKED(IDC_FACTOR_MATRICES, On_Display_Factor_Matrices)
 	ON_WM_MOUSEMOVE()
+	ON_COMMAND(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORKWITHACCURACY, &CModelingandAnalysisofUncertaintyView::OnMachinelearningArtificialneuralnetworkwithaccuracy)
+	ON_WM_TIMER()
+	
+
 END_MESSAGE_MAP()
 
 // CModelingandAnalysisofUncertaintyView construction/destruction
@@ -1300,12 +1310,30 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		Settings_Descriptive_Statistics.ShowWindow(SW_HIDE);
 	}
 	else if (pDoc->ANN_Training) {
+		DisplayPCA.ShowWindow(SW_HIDE);
+		DisplayLoadingPlots.ShowWindow(SW_HIDE);
+		DisplayScorePlots.ShowWindow(SW_HIDE);
+		SelectScatterPlots.ShowWindow(SW_HIDE);
+		Next_Variable.ShowWindow(SW_HIDE);
+		Previous_Variable.ShowWindow(SW_HIDE);
+		Ind_Ass_Regression.ShowWindow(SW_HIDE);
+		Sta_Ass_Regression.ShowWindow(SW_HIDE);
+		Settings_Descriptive_Statistics.ShowWindow(SW_HIDE);
+		DisplayFA.ShowWindow(SW_HIDE);
+		DisplayFactorLoadings.ShowWindow(SW_HIDE);
+		DisplayFactorScores.ShowWindow(SW_HIDE);
 		CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
 		// plot the loss and accuracy curve
 		DisplayFileAndDataSetInformation(pDoc, pDC, true);
 		PlotLossCurve();
-		//PlotAccuraciesCurve();
+		//StartDrawing();
+		PlotAccuraciesCurve();
+		DisplayConfusionMatrix();
+		//m_nCurrentIndex = 0;
+		//m_nTimerID = SetTimer(1, 10, NULL);
+		//OnTimer(m_nTimerID);
 	}
+	
 }
 
 // *************************************************************
@@ -9946,8 +9974,95 @@ void CModelingandAnalysisofUncertaintyView::TwoSampleBoxPlot(CModelingandAnalysi
 	
 }
 
+// helper function to check vector value
+void SaveDataToFile(const std::vector<double>& Data, const std::string& filePath) {
+	std::ofstream outFile(filePath);
+	if (outFile.is_open()) {
+		outFile << Data.size() << "/n";
+		for (const auto& value :Data) {
+			outFile << value << std::endl;
+		}
+		
+		outFile.close();
+	}
+	else {
+		std::cerr << "Unable to open file: " << filePath << std::endl;
+	}
+}
+
+//timer for drawing
+void CModelingandAnalysisofUncertaintyView::StartDrawing()
+{
+	
+	m_nCurrentIndex = 0;
+	m_nTimerID = SetTimer(1, 1, NULL);  // update every 10ms 
+	
+}
 
 
+void CModelingandAnalysisofUncertaintyView::OnTimer(UINT_PTR nIDEvent)
+{
+	
+	if (nIDEvent == m_nTimerID)
+	{
+		CClientDC dc(this);
+
+		CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
+		ASSERT_VALID(pDoc);
+		if (!pDoc)
+			return;
+
+		std::vector<double>& losses = pDoc->Loss_Ann;
+
+		//Check the data
+		SaveDataToFile(pDoc->Loss_Ann, "loss_ann.txt");
+
+		// range of index
+		if (m_nCurrentIndex >= losses.size()) {
+			KillTimer(m_nTimerID);  //stop timer when done
+			return;
+		}
+
+		int margin = 70;
+		int spacingBetweenGraphs = 50;
+		CRect rc;
+		GetClientRect(&rc);
+		int graphHeight = (rc.Height() - 3 * margin - spacingBetweenGraphs) / 2;
+		int graphWidth = rc.Width()/2 - 2 * margin;
+
+		int startX = margin;
+		int startY = (2 * graphHeight) + (2 * margin) + spacingBetweenGraphs;
+		int endX = startX + graphWidth;
+		int endY = startY - graphHeight;
+
+		double scaleX = static_cast<double>(graphWidth) / losses.size();
+		double maxLoss = *std::max_element(losses.begin(), losses.end());
+		double scaleY = static_cast<double>(graphHeight) / maxLoss;
+
+		CPen penLine(PS_SOLID, 2, RGB(255, 0, 0));
+		dc.SelectObject(&penLine);
+		
+
+		size_t nextIndex = min(m_nCurrentIndex + 10, losses.size());
+		if (m_nCurrentIndex > 0) {
+			dc.MoveTo(startX + static_cast<int>((m_nCurrentIndex - 1) * scaleX), startY - static_cast<int>(losses[m_nCurrentIndex - 1] * scaleY));
+		}else {
+			dc.MoveTo(startX, startY - static_cast<int>(losses[0] * scaleY)); 
+		}
+		for (size_t i = m_nCurrentIndex; i < nextIndex; ++i) {
+			int x = startX + static_cast<int>(i * scaleX);
+			int y = startY - static_cast<int>(losses[i] * scaleY);
+	
+			dc.LineTo(x, y);
+			
+		}
+
+		m_nCurrentIndex = nextIndex; // update index for next draw
+	}
+
+	CView::OnTimer(nIDEvent);
+	
+}
 
 
 // Helper function to draw grid
@@ -9973,18 +10088,10 @@ void DrawGrid(CDC& dc, int startX, int startY, int endX, int endY, double xTickI
 
 // After ANN training call this view function to plot the loss curve
 void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
-	// read in data from txt log file
-	std::vector<double> losses;
-	std::ifstream file("ANN_Update/training_loss.txt");
-	std::string line;
-	while (std::getline(file, line)) {
-		if (line.find("loss:") != std::string::npos) {
-			size_t pos = line.find("loss:");
-			double loss_value = std::stod(line.substr(pos + 6));
-			losses.push_back(loss_value);
-		}
-	}
-
+	// read in data from loss_ANN
+	CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
+	std::vector<double>& losses = pDoc->Loss_Ann;
+	int batch_size = pDoc->ann_batch_size;
 	CClientDC dc(this);
 	CRect rc;
 	GetClientRect(&rc);
@@ -9992,7 +10099,7 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 	int margin = 70;  // Increased margin for more space
 	int spacingBetweenGraphs = 50;  // spacing between graphs
 	int graphHeight = (rc.Height() - 3 * margin - spacingBetweenGraphs) / 2;
-	int graphWidth = rc.Width() - 2 * margin;
+	int graphWidth = rc.Width()/2 - 2 * margin;
 
 	int startX = margin;
 	int startY = (2 * graphHeight) + (2 * margin) + spacingBetweenGraphs;
@@ -10009,7 +10116,7 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 
 
 
-
+		
 		CPen penLine(PS_SOLID, 2, RGB(255, 0, 0));  // Red color for curve
 		dc.SelectObject(&penLine);
 
@@ -10019,7 +10126,7 @@ void CModelingandAnalysisofUncertaintyView::PlotLossCurve() {
 			int y = startY - static_cast<int>(losses[i] * scaleY);
 			dc.LineTo(x, y);
 		}
-
+		
 		int numXTicks = 10;
 		int numYTicks = 10;
 
@@ -10094,11 +10201,11 @@ void CModelingandAnalysisofUncertaintyView::PlotAccuraciesCurve() {
 	int margin = 70;  // Increased margin for more space
 	int spacingBetweenGraphs = 50;  // spacing between graphs
 	int graphHeight = (rc.Height() - 3 * margin - spacingBetweenGraphs) / 2;
-	int graphWidth = rc.Width() - 2 * margin;
+	int graphWidth = rc.Width()/2 - 2 * margin;
 
-	int startX = margin;
+	int startX = 2*margin+graphWidth;
 	int startY = (2 * graphHeight) + (2 * margin) + spacingBetweenGraphs;
-	int endX = startX + graphWidth;
+	int endX = startX + 2*graphWidth;
 	int endY = startY - graphHeight;
 
 	double scaleX = static_cast<double>(graphWidth) / training_accuracies.size();
@@ -10188,3 +10295,74 @@ void CModelingandAnalysisofUncertaintyView::PlotAccuraciesCurve() {
 	dc.TextOutW(legendStartX + 50, legendStartY - 5, L"Testing");
 }
 
+
+ 
+void CModelingandAnalysisofUncertaintyView::OnMachinelearningArtificialneuralnetworkwithaccuracy()
+{
+	NewANN New_ANN_Dlg; 
+	if (New_ANN_Dlg.DoModal() == IDOK)
+	{
+		int numLayers = New_ANN_Dlg.m_selectedlayer;
+		CLCDialog Sec_Dlg(numLayers);
+		Sec_Dlg.DoModal();
+		std::vector<int> nodeCounts = Sec_Dlg.GetNodeCounts();
+	}
+}
+
+
+void CModelingandAnalysisofUncertaintyView::DisplayConfusionMatrix() {
+	/*
+	std::ifstream inFile("confusionMatrix.txt");
+	if (!inFile.is_open()) {
+		AfxMessageBox(_T("Unable to open confusionMatrix.txt"));
+		return;
+	}
+
+
+	int TP, FP, FN, TN;
+	inFile >> TP >> FP >> FN >> TN;
+	inFile.close();
+	*/
+	CClientDC dc(this);
+	CRect clientRect;
+	GetClientRect(&clientRect);
+	int matrixTop = 50;
+	int matrixRight = clientRect.right - 50;
+	int matrixCellWidth = 150;
+	int matrixCellHeight = 100;
+	int matrixLeft = matrixRight - 2 * matrixCellWidth;
+	CRect matrixRect(matrixLeft, matrixTop, matrixLeft + 2 * matrixCellWidth, matrixTop + 2 * matrixCellHeight);
+	dc.Rectangle(matrixRect);
+
+
+	//Draw confusion matrix
+
+	int TP = 0, FP = 0, FN = 0, TN = 0;
+
+
+
+	// Draw the confusion matrix internal lines
+	dc.MoveTo(matrixLeft + matrixCellWidth, matrixTop);
+	dc.LineTo(matrixLeft + matrixCellWidth, matrixTop + 2 * matrixCellHeight);
+	dc.MoveTo(matrixLeft, matrixTop + matrixCellHeight);
+	dc.LineTo(matrixRight, matrixTop + matrixCellHeight);
+
+	// Add labels for confusion matrix
+	dc.TextOutW(matrixLeft + 10, matrixTop - 20, L"Actually Positive");
+	dc.TextOutW(matrixLeft + matrixCellWidth + 10, matrixTop - 20, L"Actually Negative");
+	dc.TextOutW(matrixLeft - 150, matrixTop + 10, L"Predicted Positive");
+	dc.TextOutW(matrixLeft - 150, matrixTop + matrixCellHeight + 10, L"Predicted Negative");
+
+	// Assuming you have the values for TP, FP, FN, TN already calculated
+	CString strTP, strFP, strFN, strTN;
+	strTP.Format(_T("TP: %d"), TP);  // True Positives
+	strFP.Format(_T("FP: %d"), FP);  // False Positives
+	strFN.Format(_T("FN: %d"), FN);  // False Negatives
+	strTN.Format(_T("TN: %d"), TN);  // True Negatives
+
+	// Output the values in the corresponding cells
+	dc.TextOutW(matrixLeft + 10, matrixTop + 10, strTP);
+	dc.TextOutW(matrixLeft + matrixCellWidth + 10, matrixTop + 10, strFP);
+	dc.TextOutW(matrixLeft + 10, matrixTop + matrixCellHeight + 10, strFN);
+	dc.TextOutW(matrixLeft + matrixCellWidth + 10, matrixTop + matrixCellHeight + 10, strTN);
+}
