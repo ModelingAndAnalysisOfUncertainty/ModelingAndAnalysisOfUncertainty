@@ -54,7 +54,7 @@
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Static</UseOfMfc>
+    <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -76,7 +76,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\krugeu\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\dlib-19.24;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\dlib-19.24;$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -87,7 +87,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\krugeu\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\dlib-19.24;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -174,7 +173,6 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -195,6 +193,7 @@
   <ItemGroup>
     <ClInclude Include="CANNForm.h" />
     <ClInclude Include="CDisplayPCs.h" />
+    <ClInclude Include="CLCDialog.h" />
     <ClInclude Include="COneSampleHypothesisSelection.h" />
     <ClInclude Include="CSelectNumberPCs.h" />
     <ClInclude Include="CSelectScatterDiagrams.h" />
@@ -218,6 +217,7 @@
   <ItemGroup>
     <ClCompile Include="CANNForm.cpp" />
     <ClCompile Include="CDisplayPCs.cpp" />
+    <ClCompile Include="CLCDialog.cpp" />
     <ClCompile Include="COneSampleHypothesisSelection.cpp" />
     <ClCompile Include="CSelectNumberPCs.cpp" />
     <ClCompile Include="CSelectScatterDiagrams.cpp" />
@@ -227,7 +227,6 @@
     <ClCompile Include="CTwoSampleHypothesisSelection.cpp" />
     <ClCompile Include="dlib-19.24\dlib\all\source.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="Modeling and Analysis of Uncertainty.cpp" />
@@ -242,6 +241,8 @@
     </ClCompile>
     <ClCompile Include="ProbabilityDistributions.cpp" />
     <ClCompile Include="quadprogpp\Array.cc">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </AdditionalIncludeDirectories>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="quadprogpp\QuadProg++.cc">
