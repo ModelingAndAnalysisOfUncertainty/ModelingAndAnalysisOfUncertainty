@@ -15,7 +15,6 @@
 #include "NewANN.h"
 #include "CLCDialog.h"
 
-
 #include <vector>
 #include <iostream>
 #include <cstddef>

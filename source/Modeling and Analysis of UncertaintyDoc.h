@@ -6,7 +6,6 @@
 #include <vector>
 #include <omp.h>
 
-
 #pragma once
 
 class CModelingandAnalysisofUncertaintyDoc : public CDocument {

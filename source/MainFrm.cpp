@@ -6,8 +6,6 @@
 #include "framework.h"
 #include "Modeling and Analysis of Uncertainty.h"
 
-#include <dlib/dnn.h>
-
 #include "MainFrm.h"
 
 #ifdef _DEBUG

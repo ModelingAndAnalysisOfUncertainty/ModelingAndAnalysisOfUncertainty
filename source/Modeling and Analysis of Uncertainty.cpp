@@ -12,13 +12,9 @@
 #include "Modeling and Analysis of UncertaintyDoc.h"
 #include "Modeling and Analysis of UncertaintyView.h"
 
-#include<dlib/dnn.h>
-#include<dlib/data_io.h>
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
 
 // CModelingandAnalysisofUncertaintyApp
 
