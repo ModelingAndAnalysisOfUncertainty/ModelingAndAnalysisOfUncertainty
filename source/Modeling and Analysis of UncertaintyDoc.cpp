@@ -34,6 +34,9 @@
 #include "CSpecifyRegressionModel.h"
 #include "CANNForm.h"
 
+// QPP solver
+//#include "QuadProg++.hh"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
