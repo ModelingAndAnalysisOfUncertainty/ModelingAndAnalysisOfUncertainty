@@ -34,10 +34,6 @@
 #include "CSpecifyRegressionModel.h"
 #include "CANNForm.h"
 
-// QPP solver
-//#include "QuadProg++.hh"
-
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -7436,6 +7432,10 @@ void CModelingandAnalysisofUncertaintyDoc::GetNetworkPredictionParallel(const st
 	for (int i = 0; i < N; ++i) {
 		yhat[i] = 1.0 / (1.0 + exp(-yhat[i]));
 	}
+}
+
+void CModelingandAnalysisofUncertaintyDoc::OnQPPSolver() {
+
 }
 
 void CModelingandAnalysisofUncertaintyDoc::OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI) {

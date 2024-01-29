@@ -295,7 +295,6 @@ protected:
 	void VPC(CArray <double>&, CArray <int>&, int&);
 	void VRE(CArray <double>&, CArray <int>&, int&);
 	// *** Additional functions
-	void QPPSolver();
 	double GetOptimalBandwidth(CArray <double>&);
 	double NumericalIntegration(CArray <double>&, double);
 	void SetUpFDAMatrices(CArray <double>&, CArray <double>&, CArray <int>&, CArray <double>&);
