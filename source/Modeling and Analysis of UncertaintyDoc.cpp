@@ -38,6 +38,12 @@
 #define new DEBUG_NEW
 #endif
 
+/*
+//Dlib for Aritificial Neural Netowrk
+#include <dlib/dnn.h>
+#include <dlib/data_io.h>
+*/
+
 // Thread Handler for ANN
 #define WM_USER_THREAD_FINISHED WM_APP + 1
 
@@ -5223,6 +5229,68 @@ void CModelingandAnalysisofUncertaintyDoc::SetUpFDAMatrices(CArray <double>& Sb,
 		}
 	}
 }
+
+/************** Helper functions for standardize dataset **************/
+/* This function standardize the dataset based on number of features */
+
+void standardize_data(int num_features, std::vector<std::vector<float>>& data) {
+	// Compute the mean and standard deviation for each feature
+	std::vector<float> mean(num_features, 0.0);
+	std::vector<float> stddev(num_features, 0.0);
+
+	for (int i = 0; i < num_features; ++i) {
+		float sum = 0.0;
+		for (const auto& datapoint : data) {
+			sum += datapoint[i];
+		}
+		mean[i] = sum / data.size();
+
+		float sq_diff_sum = 0.0;
+		for (const auto& datapoint : data) {
+			sq_diff_sum += pow(datapoint[i] - mean[i], 2);
+		}
+		stddev[i] = sqrt(sq_diff_sum / data.size());
+	}
+
+	// Standardize the data
+	for (auto& datapoint : data) {
+		for (int i = 0; i < num_features; ++i) {
+			datapoint[i] = (datapoint[i] - mean[i]) / stddev[i];
+		}
+	}
+}
+
+/*************** Helper functions for splitting and shuffling dataset ***************/
+/* This function split the dataset into training and testing sets and shuffle them */
+void split_data(const std::vector<std::vector<float>>& data, const std::vector<unsigned long>& labels,
+	std::vector<std::vector<float>>& training_data, std::vector<unsigned long>& training_labels,
+	std::vector<std::vector<float>>& testing_data, std::vector<unsigned long>& testing_labels, float ratio = 0.85) {
+	// Generating number y variable
+	std::vector<int> indices(data.size());
+	std::iota(indices.begin(), indices.end(), 0);  // Fill with 0, 1, ..., data.size() - 1
+
+	std::random_device rd;
+	std::mt19937 g(rd());
+	std::shuffle(indices.begin(), indices.end(), g);
+
+	int training_size = static_cast<int>(ratio * data.size());
+	training_data.resize(training_size);
+	training_labels.resize(training_size);
+	testing_data.resize(data.size() - training_size);
+	testing_labels.resize(data.size() - training_size);
+
+	for (int i = 0; i < indices.size(); ++i) {
+		if (i < training_size) {
+			training_data[i] = data[indices[i]];
+			training_labels[i] = labels[indices[i]];
+		}
+		else {
+			testing_data[i - training_size] = data[indices[i]];
+			testing_labels[i - training_size] = labels[indices[i]];
+		}
+	}
+}
+
 
 
 //*****************************************************************
