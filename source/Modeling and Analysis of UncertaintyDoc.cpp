@@ -5297,6 +5297,125 @@ void split_data(const CArray<CArray<float>>& data, const CArray<unsigned long>& 
 	}
 }
 
+
+/*************** Redefinition about Linear Classification***************/
+class LinearClassifier {
+private:
+	CArray<float> weights;
+	float bias;
+	float learning_rate;
+
+public:
+	LinearClassifier(int num_features, float lr = 0.01) {
+		weights.SetSize(num_features);
+		std::fill(weights.GetData(), weights.GetData() + num_features, 0.0);
+		bias = 0.0;
+		learning_rate = lr;
+	}
+
+	// Train the linear classifier using gradient descent
+	void train(const CArray<CArray<float>>& training_data, const CArray<unsigned long>& labels, int epochs = 100) {
+		for (int epoch = 0; epoch < epochs; ++epoch) {
+			for (int i = 0; i < training_data.GetSize(); ++i) {
+				float prediction = predict(training_data[i]);
+				float error = labels[i] - prediction;
+
+				// Update weights and bias
+				for (int j = 0; j < weights.GetSize(); ++j) {
+					weights[j] += learning_rate * error * training_data[i][j];
+				}
+				bias += learning_rate * error;
+			}
+		}
+	}
+
+	// Predict the label for a given data point
+	float predict(const CArray<float>& data_point) const {
+		float result = bias;
+		for (int i = 0; i < weights.GetSize(); ++i) {
+			result += weights[i] * data_point[i];
+		}
+		return result > 0 ? 1.0 : 0.0; // Assuming binary classification (1 or 0)
+	}
+
+	// Test the linear classifier and compute confusion matrix
+	void test(const CArray<CArray<float>>& testing_data, const CArray<unsigned long>& testing_labels,
+		int& TP, int& TN, int& FP, int& FN,
+		float& PPV, float& F1, float& MCC) const {
+		TP = TN = FP = FN = 0;
+
+		for (int i = 0; i < testing_data.GetSize(); ++i) {
+			float prediction = predict(testing_data[i]);
+
+			// Check if the prediction matches the actual label
+			if (prediction == 1.0 && testing_labels[i] == 1) {
+				++TP;
+			}
+			else if (prediction == 0.0 && testing_labels[i] == 0) {
+				++TN;
+			}
+			else if (prediction == 1.0 && testing_labels[i] == 0) {
+				++FP;
+			}
+			else if (prediction == 0.0 && testing_labels[i] == 1) {
+				++FN;
+			}
+		}
+
+		// Calculate evaluation metrics
+		PPV = static_cast<float>(TP) / (TP + FP);
+		float SEN = static_cast<float>(TP) / (TP + FN);
+
+		if (PPV + SEN == 0) {
+			F1 = 0;  // Avoid division by zero
+		}
+		else {
+			F1 = 2 * PPV * SEN / (PPV + SEN);
+		}
+
+		float denominator = sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN));
+
+		if (denominator == 0) {
+			MCC = 0;  // Avoid division by zero
+		}
+		else {
+			MCC = (TP * TN - FP * FN) / denominator;
+		}
+	}
+};
+/*
+// Example usage
+void example_usage() {
+	// Assuming you have training_data, training_labels, testing_data, and testing_labels
+	// ...
+
+	int num_features = training_data[0].GetSize();  // Adjust this based on your data
+	LinearClassifier classifier(num_features);
+
+	// Train the linear classifier
+	classifier.train(training_data, training_labels);
+
+	// Test the linear classifier and compute confusion matrix
+	int TP, TN, FP, FN;
+	classifier.test(testing_data, testing_labels, TP, TN, FP, FN);
+
+	// Now you have TP, TN, FP, FN for further analysis or printing
+	// ...
+}
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
 //*****************************************************************
 //***            Compute linear classification model            ***
 //*****************************************************************
@@ -5483,6 +5602,10 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	//SaveMatrix("traindata.txt", data2, Traindata_spec);
 
 	AfxMessageBox(L"I believe I have just saved a file!");
+
+
+
+
 
 	//if w is the matci
 	// 
