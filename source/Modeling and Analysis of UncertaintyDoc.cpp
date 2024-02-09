@@ -17,6 +17,8 @@
 #include <chrono>
 #include <iomanip>
 #include <numeric>
+#include <set>
+#include <map>
 
 // SHARED_HANDLERS can be defined in an ATL project implementing preview, thumbnail
 // and search filter handlers and allows sharing of document code with that project.
@@ -5283,63 +5285,184 @@ void split_data(const std::vector<std::vector<float>>& data, const std::vector<u
 /*************** Redefinition about Linear Classification***************/
 class LinearClassifier {
 private:
-	std::vector<float> weights;
-	float bias;
+	std::vector<std::vector<float>> weights; // For OvR, we need a weight vector per class
+	std::vector<float> biases; // A bias term for each class
 	float learning_rate;
+	bool is_multiclass;
+	int num_classes;
+
+	// Helper function to perform a dot product
+	static float dot_product(const std::vector<float>& v1, const std::vector<float>& v2) {
+		if (v1.size() != v2.size()) {
+			throw std::invalid_argument("Vectors must be the same length for dot product.");
+		}
+		return std::inner_product(v1.begin(), v1.end(), v2.begin(), 0.0f);
+	}
+
+	// Sigmoid activation function for binary classification
+	static float sigmoid(float z) {
+		return 1.0f / (1.0f + std::exp(-z));
+	}
 
 public:
-	LinearClassifier(int num_features, float lr = 0.01)
-		: weights(num_features, 0.0), bias(0.0), learning_rate(lr) {}
+	LinearClassifier(int num_features, const std::vector<unsigned long>& labels, float lr = 0.01) {
+		learning_rate = lr;
 
-	// Train the linear classifier using gradient descent
+		// Determine unique labels to figure out if this is binary or multiclass
+		std::set<unsigned long> unique_labels(labels.begin(), labels.end());
+		num_classes = unique_labels.size();
+		is_multiclass = num_classes > 2;
+
+		// Initialize weights and biases
+		weights.resize(is_multiclass ? num_classes : 1, std::vector<float>(num_features, 0.0));
+		biases.resize(is_multiclass ? num_classes : 1, 0.0);
+	}
+
+	// Training method
 	void train(const std::vector<std::vector<float>>& training_data, const std::vector<unsigned long>& labels, int epochs = 1000) {
 		for (int epoch = 0; epoch < epochs; ++epoch) {
 			for (size_t i = 0; i < training_data.size(); ++i) {
-				float prediction = predict(training_data[i]);
-				float error = labels[i] - prediction;
+				const std::vector<float>& feature_vector = training_data[i];
+				unsigned long label = labels[i];
 
-				// Update weights and bias
-				for (size_t j = 0; j < weights.size(); ++j) {
-					weights[j] += learning_rate * error * training_data[i][j];
+				if (is_multiclass) {
+					for (size_t class_idx = 0; class_idx < num_classes; ++class_idx) {
+						unsigned long predicted_label = class_idx;
+
+						// Calculate prediction using current weights and bias for this class
+						float z = dot_product(weights[class_idx], feature_vector) + biases[class_idx];
+						float prediction = sigmoid(z);
+
+						// Determine if this instance's actual label is the current class
+						float target = (label == predicted_label) ? 1.0f : 0.0f;
+
+						// Calculate the error
+						float error = target - prediction;
+
+						// Update weights and bias for this class
+						for (size_t feature_idx = 0; feature_idx < feature_vector.size(); ++feature_idx) {
+							weights[class_idx][feature_idx] += learning_rate * error * feature_vector[feature_idx];
+						}
+						biases[class_idx] += learning_rate * error;
+					}
 				}
-				bias += learning_rate * error;
+				else {
+					// Binary classification logic
+					float z = dot_product(weights[0], feature_vector) + biases[0];
+					float prediction = sigmoid(z);
+
+					float error = label - prediction;
+
+					for (size_t j = 0; j < weights[0].size(); ++j) {
+						weights[0][j] += learning_rate * error * feature_vector[j];
+					}
+					biases[0] += learning_rate * error;
+				}
 			}
 		}
 	}
 
-	// Predict the label for a given data point
-	float predict(const std::vector<float>& data_point) const {
-		float result = bias;
-		for (size_t i = 0; i < weights.size(); ++i) {
-			result += weights[i] * data_point[i];
+	// predict function
+	std::vector<float> predict(const std::vector<float>& feature_vector) const {
+		std::vector<float> predictions(num_classes, 0.0);
+
+		if (is_multiclass) {
+			// Multiclass prediction logic (compute scores for all classes)
+			// Compute the scores for each class
+			std::vector<float> scores(num_classes, 0.0);
+			for (size_t class_idx = 0; class_idx < num_classes; ++class_idx) {
+				scores[class_idx] = dot_product(weights[class_idx], feature_vector) + biases[class_idx];
+			}
+
+			// Apply the softmax function to get probabilities
+			float max_score = *std::max_element(scores.begin(), scores.end());
+			float sum_exp_scores = 0.0f;
+			for (size_t class_idx = 0; class_idx < num_classes; ++class_idx) {
+				scores[class_idx] = std::exp(scores[class_idx] - max_score);  // Subtract max_score for numerical stability
+				sum_exp_scores += scores[class_idx];
+			}
+
+			for (size_t class_idx = 0; class_idx < num_classes; ++class_idx) {
+				predictions[class_idx] = scores[class_idx] / sum_exp_scores;
+			}
 		}
-		return result > 0 ? 1.0f : 0.0f; // Assuming binary classification (1 or 0)
+		else {
+			// Binary classification prediction logic
+			float z = dot_product(weights[0], feature_vector) + biases[0];
+			predictions[0] = sigmoid(z);
+		}
+
+		return predictions;
 	}
+
+	
 
 	// Test the linear classifier and compute confusion matrix
 	void test(const std::vector<std::vector<float>>& testing_data, const std::vector<unsigned long>& testing_labels,
-		int& TP, int& TN, int& FP, int& FN,
-		float& PPV, float& F1, float& MCC) const {
+		int& TP, int& TN, int& FP, int& FN, float& PPV, float& F1, float& MCC) const {
 		TP = TN = FP = FN = 0;
+		std::map<unsigned long, int> classCounts;
+
+		for (auto& label : testing_labels) {
+			// Initialize or increment class count
+			classCounts[label]++;
+		}
 
 		for (size_t i = 0; i < testing_data.size(); ++i) {
-			float prediction = predict(testing_data[i]);
+			std::vector<float> prediction_scores = predict(testing_data[i]);
+			unsigned long actual_label = testing_labels[i];
+			unsigned long predicted_label;
 
-			// Check if the prediction matches the actual label
-			if (prediction == 1.0 && testing_labels[i] == 1) ++TP;
-			else if (prediction == 0.0 && testing_labels[i] == 0) ++TN;
-			else if (prediction == 1.0 && testing_labels[i] == 0) ++FP;
-			else if (prediction == 0.0 && testing_labels[i] == 1) ++FN;
+			if (is_multiclass) {
+				predicted_label = std::distance(prediction_scores.begin(),
+					std::max_element(prediction_scores.begin(), prediction_scores.end()));
+				// For multiclass, adjust TP, TN, FP, FN for each class accordingly
+				for (auto& classCount : classCounts) {
+					if (classCount.first == actual_label) {
+						if (actual_label == predicted_label) {
+							TP++;
+						}
+						else {
+							FN++;
+						}
+					}
+					else {
+						if (predicted_label == classCount.first) {
+							FP++;
+						}
+						else {
+							TN++;
+						}
+					}
+				}
+			}
+			else {
+				// Assuming the first score is for the positive class in binary classification
+				predicted_label = prediction_scores[0] > 0.5 ? 1 : 0;
+				if (predicted_label == 1 && actual_label == 1) ++TP;
+				else if (predicted_label == 0 && actual_label == 0) ++TN;
+				else if (predicted_label == 1 && actual_label == 0) ++FP;
+				else if (predicted_label == 0 && actual_label == 1) ++FN;
+			}
+		}
+
+		// Recalculate TN for binary classification by subtracting the sum of TP, FP, FN from total predictions
+		if (!is_multiclass) {
+			TN = testing_data.size() - (TP + FP + FN);
 		}
 
 		// Calculate evaluation metrics
-		PPV = TP + FP == 0 ? 0 : static_cast<float>(TP) / (TP + FP);
-		float SEN = TP + FN == 0 ? 0 : static_cast<float>(TP) / (TP + FN);
-		F1 = PPV + SEN == 0 ? 0 : 2 * PPV * SEN / (PPV + SEN);
-		float numerator = static_cast<float>(TP * TN - FP * FN);
-		float denominator = std::sqrt(static_cast<float>((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN)));
-		MCC = denominator == 0 ? 0 : numerator / denominator;
+		PPV = (TP + FP) > 0 ? static_cast<float>(TP) / (TP + FP) : 0;
+		float recall = (TP + FN) > 0 ? static_cast<float>(TP) / (TP + FN) : 0; // Also known as TPR or sensitivity
+		F1 = (PPV + recall) > 0 ? 2 * PPV * recall / (PPV + recall) : 0;
+
+		// Calculate MCC
+		float mccNumerator = (TP * TN) - (FP * FN);
+		float mccDenominator = std::sqrt(static_cast<float>((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN)));
+		MCC = mccDenominator > 0 ? mccNumerator / mccDenominator : 0;
 	}
+
+
 };
 
 
@@ -5396,9 +5519,13 @@ void TestLinearClassifier() {
 	// Read data and labels
 	std::vector<std::vector<float>> data;
 	std::vector<unsigned long> labels;
-	ReadDataFromFile("datasets/Wisconsin.FDA", data, labels);
-	//ReadDataFromFile("datasets/Metabolites.FDA", data, labels);
 
+	//Binary Classification Test File
+	ReadDataFromFile("datasets/Wisconsin.FDA", data, labels);
+	
+	// Multi Classification Test File	
+	//ReadDataFromFile("datasets/Metabolites.FDA", data, labels);
+	//ReadDataFromFile("datasets/EEA1-Tom20-6Classes-R21.FDA", data, labels);
 
 
 	// Standardize data
@@ -5412,7 +5539,7 @@ void TestLinearClassifier() {
 	split_data(data, labels, training_data, training_labels, testing_data, testing_labels);
 
 	// Create linear classifier
-	LinearClassifier classifier(data[0].size(), 0.01); // Assuming all data entries have the same number of features
+	LinearClassifier classifier(data[0].size(),labels, 0.01); // Assuming all data entries have the same number of features
 	classifier.train(training_data, training_labels);
 
 	// Test model and calculate confusion matrix
@@ -5432,9 +5559,26 @@ void TestLinearClassifier() {
 	outfile << "F1 Score: " << F1 << std::endl;
 	outfile << "Matthews Correlation Coefficient (MCC): " << MCC << std::endl;
 
+	for (int i = 0; i < testing_data.size(); i++) {
+		outfile << "testing_data["<<i<<"]";
+
+		for (int j = 0; j < testing_data[0].size(); j++) {
+			outfile << testing_data[i][j];
+		}
+		outfile <<std::endl<< "Testinglabels" << i << ": " << testing_labels[i] << std::endl;
+		outfile << std::endl;
+	}
+	/*
 	for (int i = 0; i < testing_labels.size(); i++) {
 		outfile << "Testinglabels" << i << ": " << testing_labels[i] << std::endl;
+
 	}
+	*/
+	outfile << std::endl;
+	for (int i = 0; i < training_labels.size(); i++) {
+		outfile << "Traininglabels" << i << ": " << training_labels[i] << std::endl;
+	}
+	
 	outfile.close();
 }
 
