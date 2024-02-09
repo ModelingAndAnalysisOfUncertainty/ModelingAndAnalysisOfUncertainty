@@ -5292,7 +5292,7 @@ public:
 		: weights(num_features, 0.0), bias(0.0), learning_rate(lr) {}
 
 	// Train the linear classifier using gradient descent
-	void train(const std::vector<std::vector<float>>& training_data, const std::vector<unsigned long>& labels, int epochs = 100) {
+	void train(const std::vector<std::vector<float>>& training_data, const std::vector<unsigned long>& labels, int epochs = 1000) {
 		for (int epoch = 0; epoch < epochs; ++epoch) {
 			for (size_t i = 0; i < training_data.size(); ++i) {
 				float prediction = predict(training_data[i]);
@@ -5396,8 +5396,8 @@ void TestLinearClassifier() {
 	// Read data and labels
 	std::vector<std::vector<float>> data;
 	std::vector<unsigned long> labels;
-	//ReadDataFromFile("datasets/Wisconsin.FDA", data, labels);
-	ReadDataFromFile("datasets/Metabolites.FDA", data, labels);
+	ReadDataFromFile("datasets/Wisconsin.FDA", data, labels);
+	//ReadDataFromFile("datasets/Metabolites.FDA", data, labels);
 
 
 
@@ -5422,6 +5422,8 @@ void TestLinearClassifier() {
 
 	// Write output
 	std::ofstream outfile("linear_clas_confusion_matrix.txt");
+
+	
 	outfile << "True Positives (TP): " << TP << std::endl;
 	outfile << "True Negatives (TN): " << TN << std::endl;
 	outfile << "False Positives (FP): " << FP << std::endl;
@@ -5429,6 +5431,10 @@ void TestLinearClassifier() {
 	outfile << "Positive Predictive Value (PPV): " << PPV << std::endl;
 	outfile << "F1 Score: " << F1 << std::endl;
 	outfile << "Matthews Correlation Coefficient (MCC): " << MCC << std::endl;
+
+	for (int i = 0; i < testing_labels.size(); i++) {
+		outfile << "Testinglabels" << i << ": " << testing_labels[i] << std::endl;
+	}
 	outfile.close();
 }
 
