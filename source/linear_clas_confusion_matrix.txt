@@ -1,0 +1,7 @@
+True Positives (TP): 5
+True Negatives (TN): 0
+False Positives (FP): 0
+False Negatives (FN): 8
+Positive Predictive Value (PPV): 1
+F1 Score: 0.555556
+Matthews Correlation Coefficient (MCC): 0

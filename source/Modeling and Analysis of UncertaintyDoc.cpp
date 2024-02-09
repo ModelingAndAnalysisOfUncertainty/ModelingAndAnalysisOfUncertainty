@@ -5227,72 +5227,54 @@ void CModelingandAnalysisofUncertaintyDoc::SetUpFDAMatrices(CArray <double>& Sb,
 /************** Helper functions for standardize dataset **************/
 /* This function standardize the dataset based on number of features */
 
-void standardize_data(int num_features, CArray<CArray<float>>& data) {
-	// Compute the mean and standard deviation for each feature
-	CArray<float> mean;
-	CArray<float> stddev;
-
-	mean.SetSize(num_features);
-	stddev.SetSize(num_features);
+void standardize_data(std::vector<std::vector<float>>& data) {
+	if (data.empty()) return;
+	int num_features = data[0].size();
 
 	for (int i = 0; i < num_features; ++i) {
-		float sum = 0.0;
-		for (int j = 0; j < data.GetSize(); ++j) {
-			sum += data[j][i];
+		float mean = 0.0;
+		for (const auto& row : data) {
+			mean += row[i];
 		}
-		mean[i] = sum / data.GetSize();
+		mean /= data.size();
 
-		float sq_diff_sum = 0.0;
-		for (int j = 0; j < data.GetSize(); ++j) {
-			sq_diff_sum += pow(data[j][i] - mean[i], 2);
+		float variance = 0.0;
+		for (const auto& row : data) {
+			variance += (row[i] - mean) * (row[i] - mean);
 		}
-		stddev[i] = sqrt(sq_diff_sum / data.GetSize());
-	}
+		float stddev = std::sqrt(variance / data.size());
 
-	// Standardize the data
-	for (int j = 0; j < data.GetSize(); ++j) {
-		for (int i = 0; i < num_features; ++i) {
-			data[j][i] = (data[j][i] - mean[i]) / stddev[i];
+		for (auto& row : data) {
+			row[i] = (row[i] - mean) / stddev;
 		}
 	}
 }
 
 /*************** Helper functions for splitting and shuffling dataset ***************/
 /* This function split the dataset into training and testing sets and shuffle them */
-void split_data(const CArray<CArray<float>>& data, const CArray<unsigned long>& labels,
-	CArray<CArray<float>>& training_data, CArray<unsigned long>& training_labels,
-	CArray<CArray<float>>& testing_data, CArray<unsigned long>& testing_labels, float ratio = 0.85) {
-	// Generating number y variable
-	CArray<int> indices;
-	indices.SetSize(data.GetSize());
-	std::iota(indices.GetData(), indices.GetData() + indices.GetSize(), 0);  // Fill with 0, 1, ..., data.GetSize() - 1
+void split_data(const std::vector<std::vector<float>>& data, const std::vector<unsigned long>& labels,
+	std::vector<std::vector<float>>& training_data, std::vector<unsigned long>& training_labels,
+	std::vector<std::vector<float>>& testing_data, std::vector<unsigned long>& testing_labels,
+	float ratio = 0.85) {
+	size_t data_size = data.size();
+	std::vector<size_t> indices(data_size);
+	std::iota(indices.begin(), indices.end(), 0); // Fill indices from 0 to data_size - 1
 
+	// Shuffle indices
 	std::random_device rd;
 	std::mt19937 g(rd());
-	std::shuffle(indices.GetData(), indices.GetData() + indices.GetSize(), g);
+	std::shuffle(indices.begin(), indices.end(), g);
 
-	int training_size = static_cast<int>(ratio * data.GetSize());
-	training_data.SetSize(training_size);
-	training_labels.SetSize(training_size);
-	testing_data.SetSize(data.GetSize() - training_size);
-	testing_labels.SetSize(data.GetSize() - training_size);
+	size_t training_size = static_cast<size_t>(ratio * data_size);
 
-	for (int i = 0; i < indices.GetSize(); ++i) {
+	for (size_t i = 0; i < indices.size(); ++i) {
 		if (i < training_size) {
-			// Copy elements manually
-			training_data[i].SetSize(data[i].GetSize());
-			for (int j = 0; j < data[i].GetSize(); ++j) {
-				training_data[i][j] = data[indices[i]][j];
-			}
-			training_labels[i] = labels[indices[i]];
+			training_data.push_back(data[indices[i]]);
+			training_labels.push_back(labels[indices[i]]);
 		}
 		else {
-			// Copy elements manually
-			testing_data[i - training_size].SetSize(data[i].GetSize());
-			for (int j = 0; j < data[i].GetSize(); ++j) {
-				testing_data[i - training_size][j] = data[indices[i]][j];
-			}
-			testing_labels[i - training_size] = labels[indices[i]];
+			testing_data.push_back(data[indices[i]]);
+			testing_labels.push_back(labels[indices[i]]);
 		}
 	}
 }
@@ -5301,27 +5283,23 @@ void split_data(const CArray<CArray<float>>& data, const CArray<unsigned long>& 
 /*************** Redefinition about Linear Classification***************/
 class LinearClassifier {
 private:
-	CArray<float> weights;
+	std::vector<float> weights;
 	float bias;
 	float learning_rate;
 
 public:
-	LinearClassifier(int num_features, float lr = 0.01) {
-		weights.SetSize(num_features);
-		std::fill(weights.GetData(), weights.GetData() + num_features, 0.0);
-		bias = 0.0;
-		learning_rate = lr;
-	}
+	LinearClassifier(int num_features, float lr = 0.01)
+		: weights(num_features, 0.0), bias(0.0), learning_rate(lr) {}
 
 	// Train the linear classifier using gradient descent
-	void train(const CArray<CArray<float>>& training_data, const CArray<unsigned long>& labels, int epochs = 100) {
+	void train(const std::vector<std::vector<float>>& training_data, const std::vector<unsigned long>& labels, int epochs = 100) {
 		for (int epoch = 0; epoch < epochs; ++epoch) {
-			for (int i = 0; i < training_data.GetSize(); ++i) {
+			for (size_t i = 0; i < training_data.size(); ++i) {
 				float prediction = predict(training_data[i]);
 				float error = labels[i] - prediction;
 
 				// Update weights and bias
-				for (int j = 0; j < weights.GetSize(); ++j) {
+				for (size_t j = 0; j < weights.size(); ++j) {
 					weights[j] += learning_rate * error * training_data[i][j];
 				}
 				bias += learning_rate * error;
@@ -5330,80 +5308,129 @@ public:
 	}
 
 	// Predict the label for a given data point
-	float predict(const CArray<float>& data_point) const {
+	float predict(const std::vector<float>& data_point) const {
 		float result = bias;
-		for (int i = 0; i < weights.GetSize(); ++i) {
+		for (size_t i = 0; i < weights.size(); ++i) {
 			result += weights[i] * data_point[i];
 		}
-		return result > 0 ? 1.0 : 0.0; // Assuming binary classification (1 or 0)
+		return result > 0 ? 1.0f : 0.0f; // Assuming binary classification (1 or 0)
 	}
 
 	// Test the linear classifier and compute confusion matrix
-	void test(const CArray<CArray<float>>& testing_data, const CArray<unsigned long>& testing_labels,
+	void test(const std::vector<std::vector<float>>& testing_data, const std::vector<unsigned long>& testing_labels,
 		int& TP, int& TN, int& FP, int& FN,
 		float& PPV, float& F1, float& MCC) const {
 		TP = TN = FP = FN = 0;
 
-		for (int i = 0; i < testing_data.GetSize(); ++i) {
+		for (size_t i = 0; i < testing_data.size(); ++i) {
 			float prediction = predict(testing_data[i]);
 
 			// Check if the prediction matches the actual label
-			if (prediction == 1.0 && testing_labels[i] == 1) {
-				++TP;
-			}
-			else if (prediction == 0.0 && testing_labels[i] == 0) {
-				++TN;
-			}
-			else if (prediction == 1.0 && testing_labels[i] == 0) {
-				++FP;
-			}
-			else if (prediction == 0.0 && testing_labels[i] == 1) {
-				++FN;
-			}
+			if (prediction == 1.0 && testing_labels[i] == 1) ++TP;
+			else if (prediction == 0.0 && testing_labels[i] == 0) ++TN;
+			else if (prediction == 1.0 && testing_labels[i] == 0) ++FP;
+			else if (prediction == 0.0 && testing_labels[i] == 1) ++FN;
 		}
 
 		// Calculate evaluation metrics
-		PPV = static_cast<float>(TP) / (TP + FP);
-		float SEN = static_cast<float>(TP) / (TP + FN);
-
-		if (PPV + SEN == 0) {
-			F1 = 0;  // Avoid division by zero
-		}
-		else {
-			F1 = 2 * PPV * SEN / (PPV + SEN);
-		}
-
-		float denominator = sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN));
-
-		if (denominator == 0) {
-			MCC = 0;  // Avoid division by zero
-		}
-		else {
-			MCC = (TP * TN - FP * FN) / denominator;
-		}
+		PPV = TP + FP == 0 ? 0 : static_cast<float>(TP) / (TP + FP);
+		float SEN = TP + FN == 0 ? 0 : static_cast<float>(TP) / (TP + FN);
+		F1 = PPV + SEN == 0 ? 0 : 2 * PPV * SEN / (PPV + SEN);
+		float numerator = static_cast<float>(TP * TN - FP * FN);
+		float denominator = std::sqrt(static_cast<float>((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN)));
+		MCC = denominator == 0 ? 0 : numerator / denominator;
 	}
 };
-/*
-// Example usage
-void example_usage() {
-	// Assuming you have training_data, training_labels, testing_data, and testing_labels
-	// ...
 
-	int num_features = training_data[0].GetSize();  // Adjust this based on your data
-	LinearClassifier classifier(num_features);
 
-	// Train the linear classifier
+// helper function to test the data (Write it cause i did not find how the program read the data. This is not the right way to process data.)
+void ReadDataFromFile(const std::string& filename, std::vector<std::vector<float>>& data, std::vector<unsigned long>& labels) {
+	std::ifstream inFile(filename);
+	if (!inFile.is_open()) {
+		throw std::runtime_error("Unable to open file: " + filename);
+	}
+
+	std::string line;
+	// Read the first line to determine the number of columns
+	std::getline(inFile, line);
+	std::istringstream headerStream(line);
+	int numColumns;
+	headerStream >> numColumns;
+	int numFeatures = numColumns - 1; // Subtract one for the label column
+
+	// Skip the next three lines of metadata
+	for (int i = 0; i < 3; ++i) {
+		std::getline(inFile, line);
+	}
+
+	// Read the actual data
+	while (std::getline(inFile, line)) {
+		std::replace(line.begin(), line.end(), ',', ' '); // Replace commas with spaces for easier parsing
+		std::istringstream iss(line);
+		std::vector<float> features;
+
+		// Read feature values
+		for (int i = 0; i < numFeatures; ++i) {
+			float featureValue;
+			if (!(iss >> featureValue)) {
+				throw std::runtime_error("Error reading feature value from line: " + line);
+			}
+			features.push_back(featureValue);
+		}
+
+		// Read label value
+		unsigned long labelValue;
+		if (!(iss >> labelValue)) {
+			throw std::runtime_error("Error reading label value from line: " + line);
+		}
+
+		// Add features and label to the vectors
+		data.push_back(features);
+		labels.push_back(labelValue);
+	}
+
+	inFile.close();
+}
+
+void TestLinearClassifier() {
+	// Read data and labels
+	std::vector<std::vector<float>> data;
+	std::vector<unsigned long> labels;
+	//ReadDataFromFile("datasets/Wisconsin.FDA", data, labels);
+	ReadDataFromFile("datasets/Metabolites.FDA", data, labels);
+
+
+
+	// Standardize data
+	standardize_data(data);
+
+	// Split training and testing data
+	std::vector<std::vector<float>> training_data;
+	std::vector<unsigned long> training_labels;
+	std::vector<std::vector<float>> testing_data;
+	std::vector<unsigned long> testing_labels;
+	split_data(data, labels, training_data, training_labels, testing_data, testing_labels);
+
+	// Create linear classifier
+	LinearClassifier classifier(data[0].size(), 0.01); // Assuming all data entries have the same number of features
 	classifier.train(training_data, training_labels);
 
-	// Test the linear classifier and compute confusion matrix
+	// Test model and calculate confusion matrix
 	int TP, TN, FP, FN;
-	classifier.test(testing_data, testing_labels, TP, TN, FP, FN);
+	float PPV, F1, MCC;
+	classifier.test(testing_data, testing_labels, TP, TN, FP, FN, PPV, F1, MCC);
 
-	// Now you have TP, TN, FP, FN for further analysis or printing
-	// ...
+	// Write output
+	std::ofstream outfile("linear_clas_confusion_matrix.txt");
+	outfile << "True Positives (TP): " << TP << std::endl;
+	outfile << "True Negatives (TN): " << TN << std::endl;
+	outfile << "False Positives (FP): " << FP << std::endl;
+	outfile << "False Negatives (FN): " << FN << std::endl;
+	outfile << "Positive Predictive Value (PPV): " << PPV << std::endl;
+	outfile << "F1 Score: " << F1 << std::endl;
+	outfile << "Matthews Correlation Coefficient (MCC): " << MCC << std::endl;
+	outfile.close();
 }
-*/
-
 
 
 
@@ -5426,7 +5453,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	//AfxMessageBox(L"Now we are working on establishing an linear classification model");
 	//curent data 
 	//get data to parse through
-
+	TestLinearClassifier();
 	/// CArray <double>& Data_0, CArray <double>& bar, CArray <double>& std
 	//CArray for 3 classification
 	CArray<double> y;
