@@ -336,7 +336,8 @@ protected:
 	void CModelingandAnalysisofUncertaintyDoc::GetConfusionMatrix(CArray<int>& ConfusionMatrix,
 		std::vector<int>& yass0, std::vector<int>& ytrue);
 
-	// Generated message map functions
+	// Linear Classification
+	void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier();
 protected:
 	DECLARE_MESSAGE_MAP()
 

@@ -195,6 +195,7 @@
     <ClInclude Include="CANNForm.h" />
     <ClInclude Include="CDisplayPCs.h" />
     <ClInclude Include="CLCDialog.h" />
+    <ClInclude Include="CLinearClassificationDlg.h" />
     <ClInclude Include="COneSampleHypothesisSelection.h" />
     <ClInclude Include="CSelectNumberPCs.h" />
     <ClInclude Include="CSelectScatterDiagrams.h" />
@@ -219,6 +220,7 @@
     <ClCompile Include="CANNForm.cpp" />
     <ClCompile Include="CDisplayPCs.cpp" />
     <ClCompile Include="CLCDialog.cpp" />
+    <ClCompile Include="CLinearClassificationDlg.cpp" />
     <ClCompile Include="COneSampleHypothesisSelection.cpp" />
     <ClCompile Include="CSelectNumberPCs.cpp" />
     <ClCompile Include="CSelectScatterDiagrams.cpp" />

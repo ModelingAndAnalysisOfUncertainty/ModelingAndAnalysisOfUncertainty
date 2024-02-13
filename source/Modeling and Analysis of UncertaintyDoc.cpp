@@ -35,6 +35,7 @@
 #include "CSpecifyFactorAnalysis.h"
 #include "CSpecifyRegressionModel.h"
 #include "CANNForm.h"
+#include "CLinearClassificationDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -5285,7 +5286,7 @@ void split_data(const std::vector<std::vector<float>>& data, const std::vector<u
 /*************** Redefinition about Linear Classification***************/
 class LinearClassifier {
 private:
-	std::vector<std::vector<float>> weights; // For OvR, we need a weight vector per class
+	std::vector<std::vector<float>> weights; // For OvR, we need a dweight vector per class
 	std::vector<float> biases; // A bias term for each class
 	float learning_rate;
 	bool is_multiclass;
@@ -5319,7 +5320,7 @@ public:
 	}
 
 	// Training method
-	void train(const std::vector<std::vector<float>>& training_data, const std::vector<unsigned long>& labels, int epochs = 1000) {
+	void train(const std::vector<std::vector<float>>& training_data, const std::vector<unsigned long>& labels, int epochs = 10000) {
 		for (int epoch = 0; epoch < epochs; ++epoch) {
 			for (size_t i = 0; i < training_data.size(); ++i) {
 				const std::vector<float>& feature_vector = training_data[i];
@@ -5515,10 +5516,29 @@ void ReadDataFromFile(const std::string& filename, std::vector<std::vector<float
 	inFile.close();
 }
 
-void TestLinearClassifier() {
+// helper function to get the file path after source, eg: datasets/Wisconsin.FDA
+std::string ExtractSubpathAfterSource(const std::string& fullPath) {
+	std::string identifier = "source";
+	size_t pos = fullPath.find(identifier);
+
+	if (pos != std::string::npos) {
+		pos += identifier.length() + 1;
+		if (pos < fullPath.length()) {
+			// file path after source
+			return fullPath.substr(pos);
+		}
+	}
+	return "";
+}
+
+void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
 	// Read data and labels
 	std::vector<std::vector<float>> data;
 	std::vector<unsigned long> labels;
+
+	//Get file name 
+	std::string newFilePath = CW2A(PathAndFileName.GetString(), CP_UTF8);
+	std::string subpath = ExtractSubpathAfterSource(newFilePath);
 
 	//Binary Classification Test File
 	ReadDataFromFile("datasets/Wisconsin.FDA", data, labels);
@@ -5548,9 +5568,8 @@ void TestLinearClassifier() {
 	classifier.test(testing_data, testing_labels, TP, TN, FP, FN, PPV, F1, MCC);
 
 	// Write output
-	std::ofstream outfile("linear_clas_confusion_matrix.txt");
-
-	
+	std::ofstream outfile("linear_class_confusion_matrix.txt");
+	outfile << newFilePath << std::endl;
 	outfile << "True Positives (TP): " << TP << std::endl;
 	outfile << "True Negatives (TN): " << TN << std::endl;
 	outfile << "False Positives (FP): " << FP << std::endl;
@@ -5600,12 +5619,13 @@ void TestLinearClassifier() {
 
 void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	
-	//AfxMessageBox(L"Now we are working on establishing an linear classification model");
-	//curent data 
-	//get data to parse through
+	CLinearClassificationDlg LCdlg;
+	LCdlg.DoModal();
+	
 	TestLinearClassifier();
-	/// CArray <double>& Data_0, CArray <double>& bar, CArray <double>& std
-	//CArray for 3 classification
+
+
+//  All code below is older version for linear classification
 	CArray<double> y;
 	y.SetSize(n_Obs);
 	CArray<double> value;
@@ -5694,29 +5714,29 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	CArray <double> Sww;
 
 	GetRegressionVector(data2, Traindata_spec, label, Sww, true);
-	SaveVector("Model1_coefficient.txt", w);
+	//SaveVector("Model1_coefficient.txt", w);
 	MatrixVectorProduct(testData, testData_spec, w, testlabel1);
-	SaveVector("testlabel1.txt", testlabel1);
+	//SaveVector("testlabel1.txt", testlabel1);
 
 
 	GetRegressionVector(data2, Traindata_spec, label2, Sww, true);
-	SaveVector("Model1_coefficient2.txt", w);
+	//SaveVector("Model1_coefficient2.txt", w);
 	MatrixVectorProduct(testData, testData_spec, w, testlabel2);
-	SaveVector("testlabel2.txt", testlabel2);
+	//SaveVector("testlabel2.txt", testlabel2);
 
 	GetRegressionVector(data2, Traindata_spec, label2, Sww, true);
-	SaveVector("Model1_coefficient3.txt", w);
+	//SaveVector("Model1_coefficient3.txt", w);
 	MatrixVectorProduct(testData, testData_spec, w, testlabel3);
-	SaveVector("testlabel3.txt", testlabel3);
+	//SaveVector("testlabel3.txt", testlabel3);
 
 
 
 
-	SaveVector("test7.txt", value);
-	SaveVector("label.txt", label);
-	SaveMatrix("traindata.txt", data2, Traindata_spec);
+	//SaveVector("test7.txt", value);
+	//SaveVector("label.txt", label);
+	//SaveMatrix("traindata.txt", data2, Traindata_spec);
 
-		SaveMatrix("traindata.txt", data2, Traindata_spec);
+	//SaveMatrix("traindata.txt", data2, Traindata_spec);
 
 	//We need standardized data
 	//Classification metrics
@@ -5754,7 +5774,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 			}
 			y.SetAt(i, setValue);
 		}
-		SaveVector("yvalue.txt", y);
+		//SaveVector("yvalue.txt", y);
 		GetRegressionVector(Data, Data_spec, y, Sww, true);
 		MatrixVectorProduct(Data, Data_spec, w, y_hat);
 		for (int i = 0; i < w.GetSize(); i++) {
@@ -5762,21 +5782,16 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 		}
 	}
 
-	SaveMatrix("resultValue.txt", W, W_spec);
-	SaveMatrix("traindata2.txt", W, W_spec);
+	//SaveMatrix("resultValue.txt", W, W_spec);
+	//SaveMatrix("traindata2.txt", W, W_spec);
 
-	SaveVector("wvalue.txt", w);
-	SaveVector("swwvalue.txt", Sww);
-	SaveVector("yvalue.txt", y);
-	SaveVector("yhatvalue.txt", y_hat);
+	//SaveVector("wvalue.txt", w);
+	//SaveVector("swwvalue.txt", Sww);
+	//SaveVector("yvalue.txt", y);
+	//SaveVector("yhatvalue.txt", y_hat);
 	//MatrixVectorProduct(z, z_spec, w, y_hat)
-
-	
-	
-
 	//SaveVector("data3.txt", Data);
-	SaveVector("test2.txt", label);
-	//SaveMatrix("traindata.txt", data2, Traindata_spec);
+
 
 	AfxMessageBox(L"I believe I have just saved a file!");
 
@@ -5784,14 +5799,8 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 
 
 
-	//if w is the matci
-	// 
-	//w matrix for coefficent 
-	//Response vector is x w coefficient  and b multiplied by the input data araay to get the coreesponsing clasifcatuin 
-	//if y i 1 or0 in ebtwenn round
 
-	//CArray <double>& X, CArray <int>& X_spec, CArray <double>& y
-} //insert data thw iwll have x muTIple by w to get y value remebet for x array to add 1 at ebd bases on predictir decide class 1 or ,-1 
+} 
 
 
 //*****************************************************************
