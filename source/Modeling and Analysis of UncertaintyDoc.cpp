@@ -5618,14 +5618,39 @@ void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
 
 
 void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
+	OnOpenedFile = false;
+	DescriptiveStatistics = false;
+	HypothesisTesting_OneSample = false;
+	HypothesisTesting_TwoSample = false;
+	ShapiroWilkTest = false;
+	AndersonDarlingTest = false;
+	ANOVA = false;
+	PCA_Select_PCs = false;
+	PCA_Display_PCs_Standard = false;
+	PCA_Display_Scores = false;
+	PCA_Display_Loadings = false;
+	FA_Display_Standard = false;
+	FA_Display_Loadings = false;
+	FA_Display_Scores = false;
+	FA_Display_Matrices = false;
+	FDA = false;
+	ANN_Training = false;
+	Linear_Classification = true;
+
+	CWnd* pParent = nullptr;
+	CLinearClassificationDlg LCdlg(pParent);
+
+	if (LCdlg.DoModal() == IDOK) {
+		TestLinearClassifier();
+
+		UpdateAllViews(NULL);
+		AfxMessageBox(L"I believe I have just saved a file!");
+	}
 	
-	CLinearClassificationDlg LCdlg;
-	LCdlg.DoModal();
-	
-	TestLinearClassifier();
 
 
 //  All code below is older version for linear classification
+/*
 	CArray<double> y;
 	y.SetSize(n_Obs);
 	CArray<double> value;
@@ -5671,8 +5696,8 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	    	temp_2 = Data.GetAt(static_cast <int64_t>(GetPosition(indices[i], j, Data_spec)));
 	    	testData.SetAt(val_pos, temp_2);
 			}
-	//	///*int val_posconstant = static_cast <int64_t>(GetPosition(k, n_Var - 1, testData_spec));
-	//	//data2.SetAt(val_posconstant, (double)1);*/
+	//	//int val_posconstant = static_cast <int64_t>(GetPosition(k, n_Var - 1, testData_spec));
+	//	//data2.SetAt(val_posconstant, (double)1);
 	      k++;
 	 }
 
@@ -5792,8 +5817,8 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	//MatrixVectorProduct(z, z_spec, w, y_hat)
 	//SaveVector("data3.txt", Data);
 
-
-	AfxMessageBox(L"I believe I have just saved a file!");
+	*/
+	
 
 
 

@@ -12,7 +12,7 @@
 IMPLEMENT_DYNAMIC(CLinearClassificationDlg, CDialog)
 
 CLinearClassificationDlg::CLinearClassificationDlg(CWnd* pParent /*=nullptr*/)
-	: CDialog(IDD_DIALOG3, pParent)
+	: CDialog(IDD_DIALOG_LINEAR_CLASSIFICATION, pParent)
 {
 
 }

@@ -45,6 +45,7 @@
 #define IDD_DIALOG2                     339
 #define IDD_DIALOG_CLC                  339
 #define IDD_DIALOG3                     344
+#define IDD_DIALOG_LINEAR_CLASSIFICATION 346
 #define IDC_GET_NUMBER_PCS              1000
 #define IDC_EDIT_PC_2                   1003
 #define IDC_EDIT_PC_3                   1004
@@ -210,7 +211,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        346
+#define _APS_NEXT_RESOURCE_VALUE        347
 #define _APS_NEXT_COMMAND_VALUE         32810
 #define _APS_NEXT_CONTROL_VALUE         1117
 #define _APS_NEXT_SYMED_VALUE           310

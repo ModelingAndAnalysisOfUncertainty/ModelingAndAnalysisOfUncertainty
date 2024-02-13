@@ -1332,6 +1332,9 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		//m_nTimerID = SetTimer(1, 10, NULL);
 		//OnTimer(m_nTimerID);
 	}
+	else if (pDoc->Linear_Classification) {
+	
+	}
 	
 }
 
