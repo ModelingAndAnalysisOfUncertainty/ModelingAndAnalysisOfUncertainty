@@ -167,6 +167,7 @@
 #define IDC_STATIC_SHOW_VARIANCE_SPECIFY 1104
 #define IDC_LIST1                       1116
 #define IDC_CL1                         1116
+#define IDC_COMBOBOXEX1                 1121
 #define ID_BASICSTATISTICS              32771
 #define ID_BASICSTATISTICS_DESCRIPTIVESTATISTICS 32772
 #define ID_BASICSTATISTICS_HYPOTHESISTESTING 32773
@@ -213,7 +214,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        347
 #define _APS_NEXT_COMMAND_VALUE         32810
-#define _APS_NEXT_CONTROL_VALUE         1117
+#define _APS_NEXT_CONTROL_VALUE         1122
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif

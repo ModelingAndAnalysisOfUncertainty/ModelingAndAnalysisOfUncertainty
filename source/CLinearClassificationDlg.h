@@ -20,4 +20,15 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
+public:
+
+	
+	CButton cross_validation;
+	CButton training_validation;
+	afx_msg void OnBnClickedRadioCrossValidation();
+	afx_msg void OnBnClickedRadioTrainingValidation();
+	CButton five_fold;
+	CButton ten_fold;
+	CButton LOO;
+	CButton box_cross_validation;
 };
