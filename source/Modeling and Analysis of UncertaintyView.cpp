@@ -1333,7 +1333,9 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		//OnTimer(m_nTimerID);
 	}
 	else if (pDoc->Linear_Classification) {
-	
+		DisplayFileAndDataSetInformation(pDoc, pDC, true);
+		DisplayLinearClassifierMetrics();
+
 	}
 	
 }
@@ -10367,4 +10369,69 @@ void CModelingandAnalysisofUncertaintyView::DisplayConfusionMatrix() {
 	dc.TextOutW(matrixLeft + matrixCellWidth + 10, matrixTop + 10, strFP);
 	dc.TextOutW(matrixLeft + 10, matrixTop + matrixCellHeight + 10, strFN);
 	dc.TextOutW(matrixLeft + matrixCellWidth + 10, matrixTop + matrixCellHeight + 10, strTN);
+}
+
+//int TP, FP, TN, FN;// True_Label, False_Label;
+//double sensitivity, specificity, mcc_test, ppv_test, F1_test, acc_test, AUC_Total;
+void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
+	CClientDC dc(this);
+	CRect rect;
+	GetClientRect(&rect);
+	CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
+	std::vector<double>& losses = pDoc->Loss_Ann;
+	// Assume global variables are defined somewhere for each metric
+	double acc_test = pDoc->acc_test;
+	double sensitivity = pDoc->sensitivity;
+	double specificity = pDoc->specificity;
+	double F1_test = pDoc->F1_test;
+	double mcc_test = pDoc->mcc_test;
+	double AUC_Total = pDoc->AUC_Total;
+
+	// Determine the right boundary of the existing content
+	int currentRightBoundary = 650; // Assuming this is the current right boundary of the content
+	int newContentStartX = currentRightBoundary + 20; // Start new content to the right of the boundary
+	int startY = 150; // Starting Y position for the new content
+	int lineHeight = -MulDiv(9, GetDeviceCaps(dc.m_hDC, LOGPIXELSY), 72); // Height of each line of text
+
+	// Set the font for the text
+	CFont font;
+	font.CreatePointFont(90, _T("Arial"));
+	CFont* pOldFont = dc.SelectObject(&font);
+
+	// Draw text for each performance metric
+	CString strText;
+
+	// Display Accuracy
+	strText.Format(_T("Accuracy: %.3f"), acc_test);
+	dc.TextOut(newContentStartX, startY, strText);
+
+	// Display Sensitivity
+	startY += lineHeight;
+	strText.Format(_T("Sensitivity: %.3f"), sensitivity);
+	dc.TextOut(newContentStartX, startY, strText);
+
+	// Display Specificity
+	startY += lineHeight;
+	strText.Format(_T("Specificity: %.3f"), specificity);
+	dc.TextOut(newContentStartX, startY, strText);
+
+	// Display F1 Score
+	startY += lineHeight;
+	strText.Format(_T("F1 Score: %.3f"), F1_test);
+	dc.TextOut(newContentStartX, startY, strText);
+
+	// Display MCC
+	startY += lineHeight;
+	strText.Format(_T("MCC: %.3f"), mcc_test);
+	dc.TextOut(newContentStartX, startY, strText);
+
+	// Display AUC
+	startY += lineHeight;
+	strText.Format(_T("AUC: %.3f"), AUC_Total);
+	dc.TextOut(newContentStartX, startY, strText);
+
+	// Restore the old font
+	dc.SelectObject(pOldFont);
+	// Clean up the font resource
+	font.DeleteObject();
 }

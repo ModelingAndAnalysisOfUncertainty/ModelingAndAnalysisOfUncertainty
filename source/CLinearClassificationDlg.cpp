@@ -13,9 +13,9 @@ IMPLEMENT_DYNAMIC(CLinearClassificationDlg, CDialog)
 
 CLinearClassificationDlg::CLinearClassificationDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(IDD_DIALOG_LINEAR_CLASSIFICATION, pParent)
-	, cross_validation()
-{
 
+{
+	
 }
 
 CLinearClassificationDlg::~CLinearClassificationDlg()
@@ -49,7 +49,7 @@ void CLinearClassificationDlg::OnBnClickedRadioCrossValidation()
 	five_fold.ShowWindow(SW_SHOW);
 	ten_fold.ShowWindow(SW_SHOW);
 	LOO.ShowWindow(SW_SHOW);
-	box_cross_validation.ShowWindow(SW_SHOW);
+	//box_cross_validation.ShowWindow(SW_SHOW);
 }
 
 
@@ -58,5 +58,5 @@ void CLinearClassificationDlg::OnBnClickedRadioTrainingValidation()
 	five_fold.ShowWindow(SW_HIDE);
 	ten_fold.ShowWindow(SW_HIDE);
 	LOO.ShowWindow(SW_HIDE);
-	box_cross_validation.ShowWindow(SW_HIDE);
+	//box_cross_validation.ShowWindow(SW_HIDE);
 }

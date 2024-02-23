@@ -5400,7 +5400,7 @@ public:
 
 	// Test the linear classifier and compute confusion matrix
 	void test(const std::vector<std::vector<float>>& testing_data, const std::vector<unsigned long>& testing_labels,
-		int& TP, int& TN, int& FP, int& FN, float& PPV, float& F1, float& MCC) const {
+		int& TP, int& TN, int& FP, int& FN, double& PPV, double& F1, double& MCC, double& accuracy, double&sensitivity, double& specifity, double& AUC) const {
 		TP = TN = FP = FN = 0;
 		std::map<unsigned long, int> classCounts;
 
@@ -5563,9 +5563,12 @@ void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
 	classifier.train(training_data, training_labels);
 
 	// Test model and calculate confusion matrix
-	int TP, TN, FP, FN;
-	float PPV, F1, MCC;
-	classifier.test(testing_data, testing_labels, TP, TN, FP, FN, PPV, F1, MCC);
+	// 
+	//int TP, FP, TN, FN;// Global variabel here
+	//double sensitivity, specificity, mcc_test, ppv_test, F1_test, acc_test, AUC_Total;
+	
+	
+	classifier.test(testing_data, testing_labels, TP, TN, FP, FN, ppv_test, F1_test, mcc_test,sensitivity, specificity, acc_test, AUC_Total);
 
 	// Write output
 	std::ofstream outfile("linear_class_confusion_matrix.txt");
@@ -5574,9 +5577,9 @@ void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
 	outfile << "True Negatives (TN): " << TN << std::endl;
 	outfile << "False Positives (FP): " << FP << std::endl;
 	outfile << "False Negatives (FN): " << FN << std::endl;
-	outfile << "Positive Predictive Value (PPV): " << PPV << std::endl;
-	outfile << "F1 Score: " << F1 << std::endl;
-	outfile << "Matthews Correlation Coefficient (MCC): " << MCC << std::endl;
+	outfile << "Positive Predictive Value (PPV): " << ppv_test << std::endl;
+	outfile << "F1 Score: " << F1_test << std::endl;
+	outfile << "Matthews Correlation Coefficient (MCC): " << mcc_test << std::endl;
 
 	for (int i = 0; i < testing_data.size(); i++) {
 		outfile << "testing_data["<<i<<"]";

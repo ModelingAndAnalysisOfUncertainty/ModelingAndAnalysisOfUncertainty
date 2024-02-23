@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by ModelingandAnalysisofUncertainty.rc
 //
+#define IDOK2                           3
 #define ID_SELECT_PCS                   9
 #define IDD_ABOUTBOX                    100
 #define IDP_OLE_INIT_FAILED             100
@@ -167,7 +168,6 @@
 #define IDC_STATIC_SHOW_VARIANCE_SPECIFY 1104
 #define IDC_LIST1                       1116
 #define IDC_CL1                         1116
-#define IDC_COMBOBOXEX1                 1121
 #define ID_BASICSTATISTICS              32771
 #define ID_BASICSTATISTICS_DESCRIPTIVESTATISTICS 32772
 #define ID_BASICSTATISTICS_HYPOTHESISTESTING 32773
