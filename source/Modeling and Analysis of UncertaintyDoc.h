@@ -368,8 +368,7 @@ public:
 	afx_msg void OnL1_Regularization();
 	afx_msg void OnL2_Regularization();
 	afx_msg void OnKPLS();
-	afx_msg void OnANN();
-	afx_msg void OnQPPSolver();
+	afx_msg void OnQPSolver();
 	afx_msg void OnANN_MFC();
 	afx_msg void OnANN_MFC_layer1(double learningRate, int epochs, int batchSize,HANDLE hEvent);
 	afx_msg void OnANN_batchParallel();

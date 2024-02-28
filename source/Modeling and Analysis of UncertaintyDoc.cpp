@@ -7435,7 +7435,7 @@ void CModelingandAnalysisofUncertaintyDoc::GetNetworkPredictionParallel(const st
 	}
 }
 
-void CModelingandAnalysisofUncertaintyDoc::OnQPPSolver() {
+void CModelingandAnalysisofUncertaintyDoc::OnQPSolver() {
 
 }
 
