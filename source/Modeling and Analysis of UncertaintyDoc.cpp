@@ -33,6 +33,7 @@
 #include "CSpecifyFactorAnalysis.h"
 #include "CSpecifyRegressionModel.h"
 #include "CANNForm.h"
+#include "osqp.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
