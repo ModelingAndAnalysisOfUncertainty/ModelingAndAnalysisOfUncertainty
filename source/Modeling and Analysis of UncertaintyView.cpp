@@ -10314,6 +10314,10 @@ void CModelingandAnalysisofUncertaintyView::OnMachinelearningArtificialneuralnet
 }
 
 
+/////////////////////////////////////////////
+///////////Linear Classification/////////////
+////////////////////////////////////////////
+
 void CModelingandAnalysisofUncertaintyView::DisplayConfusionMatrix() {
 	/*
 	std::ifstream inFile("confusionMatrix.txt");
@@ -10390,7 +10394,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 	// Determine the right boundary of the existing content
 	int currentRightBoundary = 650; // Assuming this is the current right boundary of the content
 	int newContentStartX = currentRightBoundary + 20; // Start new content to the right of the boundary
-	int startY = 150; // Starting Y position for the new content
+	int startY = 90; // Starting Y position for the new content
 	int lineHeight = -MulDiv(9, GetDeviceCaps(dc.m_hDC, LOGPIXELSY), 72); // Height of each line of text
 
 	// Set the font for the text
@@ -10406,32 +10410,73 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 	dc.TextOut(newContentStartX, startY, strText);
 
 	// Display Sensitivity
-	startY += lineHeight;
+	startY -= lineHeight;
 	strText.Format(_T("Sensitivity: %.3f"), sensitivity);
 	dc.TextOut(newContentStartX, startY, strText);
 
 	// Display Specificity
-	startY += lineHeight;
+	startY -= lineHeight;
 	strText.Format(_T("Specificity: %.3f"), specificity);
 	dc.TextOut(newContentStartX, startY, strText);
 
 	// Display F1 Score
-	startY += lineHeight;
+	startY -= lineHeight;
 	strText.Format(_T("F1 Score: %.3f"), F1_test);
 	dc.TextOut(newContentStartX, startY, strText);
 
 	// Display MCC
-	startY += lineHeight;
+	startY -= lineHeight;
 	strText.Format(_T("MCC: %.3f"), mcc_test);
 	dc.TextOut(newContentStartX, startY, strText);
 
 	// Display AUC
-	startY += lineHeight;
+	startY -= lineHeight;
 	strText.Format(_T("AUC: %.3f"), AUC_Total);
 	dc.TextOut(newContentStartX, startY, strText);
+
+	// After displaying metrics, plot the ROC curve
+	int rocGraphTop = startY - (6 * lineHeight); 
+	int rocGraphLeft = newContentStartX; 
+	int rocGraphWidth = 200;
+	int rocGraphHeight = 200; 
+
+	// Draw the border for the ROC graph
+	CRect rocRect(rocGraphLeft, rocGraphTop, rocGraphLeft + rocGraphWidth, rocGraphTop + rocGraphHeight);
+	dc.Rectangle(rocRect);
+
+	// Retrieve TPR and FPR data points for ROC
+	std::vector<double>& tpr = pDoc->tpr; // True Positive Rates
+	std::vector<double>& fpr = pDoc->fpr; // False Positive Rates
+
+	// Set the pen for drawing the ROC curve
+	CPen pen(PS_SOLID, 2, RGB(0, 0, 255)); 
+	CPen* pOldPen = dc.SelectObject(&pen);
+
+	std::ofstream outfile("predictions.txt");
+	
+
+	for (int i = 0; i < tpr.size(); i++) {
+		outfile << "TPr_value: " << tpr[i] << "FPr: " << fpr[i] << std::endl;
+	}
+	outfile.close();
+
+
+	// Assuming tpr and fpr vectors are prepared and sorted
+	for (size_t i = 0; i < tpr.size(); ++i) {
+		int x = rocGraphLeft + static_cast<int>(fpr[i] * rocGraphWidth);
+		int y = rocGraphTop + rocGraphHeight - static_cast<int>(tpr[i] * rocGraphHeight);
+		if (i == 0) {
+			dc.MoveTo(x, y); // Start drawing from the first point
+		}
+		else {
+			dc.LineTo(x, y); // Draw lines to subsequent points
+		}
+	}
 
 	// Restore the old font
 	dc.SelectObject(pOldFont);
 	// Clean up the font resource
 	font.DeleteObject();
+
+
 }

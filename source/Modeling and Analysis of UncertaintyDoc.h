@@ -162,6 +162,7 @@ public:
 	CArray <int> Class_count, Confusion_Label;
 	int TP, FP, TN, FN;// True_Label, False_Label;
 	double sensitivity, specificity, mcc_test, ppv_test, F1_test, acc_test, AUC_Total;
+	std::vector<double> tpr, fpr;
 	// FLAGS FOR LINEAR MULTIPLE REGRESSION ANALYSIS
 	bool RegressionAnalysis = false;
 	bool RegressionAnalysis_Independent = false;

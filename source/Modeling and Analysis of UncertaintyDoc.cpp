@@ -5397,13 +5397,59 @@ public:
 	}
 
 	
+	void CalculateROCAndAUC(const std::vector<double>& predictions, const std::vector<unsigned long>& labels, std::vector<double>& tpr, std::vector<double>& fpr, double& auc) const {
+		std::vector<std::pair<double, unsigned long>> score_label_pairs;
+		for (size_t i = 0; i < predictions.size(); ++i) {
+			score_label_pairs.push_back(std::make_pair(predictions[i], labels[i]));
+		}
 
+		std::sort(score_label_pairs.rbegin(), score_label_pairs.rend());
+
+		size_t positive_count = std::count(labels.begin(), labels.end(), 1);
+		size_t negative_count = labels.size() - positive_count;
+
+		size_t TP = 0, FP = 0;
+		double prev_fpr = 0.0, prev_tpr = 0.0;
+		auc = 0.0;
+		
+	
+		for (const auto& score_label : score_label_pairs) {
+			if (score_label.second == 1) {
+				TP++; 
+			}
+			else {
+				FP++; 
+			}
+
+			double tpr_value = static_cast<double>(TP) / positive_count;
+			double fpr_value = static_cast<double>(FP) / negative_count;
+
+			
+			tpr.push_back(tpr_value);
+			fpr.push_back(fpr_value);
+
+			auc += (fpr_value - prev_fpr) * (tpr_value + prev_tpr) / 2.0;
+
+			prev_fpr = fpr_value;
+			prev_tpr = tpr_value;
+		}
+
+		if (prev_fpr < 1.0 || prev_tpr < 1.0) {
+			auc += (1.0 - prev_fpr) * (1.0 + prev_tpr) / 2.0;
+			tpr.push_back(1.0);
+			fpr.push_back(1.0);
+		}
+
+
+	
+	}
 	// Test the linear classifier and compute confusion matrix
 	void test(const std::vector<std::vector<float>>& testing_data, const std::vector<unsigned long>& testing_labels,
-		int& TP, int& TN, int& FP, int& FN, double& PPV, double& F1, double& MCC, double& accuracy, double&sensitivity, double& specifity, double& AUC) const {
+		int& TP, int& TN, int& FP, int& FN, double& PPV, double& F1, double& MCC, double& accuracy, double&sensitivity, double& specificity, double& AUC,std::vector<double>&TPr, std::vector<double>&FPr) const {
 		TP = TN = FP = FN = 0;
 		std::map<unsigned long, int> classCounts;
-
+		std::vector<double> predictions; 
+		std::vector<unsigned long> actual_labels; 
 		for (auto& label : testing_labels) {
 			// Initialize or increment class count
 			classCounts[label]++;
@@ -5413,7 +5459,6 @@ public:
 			std::vector<float> prediction_scores = predict(testing_data[i]);
 			unsigned long actual_label = testing_labels[i];
 			unsigned long predicted_label;
-
 			if (is_multiclass) {
 				predicted_label = std::distance(prediction_scores.begin(),
 					std::max_element(prediction_scores.begin(), prediction_scores.end()));
@@ -5439,6 +5484,10 @@ public:
 			}
 			else {
 				// Assuming the first score is for the positive class in binary classification
+				double positive_class_probability = prediction_scores[0];
+				predictions.push_back(positive_class_probability);
+				actual_labels.push_back(actual_label);
+
 				predicted_label = prediction_scores[0] > 0.5 ? 1 : 0;
 				if (predicted_label == 1 && actual_label == 1) ++TP;
 				else if (predicted_label == 0 && actual_label == 0) ++TN;
@@ -5452,15 +5501,18 @@ public:
 			TN = testing_data.size() - (TP + FP + FN);
 		}
 
-		// Calculate evaluation metrics
-		PPV = (TP + FP) > 0 ? static_cast<float>(TP) / (TP + FP) : 0;
-		float recall = (TP + FN) > 0 ? static_cast<float>(TP) / (TP + FN) : 0; // Also known as TPR or sensitivity
-		F1 = (PPV + recall) > 0 ? 2 * PPV * recall / (PPV + recall) : 0;
+		accuracy = (TP + TN) / static_cast<double>(TP + TN + FP + FN);
+		sensitivity = TP / static_cast<double>(TP + FN);
+		specificity = TN / static_cast<double>(TN + FP);
+		PPV = TP / static_cast<double>(TP + FP);
+		F1 = 2 * (PPV * sensitivity) / (PPV + sensitivity);
+		MCC = (TP * TN - FP * FN) / sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN));
 
-		// Calculate MCC
-		float mccNumerator = (TP * TN) - (FP * FN);
-		float mccDenominator = std::sqrt(static_cast<float>((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN)));
-		MCC = mccDenominator > 0 ? mccNumerator / mccDenominator : 0;
+		// 	   Calculate tpr, fpr to draw ROC
+		
+		CalculateROCAndAUC(predictions, actual_labels, TPr, FPr, AUC);
+
+		
 	}
 
 
@@ -5568,8 +5620,8 @@ void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
 	//double sensitivity, specificity, mcc_test, ppv_test, F1_test, acc_test, AUC_Total;
 	
 	
-	classifier.test(testing_data, testing_labels, TP, TN, FP, FN, ppv_test, F1_test, mcc_test,sensitivity, specificity, acc_test, AUC_Total);
-
+	classifier.test(testing_data, testing_labels, TP, TN, FP, FN, ppv_test, F1_test, mcc_test, acc_test, sensitivity, specificity,  AUC_Total,tpr,fpr);
+	UpdateAllViews(NULL);
 	// Write output
 	std::ofstream outfile("linear_class_confusion_matrix.txt");
 	outfile << newFilePath << std::endl;
@@ -5580,7 +5632,12 @@ void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
 	outfile << "Positive Predictive Value (PPV): " << ppv_test << std::endl;
 	outfile << "F1 Score: " << F1_test << std::endl;
 	outfile << "Matthews Correlation Coefficient (MCC): " << mcc_test << std::endl;
-
+	outfile << "AUC: " << AUC_Total<<std::endl;
+	outfile << "TPR:";
+	for (size_t i = 1; i < fpr.size(); i++) {
+		outfile << tpr[i]<< " ";
+	}
+	outfile << std::endl;
 	for (int i = 0; i < testing_data.size(); i++) {
 		outfile << "testing_data["<<i<<"]";
 
@@ -5647,7 +5704,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 		TestLinearClassifier();
 
 		UpdateAllViews(NULL);
-		AfxMessageBox(L"I believe I have just saved a file!");
+	
 	}
 	
 
