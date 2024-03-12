@@ -6100,6 +6100,31 @@ void CModelingandAnalysisofUncertaintyDoc::OnKPCA() {
 //***            Compute  logistic regression  model            ***
 //*****************************************************************
 
+void CModelingandAnalysisofUncertaintyDoc::OnLR_test(double eta, CArray<double> &w, 
+	const CArray < CArray<double> > &XTrain, const CArray < CArray<double> > &XVal, 
+	const CArray<int> &YTrain, const CArray<int> &YVal, int NTrain, int nIter) {
+	int N = XTrain.GetSize();
+	int M = XTrain[0].GetSize();
+	for (int i = 0; i < nIter; ++i) {
+		// check what value rand gives
+		int k = rand() % NTrain;
+		CArray<double> x;
+		x.Copy(XTrain[k]);
+		x.Add(1);
+		int y_i = YTrain[k];
+		double t = Scalar_Product(x, w);
+		double yhat = 1 / (1 + exp(-t));
+		double delta = y_i - yhat;
+
+		for (int j = 0; j <= M; ++j) {
+			w[j] += eta * x[j] * delta;
+		}
+	}
+
+
+}
+
+
 void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	AfxMessageBox(L"Now we are working on establishing logistic regression model");
 	AfxMessageBox(L"We are looking at for the Hessian Matrix and Gradient");
