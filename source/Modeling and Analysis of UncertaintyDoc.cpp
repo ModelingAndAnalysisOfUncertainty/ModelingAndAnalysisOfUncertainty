@@ -6100,9 +6100,9 @@ void CModelingandAnalysisofUncertaintyDoc::OnKPCA() {
 //***            Compute  logistic regression  model            ***
 //*****************************************************************
 
-void CModelingandAnalysisofUncertaintyDoc::OnLR_test(double eta, CArray<double> &w, 
-	const CArray < CArray<double> > &XTrain, const CArray < CArray<double> > &XVal, 
-	const CArray<int> &YTrain, const CArray<int> &YVal, int NTrain, int nIter) {
+void CModelingandAnalysisofUncertaintyDoc::OnLR_test(double eta, CArray<double>& w,
+	const CArray < CArray<double> >& XTrain, const CArray < CArray<double> >& XVal,
+	const CArray<int>& YTrain, const CArray<int>& YVal, int NTrain, int nIter) {
 	int N = XTrain.GetSize();
 	int M = XTrain[0].GetSize();
 	for (int i = 0; i < nIter; ++i) {
@@ -6120,6 +6120,27 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR_test(double eta, CArray<double> 
 			w[j] += eta * x[j] * delta;
 		}
 	}
+
+
+	CArray<CArray<double>> XtrainExtended;
+	for (int i = 0; i < NTrain; i++) {
+		CArray<double> temp;
+		for (int j = 0; j < M; j++) {
+			temp.Add(XTrain[i][j]);
+		}
+		XtrainExtended[i][M] = 1;
+		XtrainExtended.Add(temp);
+	}
+
+	CArray<double> T = innerproduct(XtrainExtended, w);
+	
+	CArray<double> temp;
+	CArray<double> yhat;
+	for (int i = 0; i < NTrain; i++) { temp.Add(1); }
+	for (int i = 0; i < NTrain; i++) {
+
+	}
+	 = temp / (temp + exp(-T))
 
 
 }
