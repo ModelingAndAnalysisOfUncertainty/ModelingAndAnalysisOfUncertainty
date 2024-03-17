@@ -6102,7 +6102,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnKPCA() {
 
 void CModelingandAnalysisofUncertaintyDoc::OnLR_test(double eta, CArray<double>& w,
 	const CArray < CArray<double> >& XTrain, const CArray < CArray<double> >& XVal,
-	const CArray<int>& YTrain, const CArray<int>& YVal, int NTrain, int nIter) {
+	const CArray<int>& YTrain, const CArray<int>& YVal, int NTrain, int NVal, int nIter) {
 	int N = XTrain.GetSize();
 	int M = XTrain[0].GetSize();
 	for (int i = 0; i < nIter; ++i) {
@@ -6131,17 +6131,27 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR_test(double eta, CArray<double>&
 		XtrainExtended[i][M] = 1;
 		XtrainExtended.Add(temp);
 	}
-
 	CArray<double> T = innerproduct(XtrainExtended, w);
-	
-	CArray<double> temp;
-	CArray<double> yhat;
-	for (int i = 0; i < NTrain; i++) { temp.Add(1); }
-	for (int i = 0; i < NTrain; i++) {
 
+	CArray<CArray<double>> XvalExtended;
+	for (int i = 0; i < NVal; i++) {
+		CArray<double> temp;
+		for (int j = 0; j < M; j++) {
+			temp.Add(XTrain[i][j]);
+		}
+		XvalExtended[i][M] = 1;
+		XvalExtended.Add(temp);
 	}
-	 = temp / (temp + exp(-T))
+	CArray<double> T0 = innerproduct(XvalExtended, w);
 
+	CArray<double> yhat;
+	CArray<double> yhat_0;
+	for (int i = 0; i < NTrain; i++) { 
+		yhat.Add(1/(1 + exp(-T[i])));
+	}
+	for (int i = 0; i < NVal; i++) {
+		yhat_0.Add(1 / (1 - exp(-T0[i])));
+	}
 
 }
 

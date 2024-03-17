@@ -364,7 +364,7 @@ public:
 	afx_msg void OnLR();
 	afx_msg void OnLR_test(double eta, CArray<double>& w,
 		const CArray < CArray<double> >& XTrain, const CArray < CArray<double> >& XVal,
-		const CArray<int>& YTrain, const CArray<int>& YVal, int NTrain, int nIter);
+		const CArray<int>& YTrain, const CArray<int>& YVal, int NTrain, int NVal, int nIter);
 	afx_msg void OnSVM();
 	afx_msg void OnKSVM();
 	afx_msg void OnKFDA();
