@@ -5,6 +5,8 @@
 #include "ProbabilityDistributions.h"
 #include <vector>
 #include <omp.h>
+#include <stdlib.h>
+#include "osqp.h"
 
 #pragma once
 
@@ -233,6 +235,7 @@ protected:
 	double GetLength(CArray <double>&);
 	double GetSquaredLength(CArray <double>&);
 	void CenterVector(CArray <double>&);
+	double ScalarProduct(CArray <double>&, CArray <double>&);
 	// *******************************************
 	// ***     Basic   Matrix   Operations     ***
 	// *******************************************
@@ -368,7 +371,7 @@ public:
 	afx_msg void OnL1_Regularization();
 	afx_msg void OnL2_Regularization();
 	afx_msg void OnKPLS();
-	afx_msg int OnQPSolver();
+	afx_msg void OnQPSolver();
 	afx_msg void OnANN_MFC();
 	afx_msg void OnANN_MFC_layer1(double learningRate, int epochs, int batchSize,HANDLE hEvent);
 	afx_msg void OnANN_batchParallel();
@@ -396,5 +399,4 @@ public:
 	afx_msg void OnUpdateKPLS(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateANN(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateMachinelearningArtificialneuralnetworkwithaccuracy(CCmdUI* pCmdUI);
-
 };
