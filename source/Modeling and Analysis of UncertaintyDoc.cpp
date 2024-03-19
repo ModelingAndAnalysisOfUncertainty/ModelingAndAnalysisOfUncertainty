@@ -6155,10 +6155,10 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR_test(double eta, CArray<double>&
 	CArray<double> yhat;
 	CArray<double> yhat_0;
 	for (int i = 0; i < NTrain; i++) { 
-		yhat.Add(1 / (1 - exp(-T[i])));
+		yhat.Add(1 / (1 + exp(-T[i])));
 	}
 	for (int i = 0; i < NVal; i++) {
-		yhat_0.Add(1 / (1 - exp(-T0[i])));
+		yhat_0.Add(1 / (1 + exp(-T0[i])));
 	}
 	SaveVector("LR_test.txt", yhat_0);
 	SaveVector("LR_test.txt", yhat);
