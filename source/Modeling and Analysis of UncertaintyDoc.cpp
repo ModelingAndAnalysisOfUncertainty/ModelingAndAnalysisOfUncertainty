@@ -5320,12 +5320,17 @@ public:
 	}
 
 	// Training method
-	void train(const std::vector<std::vector<float>>& training_data, const std::vector<unsigned long>& labels, int epochs = 10000) {
+	void train(const std::vector<std::vector<float>>& training_data, const std::vector<unsigned long>& labels,
+		int epochs = 4000) {
+		
+		// transformed_labels strat from 0 rather than 1
+		std::vector<unsigned long> transformed_labels = labels;
+		std::transform(transformed_labels.begin(), transformed_labels.end(), transformed_labels.begin(),
+			[](unsigned long label) { return label - 1; });
 		for (int epoch = 0; epoch < epochs; ++epoch) {
 			for (size_t i = 0; i < training_data.size(); ++i) {
 				const std::vector<float>& feature_vector = training_data[i];
-				unsigned long label = labels[i];
-
+				unsigned long label = transformed_labels[i];
 				if (is_multiclass) {
 					for (size_t class_idx = 0; class_idx < num_classes; ++class_idx) {
 						unsigned long predicted_label = class_idx;
@@ -5342,7 +5347,7 @@ public:
 
 						// Update weights and bias for this class
 						for (size_t feature_idx = 0; feature_idx < feature_vector.size(); ++feature_idx) {
-							weights[class_idx][feature_idx] += learning_rate * error * feature_vector[feature_idx];
+							weights[class_idx][feature_idx] += learning_rate * (error * feature_vector[feature_idx] - weights[class_idx][feature_idx]);
 						}
 						biases[class_idx] += learning_rate * error;
 					}
@@ -5353,9 +5358,9 @@ public:
 					float prediction = sigmoid(z);
 
 					float error = label - prediction;
-
+					
 					for (size_t j = 0; j < weights[0].size(); ++j) {
-						weights[0][j] += learning_rate * error * feature_vector[j];
+						weights[0][j] += learning_rate * (error * feature_vector[j] - weights[0][j]);
 					}
 					biases[0] += learning_rate * error;
 				}
@@ -5403,46 +5408,56 @@ public:
 			score_label_pairs.push_back(std::make_pair(predictions[i], labels[i]));
 		}
 
+		// Sort by prediction score in descending order
 		std::sort(score_label_pairs.rbegin(), score_label_pairs.rend());
 
 		size_t positive_count = std::count(labels.begin(), labels.end(), 1);
 		size_t negative_count = labels.size() - positive_count;
 
+		// Variables to store true positives and false positives
 		size_t TP = 0, FP = 0;
 		double prev_fpr = 0.0, prev_tpr = 0.0;
 		auc = 0.0;
-		
-	
-		for (const auto& score_label : score_label_pairs) {
-			if (score_label.second == 1) {
-				TP++; 
-			}
-			else {
-				FP++; 
+
+		// Initialize AUC calculation
+		for (size_t i = 0; i < score_label_pairs.size(); ++i) {
+			// Threshold is the current score
+			double threshold = score_label_pairs[i].first;
+			size_t temp_TP = 0, temp_FP = 0;
+
+			// Calculate TP and FP for the current threshold
+			for (size_t j = 0; j < score_label_pairs.size(); ++j) {
+				if (score_label_pairs[j].first >= threshold) {
+					if (score_label_pairs[j].second == 1) temp_TP++;
+					else temp_FP++;
+				}
 			}
 
-			double tpr_value = static_cast<double>(TP) / positive_count;
-			double fpr_value = static_cast<double>(FP) / negative_count;
+			double tpr_value = static_cast<double>(temp_TP) / positive_count;
+			double fpr_value = static_cast<double>(temp_FP) / negative_count;
 
-			
+			// Add to the TPR and FPR lists
 			tpr.push_back(tpr_value);
 			fpr.push_back(fpr_value);
 
-			auc += (fpr_value - prev_fpr) * (tpr_value + prev_tpr) / 2.0;
+			// Calculate the area using trapezoidal rule
+			if (i > 0) {
+				auc += (fpr_value - prev_fpr) * (tpr_value + prev_tpr) / 2.0;
+			}
 
-			prev_fpr = fpr_value;
+			// Update previous TPR and FPR for next iteration
 			prev_tpr = tpr_value;
+			prev_fpr = fpr_value;
 		}
 
+		// Final segment of AUC if needed
 		if (prev_fpr < 1.0 || prev_tpr < 1.0) {
 			auc += (1.0 - prev_fpr) * (1.0 + prev_tpr) / 2.0;
 			tpr.push_back(1.0);
 			fpr.push_back(1.0);
 		}
-
-
-	
 	}
+
 	// Test the linear classifier and compute confusion matrix
 	void test(const std::vector<std::vector<float>>& testing_data, const std::vector<unsigned long>& testing_labels,
 		int& TP, int& TN, int& FP, int& FN, double& PPV, double& F1, double& MCC, double& accuracy, double&sensitivity, double& specificity, double& AUC,std::vector<double>&TPr, std::vector<double>&FPr) const {
@@ -5454,9 +5469,11 @@ public:
 			// Initialize or increment class count
 			classCounts[label]++;
 		}
-
+		std::ofstream outfile("predictions.txt");
+		
 		for (size_t i = 0; i < testing_data.size(); ++i) {
 			std::vector<float> prediction_scores = predict(testing_data[i]);
+			outfile << "raw prediction_scores: " << prediction_scores[0] << std::endl;
 			unsigned long actual_label = testing_labels[i];
 			unsigned long predicted_label;
 			if (is_multiclass) {
@@ -5485,8 +5502,11 @@ public:
 			else {
 				// Assuming the first score is for the positive class in binary classification
 				double positive_class_probability = prediction_scores[0];
+				outfile << "prediction_scores: " << prediction_scores[0] << std::endl;
 				predictions.push_back(positive_class_probability);
 				actual_labels.push_back(actual_label);
+			
+				
 
 				predicted_label = prediction_scores[0] > 0.5 ? 1 : 0;
 				if (predicted_label == 1 && actual_label == 1) ++TP;
@@ -5495,7 +5515,7 @@ public:
 				else if (predicted_label == 0 && actual_label == 1) ++FN;
 			}
 		}
-
+		outfile.close();
 		// Recalculate TN for binary classification by subtracting the sum of TP, FP, FN from total predictions
 		if (!is_multiclass) {
 			TN = testing_data.size() - (TP + FP + FN);
@@ -5592,12 +5612,7 @@ void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
 	std::string newFilePath = CW2A(PathAndFileName.GetString(), CP_UTF8);
 	std::string subpath = ExtractSubpathAfterSource(newFilePath);
 
-	//Binary Classification Test File
-	ReadDataFromFile("datasets/Wisconsin.FDA", data, labels);
-	
-	// Multi Classification Test File	
-	//ReadDataFromFile("datasets/Metabolites.FDA", data, labels);
-	//ReadDataFromFile("datasets/EEA1-Tom20-6Classes-R21.FDA", data, labels);
+	ReadDataFromFile(subpath, data, labels);
 
 
 	// Standardize data
@@ -5611,7 +5626,7 @@ void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
 	split_data(data, labels, training_data, training_labels, testing_data, testing_labels);
 
 	// Create linear classifier
-	LinearClassifier classifier(data[0].size(),labels, 0.01); // Assuming all data entries have the same number of features
+	LinearClassifier classifier(data[0].size(),labels, 0.001); // Assuming all data entries have the same number of features
 	classifier.train(training_data, training_labels);
 
 	// Test model and calculate confusion matrix
@@ -5634,8 +5649,13 @@ void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
 	outfile << "Matthews Correlation Coefficient (MCC): " << mcc_test << std::endl;
 	outfile << "AUC: " << AUC_Total<<std::endl;
 	outfile << "TPR:";
-	for (size_t i = 1; i < fpr.size(); i++) {
+	for (size_t i = 1; i < tpr.size(); i++) {
 		outfile << tpr[i]<< " ";
+	}
+	outfile << std::endl;
+	outfile << "FPR:";
+	for (size_t i = 1; i < fpr.size(); i++) {
+		outfile << fpr[i] << " ";
 	}
 	outfile << std::endl;
 	for (int i = 0; i < testing_data.size(); i++) {

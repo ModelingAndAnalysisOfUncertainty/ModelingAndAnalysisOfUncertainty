@@ -1,86 +1,172 @@
-TPr_value: 0FPr: 0.015873
-TPr_value: 0FPr: 0.031746
-TPr_value: 0FPr: 0.047619
-TPr_value: 0FPr: 0.0634921
-TPr_value: 0FPr: 0.0793651
-TPr_value: 0FPr: 0.0952381
-TPr_value: 0FPr: 0.111111
-TPr_value: 0FPr: 0.126984
-TPr_value: 0FPr: 0.142857
-TPr_value: 0FPr: 0.15873
-TPr_value: 0FPr: 0.174603
-TPr_value: 0FPr: 0.190476
-TPr_value: 0FPr: 0.206349
-TPr_value: 0FPr: 0.222222
-TPr_value: 0FPr: 0.238095
-TPr_value: 0FPr: 0.253968
-TPr_value: 0FPr: 0.269841
-TPr_value: 0FPr: 0.285714
-TPr_value: 0FPr: 0.301587
-TPr_value: 0FPr: 0.31746
-TPr_value: 0FPr: 0.333333
-TPr_value: 0FPr: 0.349206
-TPr_value: 0FPr: 0.365079
-TPr_value: 0FPr: 0.380952
-TPr_value: 0FPr: 0.396825
-TPr_value: 0FPr: 0.412698
-TPr_value: 0FPr: 0.428571
-TPr_value: 0FPr: 0.444444
-TPr_value: 0FPr: 0.460317
-TPr_value: 0FPr: 0.47619
-TPr_value: 0FPr: 0.492063
-TPr_value: 0FPr: 0.507937
-TPr_value: 0FPr: 0.52381
-TPr_value: 0FPr: 0.539683
-TPr_value: 0FPr: 0.555556
-TPr_value: 0FPr: 0.571429
-TPr_value: 0FPr: 0.587302
-TPr_value: 0FPr: 0.603175
-TPr_value: 0FPr: 0.619048
-TPr_value: 0FPr: 0.634921
-TPr_value: 0FPr: 0.650794
-TPr_value: 0FPr: 0.666667
-TPr_value: 0FPr: 0.68254
-TPr_value: 0FPr: 0.698413
-TPr_value: 0FPr: 0.714286
-TPr_value: 0FPr: 0.730159
-TPr_value: 0FPr: 0.746032
-TPr_value: 0FPr: 0.761905
-TPr_value: 0FPr: 0.777778
-TPr_value: 0FPr: 0.793651
-TPr_value: 0FPr: 0.809524
-TPr_value: 0FPr: 0.825397
-TPr_value: 0FPr: 0.84127
-TPr_value: 0FPr: 0.857143
-TPr_value: 0FPr: 0.873016
-TPr_value: 0FPr: 0.888889
-TPr_value: 0FPr: 0.904762
-TPr_value: 0FPr: 0.920635
-TPr_value: 0FPr: 0.936508
-TPr_value: 0FPr: 0.952381
-TPr_value: 0FPr: 0.968254
-TPr_value: 0FPr: 0.984127
-TPr_value: 0FPr: 1
-TPr_value: 0.0434783FPr: 1
-TPr_value: 0.0869565FPr: 1
-TPr_value: 0.130435FPr: 1
-TPr_value: 0.173913FPr: 1
-TPr_value: 0.217391FPr: 1
-TPr_value: 0.26087FPr: 1
-TPr_value: 0.304348FPr: 1
-TPr_value: 0.347826FPr: 1
-TPr_value: 0.391304FPr: 1
-TPr_value: 0.434783FPr: 1
-TPr_value: 0.478261FPr: 1
-TPr_value: 0.521739FPr: 1
-TPr_value: 0.565217FPr: 1
-TPr_value: 0.608696FPr: 1
-TPr_value: 0.652174FPr: 1
-TPr_value: 0.695652FPr: 1
-TPr_value: 0.73913FPr: 1
-TPr_value: 0.782609FPr: 1
-TPr_value: 0.826087FPr: 1
-TPr_value: 0.869565FPr: 1
-TPr_value: 0.913043FPr: 1
-TPr_value: 0.956522FPr: 1
-TPr_value: 1FPr: 1
+raw prediction_scores: 0.907618
+prediction_scores: 0.907618
+raw prediction_scores: 0.806611
+prediction_scores: 0.806611
+raw prediction_scores: 0.682069
+prediction_scores: 0.682069
+raw prediction_scores: 0.876177
+prediction_scores: 0.876177
+raw prediction_scores: 0.779607
+prediction_scores: 0.779607
+raw prediction_scores: 0.731291
+prediction_scores: 0.731291
+raw prediction_scores: 0.674905
+prediction_scores: 0.674905
+raw prediction_scores: 0.202068
+prediction_scores: 0.202068
+raw prediction_scores: 0.0231738
+prediction_scores: 0.0231738
+raw prediction_scores: 0.172936
+prediction_scores: 0.172936
+raw prediction_scores: 0.882201
+prediction_scores: 0.882201
+raw prediction_scores: 0.925185
+prediction_scores: 0.925185
+raw prediction_scores: 0.555397
+prediction_scores: 0.555397
+raw prediction_scores: 0.369704
+prediction_scores: 0.369704
+raw prediction_scores: 0.750393
+prediction_scores: 0.750393
+raw prediction_scores: 0.208832
+prediction_scores: 0.208832
+raw prediction_scores: 0.282417
+prediction_scores: 0.282417
+raw prediction_scores: 0.258521
+prediction_scores: 0.258521
+raw prediction_scores: 0.596406
+prediction_scores: 0.596406
+raw prediction_scores: 0.27282
+prediction_scores: 0.27282
+raw prediction_scores: 0.92375
+prediction_scores: 0.92375
+raw prediction_scores: 0.745776
+prediction_scores: 0.745776
+raw prediction_scores: 0.745624
+prediction_scores: 0.745624
+raw prediction_scores: 0.477131
+prediction_scores: 0.477131
+raw prediction_scores: 0.905612
+prediction_scores: 0.905612
+raw prediction_scores: 0.87883
+prediction_scores: 0.87883
+raw prediction_scores: 0.773615
+prediction_scores: 0.773615
+raw prediction_scores: 0.572187
+prediction_scores: 0.572187
+raw prediction_scores: 0.844893
+prediction_scores: 0.844893
+raw prediction_scores: 0.120214
+prediction_scores: 0.120214
+raw prediction_scores: 0.857068
+prediction_scores: 0.857068
+raw prediction_scores: 0.830262
+prediction_scores: 0.830262
+raw prediction_scores: 0.830086
+prediction_scores: 0.830086
+raw prediction_scores: 0.387171
+prediction_scores: 0.387171
+raw prediction_scores: 0.473502
+prediction_scores: 0.473502
+raw prediction_scores: 0.489118
+prediction_scores: 0.489118
+raw prediction_scores: 0.0338391
+prediction_scores: 0.0338391
+raw prediction_scores: 0.138749
+prediction_scores: 0.138749
+raw prediction_scores: 0.721248
+prediction_scores: 0.721248
+raw prediction_scores: 0.339575
+prediction_scores: 0.339575
+raw prediction_scores: 0.84133
+prediction_scores: 0.84133
+raw prediction_scores: 0.738712
+prediction_scores: 0.738712
+raw prediction_scores: 0.907364
+prediction_scores: 0.907364
+raw prediction_scores: 0.266627
+prediction_scores: 0.266627
+raw prediction_scores: 0.285543
+prediction_scores: 0.285543
+raw prediction_scores: 0.115468
+prediction_scores: 0.115468
+raw prediction_scores: 0.835158
+prediction_scores: 0.835158
+raw prediction_scores: 0.322247
+prediction_scores: 0.322247
+raw prediction_scores: 0.839304
+prediction_scores: 0.839304
+raw prediction_scores: 0.821189
+prediction_scores: 0.821189
+raw prediction_scores: 0.587236
+prediction_scores: 0.587236
+raw prediction_scores: 0.873116
+prediction_scores: 0.873116
+raw prediction_scores: 0.743916
+prediction_scores: 0.743916
+raw prediction_scores: 0.204606
+prediction_scores: 0.204606
+raw prediction_scores: 0.92232
+prediction_scores: 0.92232
+raw prediction_scores: 0.356555
+prediction_scores: 0.356555
+raw prediction_scores: 0.19394
+prediction_scores: 0.19394
+raw prediction_scores: 0.88687
+prediction_scores: 0.88687
+raw prediction_scores: 0.195889
+prediction_scores: 0.195889
+raw prediction_scores: 0.838886
+prediction_scores: 0.838886
+raw prediction_scores: 0.190705
+prediction_scores: 0.190705
+raw prediction_scores: 0.142942
+prediction_scores: 0.142942
+raw prediction_scores: 0.488876
+prediction_scores: 0.488876
+raw prediction_scores: 0.877198
+prediction_scores: 0.877198
+raw prediction_scores: 0.850573
+prediction_scores: 0.850573
+raw prediction_scores: 0.766297
+prediction_scores: 0.766297
+raw prediction_scores: 0.917972
+prediction_scores: 0.917972
+raw prediction_scores: 0.829483
+prediction_scores: 0.829483
+raw prediction_scores: 0.7638
+prediction_scores: 0.7638
+raw prediction_scores: 0.311764
+prediction_scores: 0.311764
+raw prediction_scores: 0.854293
+prediction_scores: 0.854293
+raw prediction_scores: 0.849501
+prediction_scores: 0.849501
+raw prediction_scores: 0.78901
+prediction_scores: 0.78901
+raw prediction_scores: 0.0103983
+prediction_scores: 0.0103983
+raw prediction_scores: 0.745384
+prediction_scores: 0.745384
+raw prediction_scores: 0.865178
+prediction_scores: 0.865178
+raw prediction_scores: 0.1479
+prediction_scores: 0.1479
+raw prediction_scores: 0.833519
+prediction_scores: 0.833519
+raw prediction_scores: 0.799273
+prediction_scores: 0.799273
+raw prediction_scores: 0.609338
+prediction_scores: 0.609338
+raw prediction_scores: 0.319575
+prediction_scores: 0.319575
+raw prediction_scores: 0.86605
+prediction_scores: 0.86605
+raw prediction_scores: 0.831205
+prediction_scores: 0.831205
+raw prediction_scores: 0.812561
+prediction_scores: 0.812561
+raw prediction_scores: 0.797881
+prediction_scores: 0.797881
+raw prediction_scores: 0.712894
+prediction_scores: 0.712894

@@ -10452,13 +10452,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 	CPen pen(PS_SOLID, 2, RGB(0, 0, 255)); 
 	CPen* pOldPen = dc.SelectObject(&pen);
 
-	std::ofstream outfile("predictions.txt");
 	
-
-	for (int i = 0; i < tpr.size(); i++) {
-		outfile << "TPr_value: " << tpr[i] << "FPr: " << fpr[i] << std::endl;
-	}
-	outfile.close();
 
 
 	// Assuming tpr and fpr vectors are prepared and sorted
