@@ -370,6 +370,15 @@ void CModelingandAnalysisofUncertaintyDoc::CenterVector(CArray <double>& vector)
 	for (int i = 0; i < vector.GetSize(); i++) vector.SetAt(i, vector.GetAt(i) - mean);
 }
 
+double CModelingandAnalysisofUncertaintyDoc::ScalarProduct(CArray <double>& a, CArray <double>& b) {
+	double temp = 0;
+	int dim_a = a.GetSize(), dim_b = b.GetSize();
+	if (dim_a == dim_b) {
+		for (int i = 0; i < dim_a; i++) temp += a.GetAt(i) * b.GetAt(i);
+	}
+	else return temp;
+}
+
 void CModelingandAnalysisofUncertaintyDoc::GetLargestElement(CArray <double>& A, CArray <int>& A_spec, double& max) {
 	max = A.GetAt(0);
 	int row = A_spec.GetAt(0), col = A_spec.GetAt(1);
@@ -6112,7 +6121,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR_test(double eta, CArray<double>&
 		x.Copy(XTrain[k]);
 		x.Add(1);
 		int y_i = YTrain[k];
-		double t = Scalar_Product(x, w);
+		double t = ScalarProduct(x, w);
 		double yhat = 1 / (1 + exp(-t));
 		double delta = y_i - yhat;
 
@@ -6123,36 +6132,36 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR_test(double eta, CArray<double>&
 
 
 	CArray<CArray<double>> XtrainExtended;
+	CArray<double> T;
 	for (int i = 0; i < NTrain; i++) {
 		CArray<double> temp;
 		for (int j = 0; j < M; j++) {
 			temp.Add(XTrain[i][j]);
 		}
-		XtrainExtended[i][M] = 1;
-		XtrainExtended.Add(temp);
-	}
-	CArray<double> T = innerproduct(XtrainExtended, w);
+		temp.Add(1.0);
+		T.Add(ScalarProduct(temp, w));
+	} 
 
-	CArray<CArray<double>> XvalExtended;
+	CArray<double> T0;
 	for (int i = 0; i < NVal; i++) {
 		CArray<double> temp;
 		for (int j = 0; j < M; j++) {
 			temp.Add(XTrain[i][j]);
 		}
-		XvalExtended[i][M] = 1;
-		XvalExtended.Add(temp);
+		temp.Add(1.0);
+		T0.Add(ScalarProduct(temp, w));
 	}
-	CArray<double> T0 = innerproduct(XvalExtended, w);
 
 	CArray<double> yhat;
 	CArray<double> yhat_0;
 	for (int i = 0; i < NTrain; i++) { 
-		yhat.Add(1/(1 + exp(-T[i])));
+		yhat.Add(1 / (1 - exp(-T[i])));
 	}
 	for (int i = 0; i < NVal; i++) {
 		yhat_0.Add(1 / (1 - exp(-T0[i])));
 	}
-
+	SaveVector("LR_test.txt", yhat_0);
+	SaveVector("LR_test.txt", yhat);
 }
 
 

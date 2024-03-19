@@ -233,6 +233,7 @@ protected:
 	double GetLength(CArray <double>&);
 	double GetSquaredLength(CArray <double>&);
 	void CenterVector(CArray <double>&);
+	double ScalarProduct(CArray <double>&, CArray <double>&);
 	// *******************************************
 	// ***     Basic   Matrix   Operations     ***
 	// *******************************************
