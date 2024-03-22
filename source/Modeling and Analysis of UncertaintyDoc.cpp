@@ -5915,54 +5915,25 @@ void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
 	}
 	outfile.close();
 	*/
-	std::ofstream outfile1("Data_spec.txt");
-	outfile1 << "n_Var: " << n_Var << std::endl;
-	outfile1 << "n_Obs:" << n_Obs << std::endl;
-	for (int i = 0; i < Data_spec.GetSize(); i++) {
-		outfile1 << Data_spec[i] << std::endl;
-	}
-	outfile1.close();
+	
 	
 	// Read data and labels
-	CArray<double> rawdata;
-	CArray<unsigned long> labels;
-
-	//Get file name 
+	CArray<double> data, trainData, testData;
+	CArray<int> data_spec, trainData_spec, testData_spec;
+	CArray<double> label, trainLabel, testLabel;
+	CArray<double> emptySww;
 	std::string newFilePath = CW2A(PathAndFileName.GetString(), CP_UTF8);
 	std::string subpath = ExtractSubpathAfterSource(newFilePath);
+	int numFeatures = LoadData(subpath, data,  data_spec, label);
+	StandardizeData(numFeatures, data, data_spec);
+	ShuffleData(data, data_spec, label);
+	SplitData(data, data_spec,label,trainData, trainData_spec, trainLabel,testData,testData_spec, testLabel, 0.85);
 
-	ReadDataFromFile(subpath, rawdata, labels);
-	// Standardize data
-	standardize_data(Data,n_Var);
+	//GetRegressionVector(trainData, trainData_spec, trainLabel, emptySww, false);
 
-	// Split training and testing data
-	CArray<double> TrainingData;
-	CArray<int> TrainingLabels;
-	CArray<double> TestingData;
-	CArray<int> TestingLabels;
-	split_data(Data, labels, TrainingData, TrainingLabels, TestingData, TestingLabels, n_Var);
-	SimplePerceptron perceptron(n_Var);
-
-	// Train model
-	perceptron.Train(TrainingData, TrainingLabels);
-
-	CArray<int> Predictions;
-	for (int i = 0; i < TestingData.GetSize() / n_Var; ++i) {
-		CArray<double> x;
-		for (int j = 0; j < n_Var; ++j) {
-			x.Add(TestingData[i * n_Var + j]);
-		}
-
-		int predictedLabel = perceptron.Predict(x);
-		Predictions.Add(predictedLabel);
-	}
+	
 	// Calculate TP, TN, FP, FN using Predictions and TestingLabels
-	for (int i = 0; i < Predictions.GetSize(); ++i) {
-		if (Predictions[i] == 1 && TestingLabels[i] == 1) ++TP;
-		else if (Predictions[i] == 0 && TestingLabels[i] == 0) ++TN;
-		else if (Predictions[i] == 1 && TestingLabels[i] == 0) ++FP;
-		else if (Predictions[i] == 0 && TestingLabels[i] == 1) ++FN;
-	}
+	
 	acc_test = (TP + TN) / static_cast<double>(TP + TN + FP + FN);
 	sensitivity = TP / static_cast<double>(TP + FN);
 	specificity = TN / static_cast<double>(TN + FP);
@@ -5979,7 +5950,15 @@ void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
 	
 	// Write output
 	std::ofstream outfile("linear_class_confusion_matrix.txt");
-	outfile << newFilePath << std::endl;
+	for (int i = 0; i < trainData.GetSize(); i++) {
+		outfile << "trainData: " << i << " : " << trainData[i] << std::endl;
+	}
+	for (int i = 0; i < trainLabel.GetSize(); i++) {
+		outfile << "trainLabel: " << i << " : " << trainLabel[i] << std::endl;
+	}
+	for (int i = 0; i < w.GetSize(); i++) {
+		outfile << "W: " << i << " : " << w[i] << std::endl;
+	}
 	outfile << "True Positives (TP): " << TP << std::endl;
 	outfile << "True Negatives (TN): " << TN << std::endl;
 	outfile << "False Positives (FP): " << FP << std::endl;
@@ -5998,12 +5977,7 @@ void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
 	for (size_t i = 1; i < fpr.size(); i++) {
 		outfile << fpr[i] << " ";
 	}
-	for (int i = 0; i < TestingData.GetSize(); i++) {
-		outfile <<"TestingData["<<i<<"]" << TestingData[i] << std::endl;
-	}
-	for (int i = 0; i < TestingLabels.GetSize(); i++) {
-		outfile << "TestingLabels[" << i << "]" << TestingLabels[i] << std::endl;
-	}
+
 	outfile.close();
 	UpdateAllViews(NULL);
 }
