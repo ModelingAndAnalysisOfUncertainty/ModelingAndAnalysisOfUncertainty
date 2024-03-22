@@ -5,6 +5,8 @@
 #include "ProbabilityDistributions.h"
 #include <vector>
 #include <omp.h>
+#include <stdlib.h>
+#include "osqp.h"
 
 #pragma once
 
@@ -237,6 +239,7 @@ protected:
 	double GetLength(CArray <double>&);
 	double GetSquaredLength(CArray <double>&);
 	void CenterVector(CArray <double>&);
+	double ScalarProduct(CArray <double>&, CArray <double>&);
 	// *******************************************
 	// ***     Basic   Matrix   Operations     ***
 	// *******************************************
@@ -291,6 +294,21 @@ protected:
 	void EVD(CArray<double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, bool&, bool&);
 	void Transformation(CArray <double>& Temp, CArray <int>& Temp_spec, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
 	void GEVD(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, int, bool&);
+	// *******************************************
+	// ***      Pre-train Helper Functions     ***
+	// *******************************************
+	// Pre-train helper function that load a dataset given the file path, return the int for features for the dataset
+	int LoadData(const std::string& filename, CArray<double>& data, CArray <int>& data_spec,CArray<double>& label);
+	//Pre-train helper function that shuffle a dataset
+	void ShuffleData(CArray<double>& data, CArray <int>& data_spec,CArray<double>& label);
+	//Pre-train helper function that split the dataset into training and validation set given the split ratio
+	void SplitData(const CArray<double>& data, const CArray<int>& data_spec, const CArray<double>& label,
+				   CArray<double>& trainData, CArray<int>& trainData_spec, CArray<double>& trainLabel,
+				   CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel, float ratio = 0.85);
+	// Pre-train helper function that standardize the dataset
+	void StandardizeData(int numFeatures, CArray<double>& data, CArray<int>& data_spec);
+	// Pre-train helper function that standardize the label for regression problem.
+	void StandardizeLabel(CArray<double>& label);
 	// *******************************************
 	// *** Multivariate Statistical Operations ***
 	// *******************************************
@@ -374,8 +392,7 @@ public:
 	afx_msg void OnL1_Regularization();
 	afx_msg void OnL2_Regularization();
 	afx_msg void OnKPLS();
-	afx_msg void OnANN();
-	afx_msg void OnQPPSolver();
+	afx_msg void OnQPSolver();
 	afx_msg void OnANN_MFC();
 	afx_msg void OnANN_MFC_layer1(double learningRate, int epochs, int batchSize,HANDLE hEvent);
 	afx_msg void OnANN_batchParallel();
@@ -403,5 +420,4 @@ public:
 	afx_msg void OnUpdateKPLS(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateANN(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateMachinelearningArtificialneuralnetworkwithaccuracy(CCmdUI* pCmdUI);
-
 };
