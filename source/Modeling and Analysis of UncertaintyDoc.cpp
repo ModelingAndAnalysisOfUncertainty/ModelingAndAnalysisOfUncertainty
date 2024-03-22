@@ -6,7 +6,6 @@
 #include "framework.h"
 #include <vector>
 #include <algorithm>
-
 #include <iostream>
 #include <cmath>
 #include <vector>
@@ -3013,6 +3012,226 @@ BOOL CModelingandAnalysisofUncertaintyDoc::OnSaveDocument(LPCTSTR lpszPathName) 
 	return true;
 }
 
+// *******************************************
+// ***      Pre-train Helper Functions     ***
+// *******************************************
+/*
+	All helper functions use the project's CArray matrix implementation, where a matrix is stroed in a 1D CArray,
+	and use an additional CArray<int> of size 3 to define the matrix's specification.
+	spec[0] defines the number of row for the matrix
+	spec[1] defines the number of col for the matrix
+	spec[2] defines the matrix type
+	All pre-train helper functions assume matrix type is dense matrix (spec[2]=0)
+*/
+// Pre-train helper function that loads FDA datasets given the file path, return int of features
+int CModelingandAnalysisofUncertaintyDoc::LoadData(const std::string& filename, CArray<double>& data, CArray<int>& data_spec, CArray<double>& label) {
+	CString message;
+	std::ifstream file(filename);
+	if (!file) {
+		message.Format(_T("Unable to open file: %S\n"), filename.c_str());
+		AfxMessageBox(message);
+		return -1;
+	}
+	std::string line;
+	// Read the first line to get the number of features
+	if (!std::getline(file, line)) {
+		message.Format(_T("File description 1 format incorrect: %S\n"), filename.c_str());
+		AfxMessageBox(message);
+		return -1;
+	}
+	std::stringstream firstLine(line);
+	int num_features;
+	char comma;
+	if (!(firstLine >> num_features >> comma)) {
+		message.Format(_T("File description 2 format incorrect: %S\n"), filename.c_str());
+		AfxMessageBox(message);
+		return -1;
+	}
+	// Decrement by 1 to exclude the label from the features count
+	num_features -= 1;
+	// Skip the remaining description lines
+	for (int i = 0; i < 3; ++i) {
+		if (!std::getline(file, line)) {
+			message.Format(_T("File description 3 format incorrect: %S\n"), filename.c_str());
+			AfxMessageBox(message);
+			return -1;
+		}
+	}
+	// Initialize data_spec for a dense matrix
+	data_spec.SetSize(3); // Ensure data_spec has size 3
+	data_spec[1] = num_features; // Number of columns (features)
+	data_spec[2] = 0; // Dense matrix
+	// Prepare to read data rows and labels
+	std::vector<double> tempRow(num_features);
+	int rowCount = 0;
+	// Read the data
+	while (std::getline(file, line)) {
+		std::stringstream ss(line);
+		// Parse the features
+		for (int i = 0; i < num_features; ++i) {
+			if (!(ss >> tempRow[i])) {
+				message.Format(_T("File feature data format incorrect: %S\n"), filename.c_str());
+				AfxMessageBox(message);
+				return -1;
+			}
+			// Skip the comma
+			if (i < num_features - 1 && ss.peek() == ',') {
+				ss.ignore();
+			}
+		}
+		// Skip the comma before the label
+		if (ss.peek() == ',') {
+			ss.ignore();
+		}
+		// Get the label
+		double currentLabel;
+		if (!(ss >> currentLabel)) {
+			message.Format(_T("File label data format incorrect: %S\n"), filename.c_str());
+			AfxMessageBox(message);
+			return -1;
+		}
+		// Store the parsed row and label
+		for (auto value : tempRow) {
+			data.Add(value);
+		}
+		label.Add(currentLabel);
+		rowCount++;
+	}
+	// Finalize data_spec with the number of rows
+	data_spec[0] = rowCount; // Number of rows
+	return num_features;
+}
+
+//Pre-train helper function that shuffle a dataset
+void CModelingandAnalysisofUncertaintyDoc::ShuffleData(CArray<double>& data, CArray<int>& data_spec, CArray<double>& label) {
+	// Determine the number of rows and columns from data_spec
+	int numRows = data_spec[0];
+	int numCols = data_spec[1];
+	// Create a vector of indices for shuffling
+	std::vector<int> indices(numRows);
+	for (int i = 0; i < numRows; ++i) {
+		indices[i] = i;
+	}
+	// Random number generator
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::shuffle(indices.begin(), indices.end(), std::default_random_engine(seed));
+	// Temporary CArrays to hold the shuffled data and labels
+	CArray<double> shuffledData;
+	CArray<double> shuffledLabel;
+	// Preallocate space in the temporary arrays
+	shuffledData.SetSize(data.GetSize());
+	shuffledLabel.SetSize(label.GetSize());
+	// Reorder data and labels based on shuffled indices
+	for (int i = 0; i < numRows; ++i) {
+		int oldIndex = indices[i];
+		for (int j = 0; j < numCols; ++j) {
+			shuffledData.SetAt(i * numCols + j, data.GetAt(oldIndex * numCols + j));
+		}
+		shuffledLabel.SetAt(i, label.GetAt(oldIndex));
+	}
+	// Copy the shuffled data and labels back into the original CArrays
+	data.Copy(shuffledData);
+	label.Copy(shuffledLabel);
+}
+
+//Pre-train helper function that split the dataset into training and validation set given the split ratio
+void CModelingandAnalysisofUncertaintyDoc::SplitData(const CArray<double>& data, const CArray<int>& data_spec, const CArray<double>& label,
+	CArray<double>& trainData, CArray<int>& trainData_spec, CArray<double>& trainLabel,
+	CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel, float ratio) {
+	// Calculate the size of the training set
+	int numRows = data_spec[0];
+	int numCols = data_spec[1];
+	int trainSize = static_cast<int>(numRows * ratio);
+	// Prepare data_spec for both training and testing datasets
+	trainData_spec.SetSize(3);
+	testData_spec.SetSize(3);
+	// Copy specifications for dense matrices, adjusting row counts accordingly
+	trainData_spec[0] = trainSize; // Number of rows in the training set
+	trainData_spec[1] = numCols; // Number of columns/features remains the same
+	trainData_spec[2] = 0; // Dense matrix
+	testData_spec[0] = numRows - trainSize; // Number of rows in the testing set
+	testData_spec[1] = numCols; // Number of columns/features remains the same
+	testData_spec[2] = 0; // Dense matrix
+	// Allocate space for training and testing data and labels
+	trainData.SetSize(trainSize * numCols);
+	trainLabel.SetSize(trainSize);
+	testData.SetSize((numRows - trainSize) * numCols);
+	testLabel.SetSize(numRows - trainSize);
+	// Copy the first portion of the data into the training set
+	for (int i = 0; i < trainSize; ++i) {
+		for (int j = 0; j < numCols; ++j) {
+			trainData.SetAt(i * numCols + j, data.GetAt(i * numCols + j));
+		}
+		trainLabel.SetAt(i, label.GetAt(i));
+	}
+	// Copy the remaining data into the test set
+	for (int i = trainSize; i < numRows; ++i) {
+		for (int j = 0; j < numCols; ++j) {
+			testData.SetAt((i - trainSize) * numCols + j, data.GetAt(i * numCols + j));
+		}
+		testLabel.SetAt(i - trainSize, label.GetAt(i));
+	}
+}
+
+
+// Pre-train helper function that standardize the dataset
+void CModelingandAnalysisofUncertaintyDoc::StandardizeData(int numFeatures, CArray<double>& data, CArray<int>& data_spec) {
+	int numRows = data_spec[0];
+	CArray<double> mean, stddev;
+	mean.SetSize(numFeatures);
+	stddev.SetSize(numFeatures);
+	// Compute the mean for each feature
+	for (int i = 0; i < numFeatures; ++i) {
+		double sum = 0.0;
+		for (int j = 0; j < numRows; ++j) {
+			sum += data.GetAt(j * numFeatures + i);
+		}
+		mean.SetAt(i, sum / numRows);
+	}
+	// Compute the standard deviation for each feature
+	for (int i = 0; i < numFeatures; ++i) {
+		double sq_diff_sum = 0.0;
+		for (int j = 0; j < numRows; ++j) {
+			double value = data.GetAt(j * numFeatures + i) - mean.GetAt(i);
+			sq_diff_sum += std::pow(value, 2);
+		}
+		stddev.SetAt(i, std::sqrt(sq_diff_sum / numRows));
+	}
+	// Standardize the data
+	for (int j = 0; j < numRows; ++j) {
+		for (int i = 0; i < numFeatures; ++i) {
+			if (stddev.GetAt(i) != 0) { // Prevent division by zero
+				double standardizedValue = (data.GetAt(j * numFeatures + i) - mean.GetAt(i)) / stddev.GetAt(i);
+				data.SetAt(j * numFeatures + i, standardizedValue);
+			}
+		}
+	}
+}
+
+// Pre-train helper function that standardize the label for regression problem.
+void CModelingandAnalysisofUncertaintyDoc::StandardizeLabel(CArray<double>& label) {
+	int numLabels = label.GetSize();
+	double mean = 0.0;
+	double stddev = 0.0;
+	// Compute the mean of the labels
+	for (int i = 0; i < numLabels; ++i) {
+		mean += label.GetAt(i);
+	}
+	mean /= numLabels;
+	// Compute the standard deviation of the labels
+	for (int i = 0; i < numLabels; ++i) {
+		double diff = label.GetAt(i) - mean;
+		stddev += diff * diff;
+	}
+	stddev = std::sqrt(stddev / numLabels);
+	// Standardize the labels
+	for (int i = 0; i < numLabels; ++i) {
+		if (stddev != 0) { // Prevent division by zero
+			label.SetAt(i, (label.GetAt(i) - mean) / stddev);
+		}
+	}
+}
+
 #ifdef SHARED_HANDLERS
 
 // Support for thumbnails
@@ -5244,8 +5463,6 @@ void CModelingandAnalysisofUncertaintyDoc::SetUpFDAMatrices(CArray <double>& Sb,
 void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	
 	//AfxMessageBox(L"Now we are working on establishing an linear classification model");
-	//curent data 
-	//get data to parse through
 
 	/// CArray <double>& Data_0, CArray <double>& bar, CArray <double>& std
 	//CArray for 3 classification
@@ -5294,8 +5511,8 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	    	temp_2 = Data.GetAt(static_cast <int64_t>(GetPosition(indices[i], j, Data_spec)));
 	    	testData.SetAt(val_pos, temp_2);
 			}
-	//	///*int val_posconstant = static_cast <int64_t>(GetPosition(k, n_Var - 1, testData_spec));
-	//	//data2.SetAt(val_posconstant, (double)1);*/
+	//  *int val_posconstant = static_cast <int64_t>(GetPosition(k, n_Var - 1, testData_spec));
+	//	data2.SetAt(val_posconstant, (double)1);*/
 	      k++;
 	 }
 
@@ -7445,17 +7662,7 @@ void CModelingandAnalysisofUncertaintyDoc::GetNetworkPredictionParallel(const st
 	}
 }
 
-// Helper function to convert dense matrix to CSC formatt
-
-
-/*
-	QP Terms:
-	min 1/2 x^T H x + f^T x
-	Subject to:
-	Ax <= b
-*/
 void CModelingandAnalysisofUncertaintyDoc::OnQPSolver() {
-
 }
 
 void CModelingandAnalysisofUncertaintyDoc::OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI) {
