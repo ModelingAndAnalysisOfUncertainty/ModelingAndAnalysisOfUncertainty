@@ -163,6 +163,7 @@ public:
 	int TP, FP, TN, FN;// True_Label, False_Label;
 	double sensitivity, specificity, mcc_test, ppv_test, F1_test, acc_test, AUC_Total;
 	std::vector<double> tpr, fpr;
+	CArray<double> y_pred_class, y_true_class;
 	// FLAGS FOR LINEAR MULTIPLE REGRESSION ANALYSIS
 	bool RegressionAnalysis = false;
 	bool RegressionAnalysis_Independent = false;
@@ -341,6 +342,7 @@ protected:
 
 	// Linear Classification
 	void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier();
+	void CModelingandAnalysisofUncertaintyDoc::CalculateClassificationMetrics(const CArray<double>& y_pred, const CArray<double>& y_true, double threshold);
 protected:
 	DECLARE_MESSAGE_MAP()
 
