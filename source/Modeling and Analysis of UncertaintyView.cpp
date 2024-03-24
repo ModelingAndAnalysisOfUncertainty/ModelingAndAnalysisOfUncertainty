@@ -10437,8 +10437,8 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 	// After displaying metrics, plot the ROC curve
 	int rocGraphTop = startY - (6 * lineHeight); 
 	int rocGraphLeft = newContentStartX; 
-	int rocGraphWidth = 200;
-	int rocGraphHeight = 200; 
+	int rocGraphWidth = 300;
+	int rocGraphHeight = 300; 
 
 	// Draw the border for the ROC graph
 	CRect rocRect(rocGraphLeft, rocGraphTop, rocGraphLeft + rocGraphWidth, rocGraphTop + rocGraphHeight);
@@ -10467,6 +10467,17 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 		}
 	}
 
+
+
+	CString title = _T("ROC Curve");
+	dc.TextOutW(rocGraphLeft + rocGraphWidth / 2 - 40, rocGraphTop - 30, title); // Adding the title
+
+	CString xlabel = _T("FPR");
+	dc.TextOutW(rocGraphLeft + rocGraphWidth / 2 - 30, rocGraphTop + rocGraphHeight + 5, xlabel); // Adding the X-axis label
+
+	CString ylabel = _T("TPR");
+	
+	dc.TextOutW(rocGraphLeft - 45, rocGraphTop + rocGraphHeight / 2 , ylabel);
 	// Restore the old font
 	dc.SelectObject(pOldFont);
 	// Clean up the font resource

@@ -5907,16 +5907,17 @@ private:
 	}
 };
 
-void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
-	/*
-	std::ofstream outfile("Data.txt");
-	for (int i = 0; i < Data.GetSize(); i++) {
-		outfile << Data[i] << std::endl;
+double CalculateAUC(const std::vector<double>& fpr, const std::vector<double>& tpr) {
+	double auc = 0.0;
+	for (size_t i = 1; i < fpr.size(); ++i) {
+		double x1 = fpr[i - 1], x2 = fpr[i];
+		double y1 = tpr[i - 1], y2 = tpr[i];
+		auc += (x1 - x2) * (y2 + y1) / 2.0;
 	}
-	outfile.close();
-	*/
-	
-	
+	return auc;
+}
+
+void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
 	// Read data and labels
 	CArray<double> data, trainData, testData;
 	CArray<int> data_spec, trainData_spec, testData_spec;
@@ -5928,37 +5929,79 @@ void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
 	StandardizeData(numFeatures, data, data_spec);
 	ShuffleData(data, data_spec, label);
 	SplitData(data, data_spec,label,trainData, trainData_spec, trainLabel,testData,testData_spec, testLabel, 0.85);
-
-	//GetRegressionVector(trainData, trainData_spec, trainLabel, emptySww, false);
+	bool validation = true;
+	GetRegressionVector(trainData, trainData_spec, trainLabel, emptySww, validation);
 
 	
-	// Calculate TP, TN, FP, FN using Predictions and TestingLabels
-	
+	// Calculate TP, TN, FP, FN 
+	CArray<double> predictions;
+	tpr.clear();
+	fpr.clear();
+	double threshold = 0;
+	int numSamples = testData.GetSize() / numFeatures;
+	for (int i = 0; i < numSamples; i++) {
+		double score = 0.0;
+		for (int j = 0; j < numFeatures; j++) {
+			score += testData[i * numFeatures + j] * w[j]; 
+		}
+		int predictedLabel = (score > threshold) ? 2 : 1;
+		predictions.Add(predictedLabel);
+	}
+	TP = 0; TN = 0; FP = 0; FN = 0;
+	AUC_Total = 0; acc_test = 0; sensitivity = 0; specificity = 0; ppv_test = 0; F1_test = 0; mcc_test = 0;
+	for (int i = 0; i < testLabel.GetSize(); i++) {
+		if (predictions[i] == 2 && testLabel[i] == 2) TP++;
+		else if (predictions[i] == 1 && testLabel[i] == 1) TN++;
+		else if (predictions[i] == 2 && testLabel[i] == 1) FP++;
+		else if (predictions[i] == 1 && testLabel[i] == 2) FN++;
+	}
 	acc_test = (TP + TN) / static_cast<double>(TP + TN + FP + FN);
 	sensitivity = TP / static_cast<double>(TP + FN);
 	specificity = TN / static_cast<double>(TN + FP);
-	ppv_test = (TP + FP > 0) ? static_cast<double>(TP) / (TP + FP) : 0; // Positive Predictive Value (Precision)
-	double recall_test = (TP + FN > 0) ? static_cast<double>(TP) / (TP + FN) : 0; // Recall (True Positive Rate)
-	F1_test = (ppv_test + recall_test > 0) ? 2 * ppv_test * recall_test / (ppv_test + recall_test) : 0; // F1 Score
+	ppv_test = static_cast<double>(TP) / (TP + FP); // Positive Predictive Value (Precision)
+	double recall_test = static_cast<double>(TP) / (TP + FN); // Recall (True Positive Rate)
+	F1_test = 2 * ppv_test * recall_test / (ppv_test + recall_test); // F1 Score
 	mcc_test = (TP * TN - FP * FN) / sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN));
+	
+	std::vector<double> thresholds;
+	
+	for (int i = 0; i < numSamples; i++) {
+		double score = 0.0;
+		for (int j = 0; j < numFeatures; j++) {
+			score += testData[i * numFeatures + j] * w[j];
+		}
+		thresholds.push_back(score);
+	}
 
+	std::sort(thresholds.begin(), thresholds.end());
+	auto last = std::unique(thresholds.begin(), thresholds.end());
+	thresholds.erase(last, thresholds.end());
+
+	for (double threshold : thresholds) {
+		int TP = 0, TN = 0, FP = 0, FN = 0;
+		for (int i = 0; i < numSamples; i++) {
+			double score = 0.0;
+			for (int j = 0; j < numFeatures; j++) {
+				score += testData[i * numFeatures + j] * w[j];
+			}
+			int predictedLabel = (score > threshold) ? 2 : 1;
+			if (predictedLabel == 2 && testLabel[i] == 2) TP++;
+			else if (predictedLabel == 1 && testLabel[i] == 1) TN++;
+			else if (predictedLabel == 2 && testLabel[i] == 1) FP++;
+			else if (predictedLabel == 1 && testLabel[i] == 2) FN++;
+		}
+		double TPR = static_cast<double>(TP) / (TP + FN);
+		double FPR = static_cast<double>(FP) / (FP + TN);
+		tpr.push_back(TPR);
+		fpr.push_back(FPR);
+	}
+
+	AUC_Total = CalculateAUC(fpr, tpr);
 	// Test model and calculate confusion matrix
 
-	//int TP, FP, TN, FN;// Global variabel here
-	//double sensitivity, specificity, mcc_test, ppv_test, F1_test, acc_test, AUC_Total;
-	//classifier.test(testing_data, testing_labels, TP, TN, FP, FN, ppv_test, F1_test, mcc_test, acc_test, sensitivity, specificity,  AUC_Total,tpr,fpr);
-	
 	// Write output
 	std::ofstream outfile("linear_class_confusion_matrix.txt");
-	for (int i = 0; i < trainData.GetSize(); i++) {
-		outfile << "trainData: " << i << " : " << trainData[i] << std::endl;
-	}
-	for (int i = 0; i < trainLabel.GetSize(); i++) {
-		outfile << "trainLabel: " << i << " : " << trainLabel[i] << std::endl;
-	}
-	for (int i = 0; i < w.GetSize(); i++) {
-		outfile << "W: " << i << " : " << w[i] << std::endl;
-	}
+	
 	outfile << "True Positives (TP): " << TP << std::endl;
 	outfile << "True Negatives (TN): " << TN << std::endl;
 	outfile << "False Positives (FP): " << FP << std::endl;
@@ -5968,16 +6011,13 @@ void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
 	outfile << "Matthews Correlation Coefficient (MCC): " << mcc_test << std::endl;
 	outfile << "AUC: " << AUC_Total<<std::endl;
 
-	outfile << "TPR:";
-	for (size_t i = 1; i < tpr.size(); i++) {
-		outfile << tpr[i]<< " ";
-	}
-	outfile << std::endl;
-	outfile << "FPR:";
-	for (size_t i = 1; i < fpr.size(); i++) {
-		outfile << fpr[i] << " ";
-	}
+	for (int i = 0; i < predictions.GetSize(); i++) {
+		outfile<<i << " Predictions: " << predictions[i] << " Actual Label "<< testLabel[i] << std::endl;
 
+	}
+	for (int i = 0; i < w.GetSize(); i++) {
+		outfile << "W: " << i << " : " << w[i] << std::endl;
+	}
 	outfile.close();
 	UpdateAllViews(NULL);
 }
@@ -6026,180 +6066,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	}
 	
 
-/*
-//  All code below is older version for linear classification
 
-	CArray<double> y;
-	y.SetSize(n_Obs);
-	CArray<double> value;
-	std::vector<int> indices(n_Obs);
-	std::iota(indices.begin(), indices.end(), 0);  // Fill with 0, 1, ..., data.size() - 1
-
-	std::random_device rd;
-	std::mt19937 g(rd());
-	std::shuffle(indices.begin(), indices.end(), g);
-	//shuffle the data
-	//We want to train with 85% of the data
-	int y_train = (int)floor(n_Obs * 0.85);
-	value.SetSize(y_train);
-
-	//Declare the train data array and the specifications of it
-	CArray<double> data2;
-	CArray<double> label;
-	data2.SetSize(static_cast <int64_t> (n_Var*y_train));
-	label.SetSize(static_cast <int64_t> (y_train));
-    //new data size with new n object
-	CArray <int> Traindata_spec;
-	Traindata_spec.SetSize(3);
-	Traindata_spec.SetAt(0, y_train), Traindata_spec.SetAt(1, n_Var), Traindata_spec.SetAt(2, 0);
-	double temp_1, temp_3, temp_2, temp_4, temp_5;
-	//test data 15 percent
-	CArray<double> testData;
-	testData.SetSize(static_cast <int64_t> (n_Var * (n_Obs - y_train)));
-	CArray <int> testData_spec;
-	testData_spec.SetSize(3);
-	//Declare the test data array and the specifications of it
-	CArray<double> testlabel1;
-	testlabel1.SetSize(static_cast <int64_t> ((n_Obs - y_train)));
-	CArray<double> testlabel2;
-	testlabel2.SetSize(static_cast <int64_t> ((n_Obs - y_train)));
-	CArray<double> testlabel3;
-	testlabel3.SetSize(static_cast <int64_t> ((n_Obs - y_train)));
-	int k = 0;
-	testData_spec.SetAt(0, (n_Obs - y_train)), testData_spec.SetAt(1, n_Var), testData_spec.SetAt(2, 0);
-	 for (int i = y_train; i < n_Obs; i++) {
-		
-		 for (int j = 0; j < n_Var - 1; j++) {
-	     	int val_pos = static_cast <int64_t>(GetPosition(k, j, testData_spec));
-	    	temp_2 = Data.GetAt(static_cast <int64_t>(GetPosition(indices[i], j, Data_spec)));
-	    	testData.SetAt(val_pos, temp_2);
-			}
-	//	//int val_posconstant = static_cast <int64_t>(GetPosition(k, n_Var - 1, testData_spec));
-	//	//data2.SetAt(val_posconstant, (double)1);
-	      k++;
-	 }
-	
-
-	 //time to test data and create 3 models
-
-	// For loop gets new test train vector data
-
-
-	 //3 model data coeficient declare array declare 3 label 
-	 CArray<double> label2;
-	 label2.SetSize(static_cast <int64_t> (y_train));
-	 CArray<double> label3;
-	 label3.SetSize(static_cast <int64_t> (y_train));
-
-
-	for (int i = 0; i < y_train; i++) {
-
-		temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(indices[i], n_Var - 1, Data_spec)));
-		temp_4 = temp_1;
-		temp_5 = temp_4;
-
-		if (temp_1 != 1) temp_1 = -1;
-		if (temp_4 != 2) temp_4 = -1;
-		if (temp_5 != 3) temp_4 = -3;
-		for (int j = 0; j < n_Var - 1; j++) {
-			int val_pos = static_cast <int64_t>(GetPosition(i, j, Traindata_spec));
-			temp_2 = Data.GetAt(static_cast <int64_t>(GetPosition(indices[i], j, Data_spec)));
-			data2.SetAt(val_pos, temp_2);
-		}
-		label.SetAt(i, temp_1);
-		label2.SetAt(i, temp_4);
-		label3.SetAt(i, temp_5);
-		int val_posconstant = static_cast <int64_t>(GetPosition(i, n_Var - 1, Traindata_spec));
-		data2.SetAt(val_posconstant, (double)1);
-
-	}
-	CArray <double> Sww;
-
-	GetRegressionVector(data2, Traindata_spec, label, Sww, true);
-	//SaveVector("Model1_coefficient.txt", w);
-	MatrixVectorProduct(testData, testData_spec, w, testlabel1);
-	//SaveVector("testlabel1.txt", testlabel1);
-
-
-	GetRegressionVector(data2, Traindata_spec, label2, Sww, true);
-	//SaveVector("Model1_coefficient2.txt", w);
-	MatrixVectorProduct(testData, testData_spec, w, testlabel2);
-	//SaveVector("testlabel2.txt", testlabel2);
-
-	GetRegressionVector(data2, Traindata_spec, label2, Sww, true);
-	//SaveVector("Model1_coefficient3.txt", w);
-	MatrixVectorProduct(testData, testData_spec, w, testlabel3);
-	//SaveVector("testlabel3.txt", testlabel3);
-
-
-
-
-	//SaveVector("test7.txt", value);
-	//SaveVector("label.txt", label);
-	//SaveMatrix("traindata.txt", data2, Traindata_spec);
-
-	//SaveMatrix("traindata.txt", data2, Traindata_spec);
-
-	//We need standardized data
-	//Classification metrics
-	//member matrix vector product
-	
-	//MatrixVectorProduct(Data, Data_spec, w, y_hat);
-
-	//SaveVector("ypredv.txt", n_classes);
-	//SaveVector("swwvalue.txt", Sww);
-
-
-	//SaveVector("yvalue.txt", y);
-	//SaveVector("yhatvalue.txt", y_hat);
-	//MatrixVectorProduct(z, z_spec, w, y_hat)
-
-	//GetRegressionVector
-	//GetStandardRegressionModel(data2, Traindata_spec, label, Sww, w);
-	
-	
-	//Sww.SetSize(y_train * n_Var);
-	CArray<double> W;
-	CArray<int> W_spec;
-	CArray<double> y_hat;
-	W.SetSize(n_Var*3);
-	W_spec.SetSize(3);
-	W_spec.SetAt(0, n_Var); W_spec.SetAt(1, 3); W_spec.SetAt(2, 0);
-
-	for (int j = 1; j <= 3;j++) {
-		//(n_Obs * n_Var) - n_Obs; i < n_Obs * n_Var; i++
-		for (int i = 0; i < n_Obs; i++) {
-			double setValue;
-			if (Data.GetAt((n_Obs * n_Var) - n_Obs + i) == j) {
-				setValue = 1;
-			}
-			else {
-				setValue = -1;
-			}
-			y.SetAt(i, setValue);
-		}
-		//SaveVector("yvalue.txt", y);
-		GetRegressionVector(Data, Data_spec, y, Sww, true);
-		MatrixVectorProduct(Data, Data_spec, w, y_hat);
-		for (int i = 0; i < w.GetSize(); i++) {
-			W.SetAt(i + w.GetSize() * (j-1), w.GetAt(i));
-		}
-	}
-
-	//SaveMatrix("resultValue.txt", W, W_spec);
-	//SaveMatrix("traindata2.txt", W, W_spec);
-
-	SaveVector("wvalue.txt", w);
-	//SaveVector("swwvalue.txt", Sww);
-	//SaveVector("yvalue.txt", y);
-	//SaveVector("yhatvalue.txt", y_hat);
-	//MatrixVectorProduct(z, z_spec, w, y_hat)
-	//SaveVector("data3.txt", Data);
-
-	
-	
-
-	*/
 
 
 
@@ -6810,6 +6677,7 @@ void CModelingandAnalysisofUncertaintyDoc::GetRegressionVector(CArray <double>& 
 	rxy.SetSize(static_cast <int64_t>(n_var));
 	Rx_spec.SetSize(3);
 	Rx_spec.SetAt(0, n_var), Rx_spec.SetAt(1, n_var), Rx_spec.SetAt(2, 3);
+	
 	for (int i = 0; i < n_var; i++) {
 		for (int j = i; j < n_var; j++) {
 			value = R.GetAt(GetPosition(i, j, R_spec));
