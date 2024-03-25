@@ -3136,8 +3136,8 @@ void CModelingandAnalysisofUncertaintyDoc::ShuffleData(CArray<double>& data, CAr
 
 //Pre-train helper function that split the dataset into training and validation set given the split ratio
 void CModelingandAnalysisofUncertaintyDoc::SplitData(const CArray<double>& data, const CArray<int>& data_spec, const CArray<double>& label,
-	CArray<double>& trainData, CArray<int>& trainData_spec, CArray<double>& trainLabel,
-	CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel, float ratio) {
+													 CArray<double>& trainData, CArray<int>& trainData_spec, CArray<double>& trainLabel,
+													 CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel, float ratio) {
 	// Calculate the size of the training set
 	int numRows = data_spec[0];
 	int numCols = data_spec[1];
