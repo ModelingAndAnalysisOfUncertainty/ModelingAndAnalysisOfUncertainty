@@ -1,124 +1,124 @@
-True Positives (TP): 33
-True Negatives (TN): 16
-False Positives (FP): 13
-False Negatives (FN): 24
-Positive Predictive Value (PPV): 0.717391
-F1 Score: 0.640777
-Matthews Correlation Coefficient (MCC): 0.123854
-AUC: 0.572293
+True Positives (TP): 45
+True Negatives (TN): 22
+False Positives (FP): 7
+False Negatives (FN): 12
+Positive Predictive Value (PPV): 0.865385
+F1 Score: 0.825688
+Matthews Correlation Coefficient (MCC): 0.529969
+AUC: 0.800363
 0 Predictions: 2 Actual Label 2
 1 Predictions: 2 Actual Label 2
-2 Predictions: 1 Actual Label 1
+2 Predictions: 2 Actual Label 2
 3 Predictions: 2 Actual Label 2
-4 Predictions: 2 Actual Label 2
+4 Predictions: 1 Actual Label 1
 5 Predictions: 1 Actual Label 1
 6 Predictions: 2 Actual Label 2
-7 Predictions: 2 Actual Label 1
-8 Predictions: 2 Actual Label 1
-9 Predictions: 1 Actual Label 2
-10 Predictions: 2 Actual Label 2
-11 Predictions: 1 Actual Label 2
-12 Predictions: 2 Actual Label 2
-13 Predictions: 2 Actual Label 2
-14 Predictions: 2 Actual Label 2
+7 Predictions: 1 Actual Label 1
+8 Predictions: 1 Actual Label 2
+9 Predictions: 1 Actual Label 1
+10 Predictions: 1 Actual Label 1
+11 Predictions: 2 Actual Label 2
+12 Predictions: 1 Actual Label 1
+13 Predictions: 1 Actual Label 1
+14 Predictions: 2 Actual Label 1
 15 Predictions: 2 Actual Label 2
 16 Predictions: 1 Actual Label 1
-17 Predictions: 2 Actual Label 1
+17 Predictions: 1 Actual Label 1
 18 Predictions: 2 Actual Label 2
-19 Predictions: 2 Actual Label 2
-20 Predictions: 2 Actual Label 2
-21 Predictions: 2 Actual Label 1
-22 Predictions: 2 Actual Label 2
-23 Predictions: 2 Actual Label 1
-24 Predictions: 2 Actual Label 1
-25 Predictions: 2 Actual Label 2
-26 Predictions: 2 Actual Label 1
-27 Predictions: 1 Actual Label 2
+19 Predictions: 1 Actual Label 1
+20 Predictions: 1 Actual Label 1
+21 Predictions: 1 Actual Label 1
+22 Predictions: 1 Actual Label 2
+23 Predictions: 2 Actual Label 2
+24 Predictions: 1 Actual Label 1
+25 Predictions: 1 Actual Label 2
+26 Predictions: 1 Actual Label 2
+27 Predictions: 2 Actual Label 2
 28 Predictions: 1 Actual Label 2
-29 Predictions: 1 Actual Label 1
-30 Predictions: 1 Actual Label 2
-31 Predictions: 1 Actual Label 2
-32 Predictions: 2 Actual Label 1
-33 Predictions: 1 Actual Label 2
-34 Predictions: 2 Actual Label 2
-35 Predictions: 1 Actual Label 2
+29 Predictions: 2 Actual Label 1
+30 Predictions: 2 Actual Label 2
+31 Predictions: 2 Actual Label 2
+32 Predictions: 1 Actual Label 2
+33 Predictions: 2 Actual Label 2
+34 Predictions: 1 Actual Label 2
+35 Predictions: 2 Actual Label 2
 36 Predictions: 2 Actual Label 2
 37 Predictions: 2 Actual Label 2
-38 Predictions: 1 Actual Label 2
-39 Predictions: 2 Actual Label 2
+38 Predictions: 1 Actual Label 1
+39 Predictions: 1 Actual Label 2
 40 Predictions: 2 Actual Label 2
-41 Predictions: 2 Actual Label 2
-42 Predictions: 1 Actual Label 2
-43 Predictions: 1 Actual Label 1
-44 Predictions: 1 Actual Label 2
-45 Predictions: 1 Actual Label 1
+41 Predictions: 1 Actual Label 1
+42 Predictions: 1 Actual Label 1
+43 Predictions: 2 Actual Label 2
+44 Predictions: 2 Actual Label 1
+45 Predictions: 2 Actual Label 2
 46 Predictions: 1 Actual Label 1
-47 Predictions: 1 Actual Label 2
-48 Predictions: 1 Actual Label 1
+47 Predictions: 1 Actual Label 1
+48 Predictions: 2 Actual Label 2
 49 Predictions: 2 Actual Label 2
-50 Predictions: 1 Actual Label 2
+50 Predictions: 2 Actual Label 2
 51 Predictions: 2 Actual Label 2
-52 Predictions: 2 Actual Label 2
+52 Predictions: 1 Actual Label 1
 53 Predictions: 2 Actual Label 2
 54 Predictions: 2 Actual Label 2
-55 Predictions: 1 Actual Label 2
-56 Predictions: 2 Actual Label 1
-57 Predictions: 1 Actual Label 1
+55 Predictions: 2 Actual Label 2
+56 Predictions: 2 Actual Label 2
+57 Predictions: 2 Actual Label 2
 58 Predictions: 2 Actual Label 2
-59 Predictions: 1 Actual Label 2
-60 Predictions: 1 Actual Label 1
-61 Predictions: 1 Actual Label 2
+59 Predictions: 2 Actual Label 2
+60 Predictions: 2 Actual Label 2
+61 Predictions: 2 Actual Label 2
 62 Predictions: 1 Actual Label 1
-63 Predictions: 1 Actual Label 2
-64 Predictions: 1 Actual Label 1
+63 Predictions: 2 Actual Label 1
+64 Predictions: 2 Actual Label 2
 65 Predictions: 1 Actual Label 2
 66 Predictions: 2 Actual Label 2
-67 Predictions: 1 Actual Label 2
+67 Predictions: 2 Actual Label 2
 68 Predictions: 2 Actual Label 2
 69 Predictions: 2 Actual Label 2
-70 Predictions: 1 Actual Label 1
+70 Predictions: 2 Actual Label 2
 71 Predictions: 2 Actual Label 2
-72 Predictions: 2 Actual Label 1
-73 Predictions: 1 Actual Label 1
+72 Predictions: 2 Actual Label 2
+73 Predictions: 2 Actual Label 2
 74 Predictions: 2 Actual Label 1
-75 Predictions: 2 Actual Label 2
-76 Predictions: 1 Actual Label 2
+75 Predictions: 1 Actual Label 2
+76 Predictions: 2 Actual Label 1
 77 Predictions: 2 Actual Label 1
-78 Predictions: 1 Actual Label 2
-79 Predictions: 1 Actual Label 2
-80 Predictions: 1 Actual Label 1
-81 Predictions: 1 Actual Label 2
-82 Predictions: 1 Actual Label 1
-83 Predictions: 1 Actual Label 2
-84 Predictions: 2 Actual Label 1
-85 Predictions: 2 Actual Label 2
-W: 0 : -0.0615058
-W: 1 : -0.292186
-W: 2 : 0.0620733
-W: 3 : -0.0534839
-W: 4 : 0.00114774
-W: 5 : 0.164314
-W: 6 : -0.145388
-W: 7 : 0.154985
-W: 8 : 0.0962062
-W: 9 : 0.0285787
-W: 10 : -0.161659
-W: 11 : -0.754965
-W: 12 : 0.119461
-W: 13 : -0.0554207
-W: 14 : -0.00153157
-W: 15 : 0.0194389
-W: 16 : 0.125278
-W: 17 : -0.120977
-W: 18 : -0.130058
-W: 19 : 0.0783212
-W: 20 : 0.0502968
-W: 21 : 0.162332
-W: 22 : -0.366099
-W: 23 : 0.0703514
-W: 24 : 0.157595
-W: 25 : 0.0489764
-W: 26 : 0.123529
-W: 27 : 0.0459595
-W: 28 : -0.0753466
-W: 29 : -0.455139
+78 Predictions: 1 Actual Label 1
+79 Predictions: 2 Actual Label 2
+80 Predictions: 2 Actual Label 2
+81 Predictions: 2 Actual Label 2
+82 Predictions: 2 Actual Label 2
+83 Predictions: 1 Actual Label 1
+84 Predictions: 1 Actual Label 2
+85 Predictions: 1 Actual Label 2
+W: 0 : -0.260354
+W: 1 : 0.192366
+W: 2 : -0.163463
+W: 3 : -0.336721
+W: 4 : -0.0198282
+W: 5 : -0.171741
+W: 6 : -0.39546
+W: 7 : -0.0593368
+W: 8 : 0.113063
+W: 9 : 0.137807
+W: 10 : 0.227622
+W: 11 : 0.0769018
+W: 12 : 0.0376878
+W: 13 : -0.16666
+W: 14 : 0.0662326
+W: 15 : 0.195061
+W: 16 : 0.138312
+W: 17 : -0.190907
+W: 18 : -0.125985
+W: 19 : 0.140279
+W: 20 : 0.0796902
+W: 21 : 0.0202204
+W: 22 : 0.0554354
+W: 23 : 0.279064
+W: 24 : -0.0947121
+W: 25 : 0.132993
+W: 26 : 0.161338
+W: 27 : -0.222953
+W: 28 : -0.221063
+W: 29 : 0.172014

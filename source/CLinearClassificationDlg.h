@@ -21,14 +21,16 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-
-	
-	CButton cross_validation;
-	CButton training_validation;
-	afx_msg void OnBnClickedRadioCrossValidation();
-	afx_msg void OnBnClickedRadioTrainingValidation();
 	CButton five_fold;
 	CButton ten_fold;
 	CButton LOO;
-	CButton box_cross_validation;
+	int linearClassificationSelection = 0; //   0: Training Validation, 1: 5 fold, 2: 10fold, 3: LOO
+
+	CButton training_validation;
+	CButton cross_validation;
+	afx_msg void OnBnClickedCross();
+	afx_msg void OnBnClickedTraining();
+	
+	CStatic group_cross_validation;
+	afx_msg void OnBnClickedOk();
 };

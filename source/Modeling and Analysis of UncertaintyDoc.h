@@ -172,6 +172,7 @@ public:
 	bool ShowStatisticalAnalysis = false;
 	// FLAGS FOR LINEAR CLASSIFICATION
 	bool Linear_Classification = false;
+	
 	// FLAGS FOR ARTIFICIAL NEURAL NETWORKS
 	bool ANN_Training = false;
 	std::vector<double> Loss_Ann;

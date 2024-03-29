@@ -6056,11 +6056,37 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 
 	CWnd* pParent = nullptr;
 	CLinearClassificationDlg LCdlg(pParent);
-	
+
+
 	CSpecifyRegressionModel RegressionModel(pParent, &Name);
 	if (LCdlg.DoModal() == IDOK) {
-		TestLinearClassifier();
-	
+
+		// linearClassifcationSelection  0: Training Validation, 1: 5 fold, 2: 10fold, 3: LOO
+		if (LCdlg.training_validation.GetCheck()) {
+			TestLinearClassifier();
+		}
+		else if (LCdlg.five_fold.GetCheck()) {
+			CArray<double> data, trainData, testData;
+			CArray<int> data_spec, trainData_spec, testData_spec;
+			CArray<double> label, trainLabel, testLabel;
+			CArray<double> emptySww;
+			std::string newFilePath = CW2A(PathAndFileName.GetString(), CP_UTF8);
+			std::string subpath = ExtractSubpathAfterSource(newFilePath);
+			int numFeatures = LoadData(subpath, data, data_spec, label);
+			StandardizeData(numFeatures, data, data_spec);
+			ShuffleData(data, data_spec, label);
+			SplitData(data, data_spec, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel, 0.85);
+		
+			GetRegressionModel_5_Fold_CV(trainData,trainData_spec, trainLabel);
+		}
+		else if (LCdlg.ten_fold.GetCheck()) {
+		
+		}
+		else if (LCdlg.LOO.GetCheck()) {
+		
+		}
+		
+
 		UpdateAllViews(NULL);
 	
 	}
