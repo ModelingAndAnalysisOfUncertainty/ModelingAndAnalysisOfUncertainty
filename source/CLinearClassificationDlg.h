@@ -21,13 +21,17 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-	CButton five_fold;
-	CButton ten_fold;
-	CButton LOO;
+	int five_fold_value;
+	CStatic five_fold;
+	int ten_fold_value;
+	CStatic ten_fold;
+	int LOO_value;
+	CStatic LOO;
+
 	int linearClassificationSelection = 0; //   0: Training Validation, 1: 5 fold, 2: 10fold, 3: LOO
 
-	CButton training_validation;
-	CButton cross_validation;
+	int training_validation;
+	int cross_validation;
 	afx_msg void OnBnClickedCross();
 	afx_msg void OnBnClickedTraining();
 	

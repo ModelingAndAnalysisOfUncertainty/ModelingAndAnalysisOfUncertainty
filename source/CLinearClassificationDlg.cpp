@@ -13,7 +13,12 @@ IMPLEMENT_DYNAMIC(CLinearClassificationDlg, CDialog)
 
 CLinearClassificationDlg::CLinearClassificationDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(IDD_DIALOG_LINEAR_CLASSIFICATION, pParent)
+	, five_fold_value(0)
+	, ten_fold_value(1)
+	, LOO_value(1)
 	
+	,training_validation(1)
+	,cross_validation(0)
 {
 	
 }
@@ -25,13 +30,11 @@ CLinearClassificationDlg::~CLinearClassificationDlg()
 void CLinearClassificationDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_RADIO3, five_fold);
+	DDX_Control (pDX, IDC_RADIO3, five_fold);
+	DDX_Radio(pDX, IDC_RADIO3, five_fold_value);
 	DDX_Control(pDX, IDC_RADIO4, ten_fold);
 	DDX_Control(pDX, IDC_RADIO5, LOO);
-
-
-	DDX_Control(pDX, IDC_TRAINING, training_validation);
-	DDX_Control(pDX, IDC_CROSS, cross_validation);
+	DDX_Radio(pDX, IDC_CROSS, cross_validation);
 	DDX_Control(pDX, IDC_Cross_Validation, group_cross_validation);
 }
 
@@ -70,19 +73,7 @@ void CLinearClassificationDlg::OnBnClickedTraining()
 
 void CLinearClassificationDlg::OnBnClickedOk()
 {
-	
-	if (five_fold.GetCheck()) {
-		linearClassificationSelection = 1;
-	}
-	else if (ten_fold.GetCheck()) {
-		linearClassificationSelection = 2;
-	}
-	else if (LOO.GetCheck()) {
-		linearClassificationSelection = 3;
-	}
-	else if (training_validation.GetCheck()) {
-		linearClassificationSelection = 0;
-	}
+
 
 	CDialog::OnOK();
 }

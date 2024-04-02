@@ -141,6 +141,7 @@ private:
 	void CModelingandAnalysisofUncertaintyView::DisplayConfusionMatrix();
 
 	// Linear Classifier
+	void DisplayFoldMetrics(int foldIndex);
 	void DisplayLinearClassifierMetrics();
 
 public:

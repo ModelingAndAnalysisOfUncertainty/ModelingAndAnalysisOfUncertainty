@@ -10375,6 +10375,19 @@ void CModelingandAnalysisofUncertaintyView::DisplayConfusionMatrix() {
 	dc.TextOutW(matrixLeft + matrixCellWidth + 10, matrixTop + matrixCellHeight + 10, strTN);
 }
 
+double CalculateAverage(const std::vector<double>& values) {
+	double sum = 0.0;
+
+	if (values.empty()) {
+		return sum; // If the vector is empty, return 0 or handle as needed
+	}
+
+	for (double value : values) {
+		sum += value;
+	}
+
+	return sum / values.size();
+}
 //int TP, FP, TN, FN;// True_Label, False_Label;
 //double sensitivity, specificity, mcc_test, ppv_test, F1_test, acc_test, AUC_Total;
 void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
@@ -10404,7 +10417,91 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 
 	// Draw text for each performance metric
 	CString strText;
+	std::vector<double> acc = pDoc->accuracies;
+	std::vector<double> sen = pDoc->sensitivities;
+	std::vector<double>spe = pDoc->specificities;
+	std::vector<double>f1s = pDoc->f1_scores;
+	std::vector<double>mcc = pDoc->mccs;
+	std::vector<double>	auc = pDoc->auc_totals;
+	const int numFolds = 5; 
+	
+	int temp_X = newContentStartX;
+	for (int foldIndex = 0; foldIndex < numFolds; ++foldIndex) {
 
+		CFont font;
+		int temp_startY = startY;
+		
+		font.CreatePointFont(90, _T("Arial"));
+		CFont* pOldFont = dc.SelectObject(&font);
+		CString strText;
+		strText.Format(_T("Fold %d Metrics:"), foldIndex + 1);
+		dc.TextOut(temp_X, temp_startY, strText);
+		temp_startY -= lineHeight;
+
+		strText.Format(_T("Accuracy: %.3f"), acc[foldIndex]);
+		dc.TextOut(temp_X, temp_startY, strText);
+		temp_startY -= lineHeight;
+
+		strText.Format(_T("Sensitivity: %.3f"), sen[foldIndex]);
+		dc.TextOut(temp_X, temp_startY, strText);
+		temp_startY -= lineHeight;
+
+		strText.Format(_T("Specificity: %.3f"), spe[foldIndex]);
+		dc.TextOut(temp_X, temp_startY, strText);
+		temp_startY -= lineHeight;
+
+		strText.Format(_T("F1 Score: %.3f"), f1s[foldIndex]);
+		dc.TextOut(temp_X, temp_startY, strText);
+		temp_startY -= lineHeight;
+
+		strText.Format(_T("MCC: %.3f"), mcc[foldIndex]);
+		dc.TextOut(temp_X, temp_startY, strText);
+		temp_startY -= lineHeight;
+
+		strText.Format(_T("AUC: %.3f"), auc[foldIndex]);
+		dc.TextOut(temp_X, temp_startY, strText);
+		temp_X += 150;
+	}
+
+	
+	double mean_acc = CalculateAverage(acc);
+	double mean_sen = CalculateAverage(sen);
+	double mean_spe = CalculateAverage(spe);
+	double mean_f1s = CalculateAverage(f1s);
+	double mean_mcc = CalculateAverage(mcc);
+	double mean_auc = CalculateAverage(auc);
+	//Display mean metrix
+	int temp_startY = startY;
+
+	strText.Format(_T("Mean Metrics:"));
+	dc.TextOut(temp_X, temp_startY, strText);
+	temp_startY -= lineHeight;
+
+	strText.Format(_T("Accuracy: %.3f"), mean_acc);
+	dc.TextOut(temp_X, temp_startY, strText);
+	temp_startY -= lineHeight;
+
+	strText.Format(_T("Sensitivity: %.3f"), mean_sen);
+	dc.TextOut(temp_X, temp_startY, strText);
+	temp_startY -= lineHeight;
+
+	strText.Format(_T("Specificity: %.3f"), mean_spe);
+	dc.TextOut(temp_X, temp_startY, strText);
+	temp_startY -= lineHeight;
+
+	strText.Format(_T("F1 Score: %.3f"), mean_f1s);
+	dc.TextOut(temp_X, temp_startY, strText);
+	temp_startY -= lineHeight;
+
+	strText.Format(_T("MCC: %.3f"), mean_mcc);
+	dc.TextOut(temp_X, temp_startY, strText);
+	temp_startY -= lineHeight;
+
+	strText.Format(_T("AUC: %.3f"), mean_auc);
+	dc.TextOut(temp_X, temp_startY, strText);
+	temp_X += 150;
+	startY -= 6 * lineHeight;
+	/*
 	// Display Accuracy
 	strText.Format(_T("Accuracy: %.3f"), acc_test);
 	dc.TextOut(newContentStartX, startY, strText);
@@ -10434,6 +10531,8 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 	strText.Format(_T("AUC: %.3f"), AUC_Total);
 	dc.TextOut(newContentStartX, startY, strText);
 
+	*/
+
 	// After displaying metrics, plot the ROC curve
 	int rocGraphTop = startY - (6 * lineHeight); 
 	int rocGraphLeft = newContentStartX; 
@@ -10453,8 +10552,38 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 	CPen* pOldPen = dc.SelectObject(&pen);
 
 	
+	// Array of colors for each fold's ROC curve
+	const COLORREF colors[5] = { RGB(255, 0, 0), RGB(0, 255, 0), RGB(0, 0, 255), RGB(255, 255, 0), RGB(0, 255, 255) };
 
+	for (int fold = 0; fold < 5; ++fold) {
+		// Retrieve TPR and FPR data points for the current fold's ROC
+		std::vector<std::vector<double>>& tpr_fold = pDoc->tprList; // True Positive Rates for current fold
+		std::vector<std::vector<double>>& fpr_fold = pDoc->fprList; // False Positive Rates for current fold
 
+		// Create a pen with the color for the current fold
+		CPen pen(PS_SOLID, 2, colors[fold]);
+		CPen* pOldPen = dc.SelectObject(&pen);
+
+		// Assuming tpr_fold and fpr_fold vectors are prepared and sorted
+		for (size_t i = 0; i < tpr_fold[fold].size(); ++i) {
+			int x = rocGraphLeft + static_cast<int>(fpr_fold[fold][i] * rocGraphWidth);
+			int y = rocGraphTop + rocGraphHeight - static_cast<int>(tpr_fold[fold][i] * rocGraphHeight);
+
+			// Move to the first point without drawing a line
+			if (i == 0) {
+				dc.MoveTo(x, y);
+			}
+			else {
+				// Draw lines to subsequent points
+				dc.LineTo(x, y);
+			}
+		}
+
+		// Reset the pen at the end of drawing each fold's ROC
+		dc.SelectObject(pOldPen);
+		pen.DeleteObject(); // Clean up the pen resource
+	}
+	/*
 	// Assuming tpr and fpr vectors are prepared and sorted
 	for (size_t i = 0; i < tpr.size(); ++i) {
 		int x = rocGraphLeft + static_cast<int>(fpr[i] * rocGraphWidth);
@@ -10466,7 +10595,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 			dc.LineTo(x, y); // Draw lines to subsequent points
 		}
 	}
-
+	*/
 
 
 	CString title = _T("ROC Curve");
@@ -10482,6 +10611,70 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 	dc.SelectObject(pOldFont);
 	// Clean up the font resource
 	font.DeleteObject();
+	int legendStartX = rocGraphLeft + rocGraphWidth + 10; // 10 pixels to the right of the ROC curve
+	int legendStartY = rocGraphTop + rocGraphHeight - 20; // 20 pixels up from the bottom of the ROC curve
+
+	// Iterate over the folds to draw the legend
+	for (int fold = 0; fold < 5; ++fold) {
+		// Set the pen for the legend color
+		CPen legendPen(PS_SOLID, 2, colors[fold]);
+		dc.SelectObject(&legendPen);
+
+		// Draw the line segment for the legend
+		dc.MoveTo(legendStartX, legendStartY - (fold * 15)); // Offset each line by 15 pixels
+		dc.LineTo(legendStartX + 20, legendStartY - (fold * 15)); // 20-pixel long line segment
+
+		// Draw the fold label text
+		CString strFold;
+		strFold.Format(_T("Fold %d"), fold + 1);
+		dc.TextOut(legendStartX + 25, legendStartY - (fold * 15) - 5, strFold); // Position text right to the line
+
+		// Reset the pen
+		dc.SelectObject(pOldPen);
+		legendPen.DeleteObject(); // Clean up the pen resource
+	}
+
+}
+
+void CModelingandAnalysisofUncertaintyView::DisplayFoldMetrics(int foldIndex) {
+	CClientDC dc(this);
+	CRect rect;
+	GetClientRect(&rect);
+	CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
 
 
+	int startY = 90 + foldIndex * 100;
+	int lineHeight = 15; 
+
+	// Set the font for the text
+	CFont font;
+	font.CreatePointFont(90, _T("Arial"));
+	CFont* pOldFont = dc.SelectObject(&font);
+	CString strText;
+	strText.Format(_T("Fold %d Metrics:"), foldIndex + 1);
+	dc.TextOut(10, startY, strText); 
+	startY += lineHeight;
+
+	strText.Format(_T("Accuracy: %.3f"), pDoc->accuracies[foldIndex]);
+	dc.TextOut(10, startY, strText);
+	startY += lineHeight;
+
+	strText.Format(_T("Sensitivity: %.3f"), pDoc->sensitivities[foldIndex]);
+	dc.TextOut(10, startY, strText);
+	startY += lineHeight;
+
+	strText.Format(_T("Specificity: %.3f"), pDoc->specificities[foldIndex]);
+	dc.TextOut(10, startY, strText);
+	startY += lineHeight;
+
+	strText.Format(_T("F1 Score: %.3f"), pDoc->f1_scores[foldIndex]);
+	dc.TextOut(10, startY, strText);
+	startY += lineHeight;
+
+	strText.Format(_T("MCC: %.3f"), pDoc->mccs[foldIndex]);
+	dc.TextOut(10, startY, strText);
+	startY += lineHeight;
+
+	strText.Format(_T("AUC: %.3f"), pDoc->auc_totals[foldIndex]);
+	dc.TextOut(10, startY, strText);
 }

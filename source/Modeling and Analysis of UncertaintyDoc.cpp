@@ -5907,7 +5907,7 @@ private:
 	}
 };
 
-double CalculateAUC(const std::vector<double>& fpr, const std::vector<double>& tpr) {
+double CalculateAUC(const std::vector<double>& tpr, const std::vector<double>& fpr) {
 	double auc = 0.0;
 	for (size_t i = 1; i < fpr.size(); ++i) {
 		double x1 = fpr[i - 1], x2 = fpr[i];
@@ -6023,8 +6023,151 @@ void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
 }
 
 
+void CModelingandAnalysisofUncertaintyDoc::SplitDataForKFold(int currentFold, int foldSize, int numFolds,
+	int numRows, int numCols, CArray<double>& data, CArray<double>& label, CArray<double>& trainData, 
+	CArray<int>& trainData_spec, CArray<double>& trainLabel, CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel) {
+
+	trainData.RemoveAll();
+	testData.RemoveAll();
+	trainLabel.RemoveAll();
+	testLabel.RemoveAll();
+
+	// Calculate the indices for the start and end of the test fold
+	int startIdx = currentFold * foldSize;
+	//ensure the endIdx does not exceed the total number of rows
+	int endIdx = (currentFold == numFolds - 1) ? numRows : (currentFold + 1) * foldSize;
+
+	// Allocate space for the training and testing data based on the indices
+	testData.SetSize((endIdx - startIdx) * numCols);
+	trainData.SetSize((numRows - (endIdx - startIdx)) * numCols);
+	testLabel.SetSize(endIdx - startIdx);
+	trainLabel.SetSize(numRows - (endIdx - startIdx));
+	int trainIdx = 0, testIdx = 0;
+
+	// Iterate over the dataset and allocate to train or test based on current fold
+	for (int i = 0; i < numRows; ++i) {
+		for (int j = 0; j < numCols; ++j) {
+			if (i >= startIdx && i < endIdx) {
+				testData[testIdx * numCols + j] = data[i * numCols + j];
+			}
+			else {
+				trainData[trainIdx * numCols + j] = data[i * numCols + j];
+			}
+		}
+		if (i >= startIdx && i < endIdx) {
+			testLabel[testIdx] = label[i];
+			testIdx++;
+		}
+		else {
+			trainLabel[trainIdx] = label[i];
+			trainIdx++;
+		}
+	}
+
+	// Set the specifications for the training and testing data
+	trainData_spec.SetSize(3);
+	testData_spec.SetSize(3);
+	trainData_spec[0] = trainIdx;  
+	trainData_spec[1] = numCols;  
+	trainData_spec[2] = 0;       
+
+	testData_spec[0] = testIdx;    
+	testData_spec[1] = numCols;    
+	testData_spec[2] = 0;         
+}
+
+void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel, int numFeatures,
+	std::vector<double>& accuracies, std::vector<double>& sensitivities, std::vector<double>& specificities, std::vector<double>& ppvs, std::vector<double>& f1_scores,
+	std::vector<double>& mccs, std::vector<double>& auc_totals, std::vector<std::vector <double>>& tprList, std::vector<std::vector <double>>& fprList, int fold) {
+
+	CArray<double> predictions;
+	int TP = 0, TN = 0, FP = 0, FN = 0;
+	double threshold = 0; 
+	int numSamples = testData.GetSize() / numFeatures;
+
+	for (int i = 0; i < numSamples; i++) {
+		double score = 0.0;
+		for (int j = 0; j < numFeatures; j++) {
+			score += testData[i * numFeatures + j] * w[j];
+		}
+		int predictedLabel = (score > threshold) ? 2 : 1;
+		predictions.Add(predictedLabel);
+	}
+
+	for (int i = 0; i < testLabel.GetSize(); i++) {
+		if (predictions[i] == 2 && testLabel[i] == 2) TP++;
+		else if (predictions[i] == 1 && testLabel[i] == 1) TN++;
+		else if (predictions[i] == 2 && testLabel[i] == 1) FP++;
+		else if (predictions[i] == 1 && testLabel[i] == 2) FN++;
+	}
+
+	double acc = (TP + TN) / static_cast<double>(TP + TN + FP + FN);
+	double sensitivity = TP / static_cast<double>(TP + FN);
+	double specificity = TN / static_cast<double>(TN + FP);
+	double ppv = static_cast<double>(TP) / (TP + FP);
+	double recall = static_cast<double>(TP) / (TP + FN);
+	double f1 = 2 * ppv * recall / (ppv + recall);
+	double mcc = (TP * TN - FP * FN) / sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN));
 
 
+	accuracies.push_back(acc);
+	sensitivities.push_back(sensitivity);
+	specificities.push_back(specificity);
+	ppvs.push_back(ppv);
+	f1_scores.push_back(f1);
+	mccs.push_back(mcc);
+
+
+	std::vector<double> thresholds;
+
+	for (int i = 0; i < numSamples; i++) {
+		double score = 0.0;
+		for (int j = 0; j < numFeatures; j++) {
+			score += testData[i * numFeatures + j] * w[j];
+		}
+		thresholds.push_back(score);
+	}
+
+	std::sort(thresholds.begin(), thresholds.end());
+	auto last = std::unique(thresholds.begin(), thresholds.end());
+	thresholds.erase(last, thresholds.end());
+	double minScore = *std::min_element(thresholds.begin(), thresholds.end());
+	double maxScore = *std::max_element(thresholds.begin(), thresholds.end());
+
+	// Decide how many thresholds you want to generate
+	int numThresholds = 80;  // for example, 100 thresholds
+	std::vector<double> newThresholds;
+
+	// Generate thresholds at regular intervals between min and max score
+	double step = (maxScore - minScore) / numThresholds;
+	for (int i = 0; i <= numThresholds; ++i) {
+		newThresholds.push_back(minScore + i * step);
+	}
+	for (double threshold : newThresholds) {
+		int TP = 0, TN = 0, FP = 0, FN = 0;
+		for (int i = 0; i < numSamples; i++) {
+			double score = 0.0;
+			for (int j = 0; j < numFeatures; j++) {
+				score += testData[i * numFeatures + j] * w[j];
+			}
+			int predictedLabel = (score > threshold) ? 2 : 1;
+			if (predictedLabel == 2 && testLabel[i] == 2) TP++;
+			else if (predictedLabel == 1 && testLabel[i] == 1) TN++;
+			else if (predictedLabel == 2 && testLabel[i] == 1) FP++;
+			else if (predictedLabel == 1 && testLabel[i] == 2) FN++;
+		}
+		double TPR = static_cast<double>(TP) / (TP + FN);
+		double FPR = static_cast<double>(FP) / (FP + TN);
+		tpr.push_back(TPR);
+		fpr.push_back(FPR);
+		tprList[fold].push_back(TPR);
+		fprList[fold].push_back(FPR);
+	}
+	double AUC_Total = CalculateAUC(tprList[fold], fprList[fold]);
+	auc_totals.push_back(AUC_Total);
+
+
+}
 
 
 
@@ -6055,17 +6198,16 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	Linear_Classification = true;
 
 	CWnd* pParent = nullptr;
+
 	CLinearClassificationDlg LCdlg(pParent);
 
-
-	CSpecifyRegressionModel RegressionModel(pParent, &Name);
 	if (LCdlg.DoModal() == IDOK) {
-
-		// linearClassifcationSelection  0: Training Validation, 1: 5 fold, 2: 10fold, 3: LOO
-		if (LCdlg.training_validation.GetCheck()) {
+	
+	
+		if (LCdlg.training_validation ==0) {
 			TestLinearClassifier();
 		}
-		else if (LCdlg.five_fold.GetCheck()) {
+		else if (LCdlg.five_fold_value==0) {
 			CArray<double> data, trainData, testData;
 			CArray<int> data_spec, trainData_spec, testData_spec;
 			CArray<double> label, trainLabel, testLabel;
@@ -6076,13 +6218,40 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 			StandardizeData(numFeatures, data, data_spec);
 			ShuffleData(data, data_spec, label);
 			SplitData(data, data_spec, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel, 0.85);
+			int numFolds = 5;
+			int numRows = data_spec[0]; 
+			int numCols = data_spec[1]; 
+			int foldSize = numRows / numFolds;
+
 		
-			GetRegressionModel_5_Fold_CV(trainData,trainData_spec, trainLabel);
-		}
-		else if (LCdlg.ten_fold.GetCheck()) {
+			tprList.resize(5);
+			fprList.resize(5);
+
+			for (int fold = 0; fold < numFolds; fold++) {
+				CArray<double> trainData, testData, trainLabel, testLabel;
+				CArray<int> trainData_spec, testData_spec;
+				SplitDataForKFold(fold, foldSize, numFolds, numRows, numCols, data, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel);
+				CArray<double> emptySww;
+				bool validation = true;
+				GetRegressionVector(trainData, trainData_spec, trainLabel, emptySww, validation);
+			
+				EvaluateModel(testData, testData_spec, testLabel, numFeatures, accuracies, sensitivities, specificities, ppvs, f1_scores, mccs, auc_totals,tprList,fprList,fold);
+				//UpdateAllViews(NULL);
+			}
+			std::ofstream outfile("5-fold.txt");
+
+			for (int i = 0; i < 5; i++) {
+				for (int j = 0; j < tprList[i].size() - 1; j++) {
+					outfile << tprList[i][j] << " ";
+				}
+					
+			}
 		
 		}
-		else if (LCdlg.LOO.GetCheck()) {
+		else if (LCdlg.ten_fold_value ==0) {
+		
+		}
+		else if (LCdlg.LOO_value ==0) {
 		
 		}
 		
