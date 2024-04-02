@@ -6,7 +6,6 @@
 #include <vector>
 #include <omp.h>
 #include <stdlib.h>
-#include "osqp.h"
 
 #pragma once
 
@@ -340,20 +339,30 @@ protected:
 	double sum_squared_error_parallel(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2);
 	void VecTranspose(std::vector<std::vector<double> >& b);
 	void VecTransposeInt(std::vector<std::vector<int> >& b);
-  void getTrainTestData(std::vector<std::vector<double> >& X,
-		std::vector<std::vector<double> >& Xtrain, std::vector<std::vector<double> >& Xtest,
-		std::vector<std::vector<int>>& Y, std::vector<std::vector<int>>& Ytrain,
-		std::vector<std::vector<int>>& Ytest, double trainFraction, const int M, const int C);
+	void getTrainTestData(std::vector<std::vector<double> >& X,
+						  std::vector<std::vector<double> >& Xtrain, std::vector<std::vector<double> >& Xtest,
+						  std::vector<std::vector<int>>& Y, std::vector<std::vector<int>>& Ytrain,
+						  std::vector<std::vector<int>>& Ytest, double trainFraction, const int M, const int C);
 	void UpdateBiases(int c, int n_weights, const int M, const int H, const int train,
-		std::vector<double>& yhat, std::vector<double>& private_w, const int eta, std::vector<std::vector<double>>& F,
-		std::vector<std::vector<int>>& Ytrain, int n_biases, std::vector<std::vector<double> >& Xslice, std::vector<double>& private_b,
-		int slice_index, int Ntrain);
+					  std::vector<double>& yhat, std::vector<double>& private_w, const int eta, std::vector<std::vector<double>>& F,
+					  std::vector<std::vector<int>>& Ytrain, int n_biases, std::vector<std::vector<double> >& Xslice, std::vector<double>& private_b,
+					  int slice_index, int Ntrain);
 	void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(std::vector<int>& yass0, std::vector<int>& ytrue);
 	int CModelingandAnalysisofUncertaintyDoc::n_choose_k(int n, int k);
 	int CModelingandAnalysisofUncertaintyDoc::factorial(int m);
 	void CModelingandAnalysisofUncertaintyDoc::GetConfusionMatrix(CArray<int>& ConfusionMatrix,
-		std::vector<int>& yass0, std::vector<int>& ytrue);
-
+																  std::vector<int>& yass0, std::vector<int>& ytrue);
+	// Support Vector Machine Functions (SMO Algorithms)
+	// Linear Kernal Function, dot product of two vectors
+	double linearKernal(CArray <double>&, CArray <double>&);
+	// Calculate the SVM output for a given input vector
+	double svmOutput(CArray<double>&, CArray<double>&, CArray<double>&, CArray<int>&, CArray<double>&, double);
+	// Select the alpha pair for optimization
+	bool selectAlphaPair(int&, int&, CArray<double>&, CArray<double>&, CArray<int>&, CArray<double>&, double&, double&, double);
+	// Optimize a pair of Lagrange multipliers
+	bool optimizeAlphaPair(int, int, CArray<double>&, CArray<double>&, CArray<double>&, CArray<int>&, double&, double);
+	// train SVM with SMO
+	void CModelingandAnalysisofUncertaintyDoc::trainSVM(CArray<double>&, CArray<int>&, CArray<double>&, double, double, int);
 	// Generated message map functions
 protected:
 	DECLARE_MESSAGE_MAP()
@@ -388,7 +397,7 @@ public:
 	afx_msg void OnKPLS();
 	afx_msg void OnQPSolver();
 	afx_msg void OnANN_MFC();
-	afx_msg void OnANN_MFC_layer1(double learningRate, int epochs, int batchSize,HANDLE hEvent);
+	afx_msg void OnANN_MFC_layer1(double, int, int,HANDLE hEvent);
 	afx_msg void OnANN_batchParallel();
 	afx_msg void OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateOnesample(CCmdUI* pCmdUI);

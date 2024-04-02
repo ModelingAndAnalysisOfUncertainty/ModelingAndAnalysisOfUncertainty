@@ -33,7 +33,6 @@
 #include "CSpecifyRegressionModel.h"
 #include "CANNForm.h"
 #include <stdlib.h>
-#include "osqp.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -6494,6 +6493,152 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 //*****************************************************************
 //***         Compute  support  vector  machine  model          ***
 //*****************************************************************
+
+/***              SMO Algorithm Helper Functions               ***/
+// Linear Kernal Function, dot product of two vectors
+double CModelingandAnalysisofUncertaintyDoc::linearKernal(CArray <double>& a, CArray <double>& b) {
+	return ScalarProduct(a, b);
+}
+
+// Helper function to calculate the SVM output for a given input vector
+double CModelingandAnalysisofUncertaintyDoc::svmOutput(CArray<double>& x, CArray<double>& alphas, CArray<double>& data, CArray<int>& data_spec, CArray<double>& label, double b) {
+	double sum = 0.0;
+	// Number of data points
+	int m = data_spec[0];
+	for (int i = 0; i < m; ++i) {
+		CArray<double> xi;
+		// Extract ith data row
+		GetRow(data, data_spec, xi, i);
+		double kernelValue = linearKernal(x, xi);
+		sum += alphas[i] * label[i] * kernelValue;
+	}
+	return sum + b;
+}
+
+// Function to select the alpha pair for optimization
+bool CModelingandAnalysisofUncertaintyDoc::selectAlphaPair(int& out_i, int& out_j, CArray<double>& alphas, CArray<double>& data, CArray<int>& data_spec, CArray<double>& label, double& Ei, double& Ej, double b) {
+	// Number of data points
+	int m = data_spec[0];
+	bool foundPair = false;
+	double maxDeltaE = 0;
+
+	for (int i = 0; i < m; ++i) {
+		// Calculate Ei = f(x_i) - y_i for the first alpha
+		CArray<double> xi;
+		GetRow(data, data_spec, xi, i);
+		double fxi = svmOutput(xi, alphas, data, data_spec, label, b);
+		Ei = fxi - label[i];
+
+		for (int j = 0; j < m; ++j) {
+			// Skip if it's the same point
+			if (i == j) continue;
+
+			// Calculate Ej = f(x_j) - y_j for the second alpha
+			CArray<double> xj;
+			GetRow(data, data_spec, xj, j);
+			double fxj = svmOutput(xj, alphas, data, data_spec, label, b);
+			Ej = fxj - label[j];
+
+			double deltaE = std::abs(Ei - Ej);
+			if (deltaE > maxDeltaE) {
+				// Update maxDeltaE, i, and j
+				maxDeltaE = deltaE;
+				out_i = i;
+				out_j = j;
+				foundPair = true;
+			}
+		}
+	}
+	return foundPair;
+}
+
+// Function to optimize a pair of Lagrange multipliers
+bool CModelingandAnalysisofUncertaintyDoc::optimizeAlphaPair(int i, int j, CArray<double>& alphas, CArray<double>& label, CArray<double>& data, CArray<int>& data_spec, double& b, double C) {
+	if (i == j) return false;
+
+	// Extract the feature vectors for i and j
+	CArray<double> xi, xj;
+	GetRow(data, data_spec, xi, i);
+	GetRow(data, data_spec, xj, j);
+
+	// Current alphas
+	double alpha_i_old = alphas[i];
+	double alpha_j_old = alphas[j];
+
+	// Compute the bounds L and H for alpha_j
+	double L, H;
+	if (label[i] != label[j]) {
+		L = max(0.0, alpha_j_old - alpha_i_old);
+		H = min(C, C + alpha_j_old - alpha_i_old);
+	}
+	else {
+		L = max(0.0, alpha_i_old + alpha_j_old - C);
+		H = min(C, alpha_i_old + alpha_j_old);
+	}
+	if (L == H) return false;
+
+	// Compute eta
+	double eta = 2.0 * linearKernal(xi, xj) - linearKernal(xi, xi) - linearKernal(xj, xj);
+	if (eta >= 0) return false;
+
+	// Compute and clip the new value for alpha_j
+	double alpha_j_new = alpha_j_old - (label[j] * (svmOutput(xi, alphas, data, data_spec, label, b) - b - label[i] + label[j] * b)) / eta;
+	alpha_j_new = min(H, max(L, alpha_j_new));
+
+	if (std::abs(alpha_j_new - alpha_j_old) < 1e-5) return false;
+
+	// Update alpha_i based on the change in alpha_j
+	double alpha_i_new = alpha_i_old + label[i] * label[j] * (alpha_j_old - alpha_j_new);
+
+	// Update the threshold b
+	double b1 = b - svmOutput(xi, alphas, data, data_spec, label, b) + label[i] * (alpha_i_old - alpha_i_new) * linearKernal(xi, xi) + label[j] * (alpha_j_old - alpha_j_new) * linearKernal(xi, xj);
+	double b2 = b - svmOutput(xj, alphas, data, data_spec, label, b) + label[i] * (alpha_i_old - alpha_i_new) * linearKernal(xi, xj) + label[j] * (alpha_j_old - alpha_j_new) * linearKernal(xj, xj);
+	b = (b1 + b2) / 2;
+
+	// Update alphas in the array
+	alphas[i] = alpha_i_new;
+	alphas[j] = alpha_j_new;
+
+	return true;
+}
+
+void CModelingandAnalysisofUncertaintyDoc::trainSVM(CArray<double>& data, CArray<int>& data_spec, CArray<double>& label, double C, double tol, int maxPasses) {
+	// Initialize alphas and bias
+	CArray<double> alphas;
+	// One alpha per data point
+	alphas.SetSize(data_spec[0], 0.0);
+	double b = 0;
+	int passes = 0;
+
+	while (passes < maxPasses) {
+		int numChangedAlphas = 0;
+		// For each data point
+		for (int i = 0; i < data_spec[0]; i++) {
+			// Error for alpha[i]
+			double Ei;
+			// Compute Ei - The SVM output minus the true class label for alpha[i]
+			CArray<double> xi;
+			GetRow(data, data_spec, xi, i);
+			Ei = svmOutput(xi, alphas, data, data_spec, label, b) - label[i];
+			if ((label[i] * Ei < -tol && alphas[i] < C) || (label[i] * Ei > tol && alphas[i] > 0)) {
+				int j;
+				// Error for alpha[j]
+				double Ej;
+				if (selectAlphaPair(i, j, alphas, data, data_spec, label, Ei, Ej, b)) {
+					if (optimizeAlphaPair(i, j, alphas, label, data, data_spec, b, C)) {
+						numChangedAlphas++;
+					}
+				}
+			}
+		}
+		if (numChangedAlphas == 0) {
+			passes++;
+		}
+		else {
+			passes = 0;
+		}
+	}
+}
 
 void CModelingandAnalysisofUncertaintyDoc::OnSVM() {
 	AfxMessageBox(L"Now we are working on establishing SVM model");
