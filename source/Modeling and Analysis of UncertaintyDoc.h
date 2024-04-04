@@ -1,5 +1,4 @@
  // Modeling and Analysis of UncertaintyDoc.h : interface of the CModelingandAnalysisofUncertaintyDoc class
-//
 #include <fstream>
 #include <ctime>
 #include "ProbabilityDistributions.h"
@@ -163,10 +162,17 @@ public:
 	CArray <int> Class_count, Confusion_Label;
 	int TP, FP, TN, FN;// True_Label, False_Label;
 	double sensitivity, specificity, mcc_test, ppv_test, F1_test, acc_test, AUC_Total;
+	std::vector<double>accuracies,sensitivities,specificities,ppvs,f1_scores,mccs, auc_totals;
+	std::vector<double> tpr, fpr;
+	std::vector<std::vector<double>> tprList, fprList;  // save tpr,fpr for the k-fold
+	CArray<double> y_pred_class, y_true_class;
 	// FLAGS FOR LINEAR MULTIPLE REGRESSION ANALYSIS
 	bool RegressionAnalysis = false;
 	bool RegressionAnalysis_Independent = false;
 	bool ShowStatisticalAnalysis = false;
+	// FLAGS FOR LINEAR CLASSIFICATION
+	bool Linear_Classification = false;
+	
 	// FLAGS FOR ARTIFICIAL NEURAL NETWORKS
 	bool ANN_Training = false;
 	std::vector<double> Loss_Ann;
@@ -351,7 +357,6 @@ protected:
 		CArray<double> alphas;
 		double b;
 		CArray<int> supportVectorIndices;
-
 		// Default constructor
 		SMOModel() : b(0) {}
 
@@ -361,20 +366,17 @@ protected:
 			for (int i = 0; i < other.alphas.GetSize(); ++i) {
 				alphas.Add(other.alphas[i]);
 			}
-
 			// Manually copy elements of supportVectorIndices
 			for (int i = 0; i < other.supportVectorIndices.GetSize(); ++i) {
 				supportVectorIndices.Add(other.supportVectorIndices[i]);
 			}
 		}
-
 		// Custom copy assignment operator
 		SMOModel& operator=(const SMOModel& other) {
 			if (this != &other) { // self-assignment check
 				b = other.b;
 				alphas.RemoveAll();
 				supportVectorIndices.RemoveAll();
-
 				// Copy elements
 				for (int i = 0; i < other.alphas.GetSize(); ++i) {
 					alphas.Add(other.alphas[i]);
@@ -396,6 +398,14 @@ protected:
 	bool optimizeAlphaPair(int, int, CArray<double>&, CArray<double>&, CArray<double>&, CArray<int>&, double&, double);
 	// train SVM with SMO
 	SMOModel trainSMO(CArray<double>&, CArray<int>&, CArray<double>&, double, double, int);
+	// Linear Classification
+	void CModelingandAnalysisofUncertaintyDoc::SplitDataForKFold(int currentFold, int foldSize, int numFolds, int numRows, int numCols, CArray<double>& data, CArray<double>& label,
+		CArray<double>& trainData, CArray<int>& trainData_spec, CArray<double>& trainLabel, CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel);
+	void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel, int numFeatures,
+		std::vector<double>& accuracies,std::vector<double>& sensitivities,std::vector<double>& specificities,std::vector<double>& ppvs,std::vector<double>& f1_scores,
+		std::vector<double>& mccs,std::vector<double>& auc_totals, std::vector<std::vector <double>>& tprList, std::vector<std::vector <double>>& fprList, int iteration) ;
+	void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier();
+	void CModelingandAnalysisofUncertaintyDoc::CalculateClassificationMetrics(const CArray<double>& y_pred, const CArray<double>& y_true, double threshold);
 	// Generated message map functions
 protected:
 	DECLARE_MESSAGE_MAP()

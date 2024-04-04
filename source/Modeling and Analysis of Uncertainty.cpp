@@ -174,6 +174,7 @@ protected:
 protected:
 	DECLARE_MESSAGE_MAP()
 public:
+	afx_msg void OnBnClickedOk();
 };
 
 CAboutDlg::CAboutDlg() noexcept : CDialogEx(IDD_ABOUTBOX){
@@ -184,6 +185,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX){
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
+	ON_BN_CLICKED(IDOK, &CAboutDlg::OnBnClickedOk)
 END_MESSAGE_MAP()
 
 // App command to run the dialog
@@ -208,3 +210,10 @@ void CModelingandAnalysisofUncertaintyApp::LoadCustomState(){
 void CModelingandAnalysisofUncertaintyApp::SaveCustomState(){
 }
 
+
+
+void CAboutDlg::OnBnClickedOk()
+{	
+
+	CDialogEx::OnOK();
+}

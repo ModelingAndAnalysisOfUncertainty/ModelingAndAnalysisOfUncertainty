@@ -1,0 +1,172 @@
+raw prediction_scores: 0.604171
+prediction_scores: 0.604171
+raw prediction_scores: 0.364071
+prediction_scores: 0.364071
+raw prediction_scores: 0.797058
+prediction_scores: 0.797058
+raw prediction_scores: 1.0223
+prediction_scores: 1.0223
+raw prediction_scores: 0.830959
+prediction_scores: 0.830959
+raw prediction_scores: 1.00768
+prediction_scores: 1.00768
+raw prediction_scores: 0.524804
+prediction_scores: 0.524804
+raw prediction_scores: -0.0883811
+prediction_scores: -0.0883811
+raw prediction_scores: -0.202559
+prediction_scores: -0.202559
+raw prediction_scores: 0.509244
+prediction_scores: 0.509244
+raw prediction_scores: 0.971002
+prediction_scores: 0.971002
+raw prediction_scores: 0.918975
+prediction_scores: 0.918975
+raw prediction_scores: 0.959039
+prediction_scores: 0.959039
+raw prediction_scores: 1.12003
+prediction_scores: 1.12003
+raw prediction_scores: 0.229375
+prediction_scores: 0.229375
+raw prediction_scores: 0.668653
+prediction_scores: 0.668653
+raw prediction_scores: -0.0572591
+prediction_scores: -0.0572591
+raw prediction_scores: 0.981217
+prediction_scores: 0.981217
+raw prediction_scores: 0.885558
+prediction_scores: 0.885558
+raw prediction_scores: 1.11464
+prediction_scores: 1.11464
+raw prediction_scores: 0.389607
+prediction_scores: 0.389607
+raw prediction_scores: -0.0675634
+prediction_scores: -0.0675634
+raw prediction_scores: 0.713378
+prediction_scores: 0.713378
+raw prediction_scores: 0.8086
+prediction_scores: 0.8086
+raw prediction_scores: -0.341703
+prediction_scores: -0.341703
+raw prediction_scores: 0.447247
+prediction_scores: 0.447247
+raw prediction_scores: -0.299911
+prediction_scores: -0.299911
+raw prediction_scores: 0.851603
+prediction_scores: 0.851603
+raw prediction_scores: 0.603768
+prediction_scores: 0.603768
+raw prediction_scores: -0.355118
+prediction_scores: -0.355118
+raw prediction_scores: -0.10528
+prediction_scores: -0.10528
+raw prediction_scores: 1.2891
+prediction_scores: 1.2891
+raw prediction_scores: 0.429397
+prediction_scores: 0.429397
+raw prediction_scores: 0.237162
+prediction_scores: 0.237162
+raw prediction_scores: 0.19456
+prediction_scores: 0.19456
+raw prediction_scores: 0.48518
+prediction_scores: 0.48518
+raw prediction_scores: 0.985366
+prediction_scores: 0.985366
+raw prediction_scores: 0.252302
+prediction_scores: 0.252302
+raw prediction_scores: 0.893857
+prediction_scores: 0.893857
+raw prediction_scores: 1.0277
+prediction_scores: 1.0277
+raw prediction_scores: -0.312378
+prediction_scores: -0.312378
+raw prediction_scores: 1.01694
+prediction_scores: 1.01694
+raw prediction_scores: 0.773189
+prediction_scores: 0.773189
+raw prediction_scores: 1.10091
+prediction_scores: 1.10091
+raw prediction_scores: 0.851738
+prediction_scores: 0.851738
+raw prediction_scores: 0.853881
+prediction_scores: 0.853881
+raw prediction_scores: 0.754986
+prediction_scores: 0.754986
+raw prediction_scores: 1.03539
+prediction_scores: 1.03539
+raw prediction_scores: 0.309794
+prediction_scores: 0.309794
+raw prediction_scores: 0.924546
+prediction_scores: 0.924546
+raw prediction_scores: 0.902352
+prediction_scores: 0.902352
+raw prediction_scores: 1.09088
+prediction_scores: 1.09088
+raw prediction_scores: 0.919797
+prediction_scores: 0.919797
+raw prediction_scores: 0.827472
+prediction_scores: 0.827472
+raw prediction_scores: 0.773942
+prediction_scores: 0.773942
+raw prediction_scores: 0.644938
+prediction_scores: 0.644938
+raw prediction_scores: 0.490754
+prediction_scores: 0.490754
+raw prediction_scores: 1.40217
+prediction_scores: 1.40217
+raw prediction_scores: 0.840227
+prediction_scores: 0.840227
+raw prediction_scores: 1.0614
+prediction_scores: 1.0614
+raw prediction_scores: 0.865534
+prediction_scores: 0.865534
+raw prediction_scores: 0.376196
+prediction_scores: 0.376196
+raw prediction_scores: 0.913633
+prediction_scores: 0.913633
+raw prediction_scores: 1.05777
+prediction_scores: 1.05777
+raw prediction_scores: 0.878281
+prediction_scores: 0.878281
+raw prediction_scores: 0.778854
+prediction_scores: 0.778854
+raw prediction_scores: 0.964109
+prediction_scores: 0.964109
+raw prediction_scores: 0.89749
+prediction_scores: 0.89749
+raw prediction_scores: 0.841585
+prediction_scores: 0.841585
+raw prediction_scores: 0.903927
+prediction_scores: 0.903927
+raw prediction_scores: 0.960871
+prediction_scores: 0.960871
+raw prediction_scores: 0.602291
+prediction_scores: 0.602291
+raw prediction_scores: 0.569934
+prediction_scores: 0.569934
+raw prediction_scores: 0.972214
+prediction_scores: 0.972214
+raw prediction_scores: 0.965672
+prediction_scores: 0.965672
+raw prediction_scores: 1.24285
+prediction_scores: 1.24285
+raw prediction_scores: 1.02714
+prediction_scores: 1.02714
+raw prediction_scores: 1.04969
+prediction_scores: 1.04969
+raw prediction_scores: 0.827027
+prediction_scores: 0.827027
+raw prediction_scores: 0.927256
+prediction_scores: 0.927256
+raw prediction_scores: 1.00987
+prediction_scores: 1.00987
+raw prediction_scores: 0.782359
+prediction_scores: 0.782359
+raw prediction_scores: 0.932812
+prediction_scores: 0.932812
+raw prediction_scores: 0.90403
+prediction_scores: 0.90403
+raw prediction_scores: 0.820245
+prediction_scores: 0.820245
+raw prediction_scores: -0.0852756
+prediction_scores: -0.0852756

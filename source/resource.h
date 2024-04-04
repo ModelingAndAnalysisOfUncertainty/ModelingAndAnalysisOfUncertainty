@@ -44,6 +44,8 @@
 #define IDD_NEWANN                      337
 #define IDD_DIALOG2                     339
 #define IDD_DIALOG_CLC                  339
+#define IDD_DIALOG3                     344
+#define IDD_DIALOG_LINEAR_CLASSIFICATION 346
 #define IDC_GET_NUMBER_PCS              1000
 #define IDC_EDIT_PC_2                   1003
 #define IDC_EDIT_PC_3                   1004
@@ -165,6 +167,12 @@
 #define IDC_STATIC_SHOW_VARIANCE_SPECIFY 1104
 #define IDC_LIST1                       1116
 #define IDC_CL1                         1116
+#define IDC_Cross_Validation            1122
+#define IDC_RADIO8                      1124
+#define IDC_CROSS                       1125
+#define IDC_RADIO9                      1126
+#define IDC_TRAINING                    1126
+#define IDC_VALIDATION_METHODS          1129
 #define ID_BASICSTATISTICS              32771
 #define ID_BASICSTATISTICS_DESCRIPTIVESTATISTICS 32772
 #define ID_BASICSTATISTICS_HYPOTHESISTESTING 32773
@@ -209,9 +217,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        342
+#define _APS_NEXT_RESOURCE_VALUE        347
 #define _APS_NEXT_COMMAND_VALUE         32810
-#define _APS_NEXT_CONTROL_VALUE         1117
+#define _APS_NEXT_CONTROL_VALUE         1130
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif
