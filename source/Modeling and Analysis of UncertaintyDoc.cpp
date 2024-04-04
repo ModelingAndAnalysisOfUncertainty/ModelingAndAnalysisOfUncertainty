@@ -6654,6 +6654,42 @@ CModelingandAnalysisofUncertaintyDoc::SMOModel CModelingandAnalysisofUncertainty
 
 void CModelingandAnalysisofUncertaintyDoc::OnSVM() {
 	AfxMessageBox(L"Now we are working on establishing SVM model");
+	OnOpenedFile = false;
+	DescriptiveStatistics = false;
+	HypothesisTesting_OneSample = false;
+	HypothesisTesting_TwoSample = false;
+	ShapiroWilkTest = false;
+	AndersonDarlingTest = false;
+	ANOVA = false;
+	PCA_Select_PCs = false;
+	PCA_Display_PCs_Standard = false;
+	PCA_Display_Scores = false;
+	PCA_Display_Loadings = false;
+	FA_Display_Standard = false;
+	FA_Display_Loadings = false;
+	FA_Display_Scores = false;
+	FA_Display_Matrices = false;
+	FDA = false;
+	ANN_Training = false;
+
+	CWnd* pParent = nullptr;
+
+	// Set Up Dataset
+	CArray<double> data, trainData, testData;
+	CArray<int> data_spec, trainData_spec, testData_spec;
+	CArray<double> label, trainLabel, testLabel;
+	int numFeatures = LoadData("datasets/Wisconsin", data, data_spec, label);
+	StandardizeData(numFeatures, data, data_spec);
+	ShuffleData(data, data_spec, label);
+	SplitData(data, data_spec, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel, 0.85);
+
+	// SMO Set up
+	double C = 1.0; // Regularization parameter
+	double tol = 0.001; // Tolerance for stopping criterion
+	int maxPasses = 10; // Maximum number of passes
+
+	// Train
+	SMOModel model = trainSMO(trainData, trainData_spec, label, C, tol, maxPasses);
 }
 
 //*****************************************************************
@@ -6967,9 +7003,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
 
 
 	//  Move Training methods to the OnANN_MFC_layer1. Then run training in different thread.
-	
-	
-	
 }
 
 

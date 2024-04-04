@@ -270,13 +270,6 @@ protected:
 	void GaussJordanEliminationParallel(CArray<double>&, CArray<int>&, CArray<double>&, CArray<double>&);
 	void MatrixParallelTest();
 	// *******************************************
-	// ***      Matrix  Format  Conversion     ***
-	// *******************************************
-	std::vector<std::vector<double>> CarrayToVectorM(CArray <double>&, CArray <int>&);
-	void VectorToCarrayM(std::vector<std::vector<double>>&, CArray <double>&, CArray <int>&);
-	std::vector<double> CarrayToVectorV(CArray <double>&);
-	void VectorToCarrayV(std::vector<double>&, CArray <double>&);
-	// *******************************************
 	// ***      Matrix     Decompositions      ***
 	// *******************************************
 	void QR(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, bool&);
