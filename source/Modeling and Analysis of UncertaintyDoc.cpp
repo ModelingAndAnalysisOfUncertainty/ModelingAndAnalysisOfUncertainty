@@ -7322,7 +7322,9 @@ void CModelingandAnalysisofUncertaintyDoc::OnSVM() {
 	CArray<double> data, trainData, testData;
 	CArray<int> data_spec, trainData_spec, testData_spec;
 	CArray<double> label, trainLabel, testLabel;
-	int numFeatures = LoadData("datasets/Wisconsin", data, data_spec, label);
+	std::string newFilePath = CW2A(PathAndFileName.GetString(), CP_UTF8);
+	std::string subpath = ExtractSubpathAfterSource(newFilePath);
+	int numFeatures = LoadData(subpath, data, data_spec, label);
 	StandardizeData(numFeatures, data, data_spec);
 	ShuffleData(data, data_spec, label);
 	SplitData(data, data_spec, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel, 0.85);
@@ -7334,6 +7336,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnSVM() {
 
 	// Train
 	SMOModel model = trainSMO(trainData, trainData_spec, label, C, tol, maxPasses);
+	AfxMessageBox(L"SVM model trained");
 }
 
 //*****************************************************************
