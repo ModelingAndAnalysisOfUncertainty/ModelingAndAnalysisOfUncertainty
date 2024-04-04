@@ -162,7 +162,7 @@ public:
 	bool FDA = false;
 	CArray <double> Class_Y, Label_Y, avg_ClassY, ROC_Y, ROC_X;
 	CArray <int> Class_count, Confusion_Label;
-	int TP, FP, TN, FN;// True_Label, False_Label;
+	int TP, FP, TN, FN, numFolds;// True_Label, False_Label;
 	double sensitivity, specificity, mcc_test, ppv_test, F1_test, acc_test, AUC_Total;
 	std::vector<double>accuracies,sensitivities,specificities,ppvs,f1_scores,mccs, auc_totals;
 	std::vector<double> tpr, fpr;

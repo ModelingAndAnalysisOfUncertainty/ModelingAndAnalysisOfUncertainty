@@ -6200,29 +6200,34 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	CWnd* pParent = nullptr;
 
 	CLinearClassificationDlg LCdlg(pParent);
+	CArray<double> data, trainData, testData;
+	CArray<int> data_spec, trainData_spec, testData_spec;
+	CArray<double> label, trainLabel, testLabel;
+	CArray<double> emptySww;
+	std::string newFilePath = CW2A(PathAndFileName.GetString(), CP_UTF8);
+	std::string subpath = ExtractSubpathAfterSource(newFilePath);
+	int numFeatures = LoadData(subpath, data, data_spec, label);
+	StandardizeData(numFeatures, data, data_spec);
+	ShuffleData(data, data_spec, label);
+	SplitData(data, data_spec, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel, 0.85);
 
 	if (LCdlg.DoModal() == IDOK) {
-	
-	
+		for (int i = 0; i < fprList.size();i++) {
+			fprList[i].clear();
+		}
+		for (int i = 0; i < tprList.size(); i++) {
+			tprList[i].clear();
+		}
+		
 		if (LCdlg.training_validation ==0) {
 			TestLinearClassifier();
 		}
 		else if (LCdlg.five_fold_value==0) {
-			CArray<double> data, trainData, testData;
-			CArray<int> data_spec, trainData_spec, testData_spec;
-			CArray<double> label, trainLabel, testLabel;
-			CArray<double> emptySww;
-			std::string newFilePath = CW2A(PathAndFileName.GetString(), CP_UTF8);
-			std::string subpath = ExtractSubpathAfterSource(newFilePath);
-			int numFeatures = LoadData(subpath, data, data_spec, label);
-			StandardizeData(numFeatures, data, data_spec);
-			ShuffleData(data, data_spec, label);
-			SplitData(data, data_spec, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel, 0.85);
-			int numFolds = 5;
+
+			numFolds = 5;
 			int numRows = data_spec[0]; 
 			int numCols = data_spec[1]; 
 			int foldSize = numRows / numFolds;
-
 		
 			tprList.resize(5);
 			fprList.resize(5);
@@ -6236,20 +6241,29 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 				GetRegressionVector(trainData, trainData_spec, trainLabel, emptySww, validation);
 			
 				EvaluateModel(testData, testData_spec, testLabel, numFeatures, accuracies, sensitivities, specificities, ppvs, f1_scores, mccs, auc_totals,tprList,fprList,fold);
-				//UpdateAllViews(NULL);
 			}
-			std::ofstream outfile("5-fold.txt");
-
-			for (int i = 0; i < 5; i++) {
-				for (int j = 0; j < tprList[i].size() - 1; j++) {
-					outfile << tprList[i][j] << " ";
-				}
-					
-			}
+	
 		
 		}
 		else if (LCdlg.ten_fold_value ==0) {
-		
+			numFolds = 10;
+			int numRows = data_spec[0];
+			int numCols = data_spec[1];
+			int foldSize = numRows / numFolds;
+
+			tprList.resize(10);
+			fprList.resize(10);
+
+			for (int fold = 0; fold < numFolds; fold++) {
+				CArray<double> trainData, testData, trainLabel, testLabel;
+				CArray<int> trainData_spec, testData_spec;
+				SplitDataForKFold(fold, foldSize, numFolds, numRows, numCols, data, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel);
+				CArray<double> emptySww;
+				bool validation = true;
+				GetRegressionVector(trainData, trainData_spec, trainLabel, emptySww, validation);
+
+				EvaluateModel(testData, testData_spec, testLabel, numFeatures, accuracies, sensitivities, specificities, ppvs, f1_scores, mccs, auc_totals, tprList, fprList, fold);
+			}
 		}
 		else if (LCdlg.LOO_value ==0) {
 		

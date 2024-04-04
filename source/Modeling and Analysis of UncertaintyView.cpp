@@ -10403,7 +10403,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 	double F1_test = pDoc->F1_test;
 	double mcc_test = pDoc->mcc_test;
 	double AUC_Total = pDoc->AUC_Total;
-
+	int numFolds = pDoc->numFolds;
 	// Determine the right boundary of the existing content
 	int currentRightBoundary = 650; // Assuming this is the current right boundary of the content
 	int newContentStartX = currentRightBoundary + 20; // Start new content to the right of the boundary
@@ -10422,8 +10422,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 	std::vector<double>spe = pDoc->specificities;
 	std::vector<double>f1s = pDoc->f1_scores;
 	std::vector<double>mcc = pDoc->mccs;
-	std::vector<double>	auc = pDoc->auc_totals;
-	const int numFolds = 5; 
+	std::vector<double>	auc = pDoc->auc_totals; 
 	
 	int temp_X = newContentStartX;
 	for (int foldIndex = 0; foldIndex < numFolds; ++foldIndex) {
@@ -10461,6 +10460,11 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 		strText.Format(_T("AUC: %.3f"), auc[foldIndex]);
 		dc.TextOut(temp_X, temp_startY, strText);
 		temp_X += 150;
+
+		if (foldIndex == 4) {
+			startY -= 8 * lineHeight;
+			temp_X = newContentStartX;
+		}
 	}
 
 	
@@ -10501,37 +10505,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 	dc.TextOut(temp_X, temp_startY, strText);
 	temp_X += 150;
 	startY -= 6 * lineHeight;
-	/*
-	// Display Accuracy
-	strText.Format(_T("Accuracy: %.3f"), acc_test);
-	dc.TextOut(newContentStartX, startY, strText);
 
-	// Display Sensitivity
-	startY -= lineHeight;
-	strText.Format(_T("Sensitivity: %.3f"), sensitivity);
-	dc.TextOut(newContentStartX, startY, strText);
-
-	// Display Specificity
-	startY -= lineHeight;
-	strText.Format(_T("Specificity: %.3f"), specificity);
-	dc.TextOut(newContentStartX, startY, strText);
-
-	// Display F1 Score
-	startY -= lineHeight;
-	strText.Format(_T("F1 Score: %.3f"), F1_test);
-	dc.TextOut(newContentStartX, startY, strText);
-
-	// Display MCC
-	startY -= lineHeight;
-	strText.Format(_T("MCC: %.3f"), mcc_test);
-	dc.TextOut(newContentStartX, startY, strText);
-
-	// Display AUC
-	startY -= lineHeight;
-	strText.Format(_T("AUC: %.3f"), AUC_Total);
-	dc.TextOut(newContentStartX, startY, strText);
-
-	*/
 
 	// After displaying metrics, plot the ROC curve
 	int rocGraphTop = startY - (6 * lineHeight); 
@@ -10553,9 +10527,12 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 
 	
 	// Array of colors for each fold's ROC curve
-	const COLORREF colors[5] = { RGB(255, 0, 0), RGB(0, 255, 0), RGB(0, 0, 255), RGB(255, 255, 0), RGB(0, 255, 255) };
+	std::vector<COLORREF> colors(numFolds);
+	for (int i = 0; i < numFolds; ++i) {
 
-	for (int fold = 0; fold < 5; ++fold) {
+		colors[i] = RGB(255 * (i % 2), 255 * ((i / 2) % 2), 255 * ((i / 4) % 2));
+	}
+	for (int fold = 0; fold < numFolds; ++fold) {
 		// Retrieve TPR and FPR data points for the current fold's ROC
 		std::vector<std::vector<double>>& tpr_fold = pDoc->tprList; // True Positive Rates for current fold
 		std::vector<std::vector<double>>& fpr_fold = pDoc->fprList; // False Positive Rates for current fold
@@ -10583,19 +10560,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 		dc.SelectObject(pOldPen);
 		pen.DeleteObject(); // Clean up the pen resource
 	}
-	/*
-	// Assuming tpr and fpr vectors are prepared and sorted
-	for (size_t i = 0; i < tpr.size(); ++i) {
-		int x = rocGraphLeft + static_cast<int>(fpr[i] * rocGraphWidth);
-		int y = rocGraphTop + rocGraphHeight - static_cast<int>(tpr[i] * rocGraphHeight);
-		if (i == 0) {
-			dc.MoveTo(x, y); // Start drawing from the first point
-		}
-		else {
-			dc.LineTo(x, y); // Draw lines to subsequent points
-		}
-	}
-	*/
+
 
 
 	CString title = _T("ROC Curve");
@@ -10615,7 +10580,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 	int legendStartY = rocGraphTop + rocGraphHeight - 20; // 20 pixels up from the bottom of the ROC curve
 
 	// Iterate over the folds to draw the legend
-	for (int fold = 0; fold < 5; ++fold) {
+	for (int fold = 0; fold < numFolds; ++fold) {
 		// Set the pen for the legend color
 		CPen legendPen(PS_SOLID, 2, colors[fold]);
 		dc.SelectObject(&legendPen);
