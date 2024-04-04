@@ -6602,27 +6602,23 @@ bool CModelingandAnalysisofUncertaintyDoc::optimizeAlphaPair(int i, int j, CArra
 	return true;
 }
 
-void CModelingandAnalysisofUncertaintyDoc::trainSVM(CArray<double>& data, CArray<int>& data_spec, CArray<double>& label, double C, double tol, int maxPasses) {
+CModelingandAnalysisofUncertaintyDoc::SMOModel CModelingandAnalysisofUncertaintyDoc::trainSMO(CArray<double>& data, CArray<int>& data_spec, CArray<double>& label, double C, double tol, int maxPasses) {
 	// Initialize alphas and bias
 	CArray<double> alphas;
-	// One alpha per data point
-	alphas.SetSize(data_spec[0], 0.0);
+	alphas.SetSize(data_spec[0], 0.0); // One alpha per data point, initialized to 0
 	double b = 0;
 	int passes = 0;
 
 	while (passes < maxPasses) {
 		int numChangedAlphas = 0;
-		// For each data point
 		for (int i = 0; i < data_spec[0]; i++) {
 			// Error for alpha[i]
 			double Ei;
-			// Compute Ei - The SVM output minus the true class label for alpha[i]
 			CArray<double> xi;
 			GetRow(data, data_spec, xi, i);
 			Ei = svmOutput(xi, alphas, data, data_spec, label, b) - label[i];
 			if ((label[i] * Ei < -tol && alphas[i] < C) || (label[i] * Ei > tol && alphas[i] > 0)) {
 				int j;
-				// Error for alpha[j]
 				double Ej;
 				if (selectAlphaPair(i, j, alphas, data, data_spec, label, Ei, Ej, b)) {
 					if (optimizeAlphaPair(i, j, alphas, label, data, data_spec, b, C)) {
@@ -6631,6 +6627,7 @@ void CModelingandAnalysisofUncertaintyDoc::trainSVM(CArray<double>& data, CArray
 				}
 			}
 		}
+
 		if (numChangedAlphas == 0) {
 			passes++;
 		}
@@ -6638,6 +6635,21 @@ void CModelingandAnalysisofUncertaintyDoc::trainSVM(CArray<double>& data, CArray
 			passes = 0;
 		}
 	}
+
+	// Construct the SVM model
+	SMOModel model;
+	for (int i = 0; i < alphas.GetSize(); ++i) {
+		model.alphas.Add(alphas[i]);
+	}
+	model.b = b;
+
+	// Identify support vector indices
+	for (int i = 0; i < alphas.GetSize(); i++) {
+		if (alphas[i] > 0) { // A non-zero alpha indicates a support vector
+			model.supportVectorIndices.Add(i);
+		}
+	}
+	return model;
 }
 
 void CModelingandAnalysisofUncertaintyDoc::OnSVM() {

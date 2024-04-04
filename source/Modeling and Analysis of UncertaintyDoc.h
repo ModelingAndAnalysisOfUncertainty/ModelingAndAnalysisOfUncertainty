@@ -353,6 +353,46 @@ protected:
 	void CModelingandAnalysisofUncertaintyDoc::GetConfusionMatrix(CArray<int>& ConfusionMatrix,
 																  std::vector<int>& yass0, std::vector<int>& ytrue);
 	// Support Vector Machine Functions (SMO Algorithms)
+	// SMO Model Structures
+	struct SMOModel {
+		CArray<double> alphas;
+		double b;
+		CArray<int> supportVectorIndices;
+
+		// Default constructor
+		SMOModel() : b(0) {}
+
+		// Custom copy constructor
+		SMOModel(const SMOModel& other) : b(other.b) {
+			// Manually copy elements of alphas
+			for (int i = 0; i < other.alphas.GetSize(); ++i) {
+				alphas.Add(other.alphas[i]);
+			}
+
+			// Manually copy elements of supportVectorIndices
+			for (int i = 0; i < other.supportVectorIndices.GetSize(); ++i) {
+				supportVectorIndices.Add(other.supportVectorIndices[i]);
+			}
+		}
+
+		// Custom copy assignment operator
+		SMOModel& operator=(const SMOModel& other) {
+			if (this != &other) { // self-assignment check
+				b = other.b;
+				alphas.RemoveAll();
+				supportVectorIndices.RemoveAll();
+
+				// Copy elements
+				for (int i = 0; i < other.alphas.GetSize(); ++i) {
+					alphas.Add(other.alphas[i]);
+				}
+				for (int i = 0; i < other.supportVectorIndices.GetSize(); ++i) {
+					supportVectorIndices.Add(other.supportVectorIndices[i]);
+				}
+			}
+			return *this;
+		}
+	};
 	// Linear Kernal Function, dot product of two vectors
 	double linearKernal(CArray <double>&, CArray <double>&);
 	// Calculate the SVM output for a given input vector
@@ -362,7 +402,7 @@ protected:
 	// Optimize a pair of Lagrange multipliers
 	bool optimizeAlphaPair(int, int, CArray<double>&, CArray<double>&, CArray<double>&, CArray<int>&, double&, double);
 	// train SVM with SMO
-	void CModelingandAnalysisofUncertaintyDoc::trainSVM(CArray<double>&, CArray<int>&, CArray<double>&, double, double, int);
+	SMOModel trainSMO(CArray<double>&, CArray<int>&, CArray<double>&, double, double, int);
 	// Generated message map functions
 protected:
 	DECLARE_MESSAGE_MAP()
