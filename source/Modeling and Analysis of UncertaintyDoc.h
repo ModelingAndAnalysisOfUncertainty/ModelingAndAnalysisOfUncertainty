@@ -169,6 +169,7 @@ public:
 	std::vector<std::vector<double>> tprList, fprList;  // save tpr,fpr for the k-fold
 	CArray<double> y_pred_class, y_true_class;
 	// FLAGS FOR LINEAR MULTIPLE REGRESSION ANALYSIS
+	bool LOO = false;
 	bool RegressionAnalysis = false;
 	bool RegressionAnalysis_Independent = false;
 	bool ShowStatisticalAnalysis = false;

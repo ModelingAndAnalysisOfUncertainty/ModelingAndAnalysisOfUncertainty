@@ -1333,8 +1333,13 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		//OnTimer(m_nTimerID);
 	}
 	else if (pDoc->Linear_Classification) {
+		CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
+		bool LOO= pDoc->LOO;
 		DisplayFileAndDataSetInformation(pDoc, pDC, true);
-		DisplayLinearClassifierMetrics();
+		if (LOO == false) {
+			DisplayLinearClassifierMetrics();
+		}
+		
 
 	}
 	
@@ -10524,7 +10529,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 	// Set the pen for drawing the ROC curve
 	CPen pen(PS_SOLID, 2, RGB(0, 0, 255)); 
 	CPen* pOldPen = dc.SelectObject(&pen);
-
+	
 	
 	// Array of colors for each fold's ROC curve
 	std::vector<COLORREF> colors(numFolds);
@@ -10598,7 +10603,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 		dc.SelectObject(pOldPen);
 		legendPen.DeleteObject(); // Clean up the pen resource
 	}
-
+	
 }
 
 void CModelingandAnalysisofUncertaintyView::DisplayFoldMetrics(int foldIndex) {

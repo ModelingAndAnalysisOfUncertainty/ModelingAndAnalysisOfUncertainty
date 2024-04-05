@@ -37,4 +37,5 @@ public:
 	
 	CStatic group_cross_validation;
 	afx_msg void OnBnClickedOk();
+	afx_msg void OnBnClickedTenFold();
 };

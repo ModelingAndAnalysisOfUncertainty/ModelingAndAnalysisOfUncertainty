@@ -44,6 +44,7 @@ BEGIN_MESSAGE_MAP(CLinearClassificationDlg, CDialog)
 	ON_BN_CLICKED(IDC_CROSS, &CLinearClassificationDlg::OnBnClickedCross)
 	ON_BN_CLICKED(IDC_TRAINING, &CLinearClassificationDlg::OnBnClickedTraining)
 	ON_BN_CLICKED(IDOK, &CLinearClassificationDlg::OnBnClickedOk)
+	ON_BN_CLICKED(IDC_RADIO4, &CLinearClassificationDlg::OnBnClickedTenFold)
 END_MESSAGE_MAP()
 
 
@@ -76,4 +77,10 @@ void CLinearClassificationDlg::OnBnClickedOk()
 
 
 	CDialog::OnOK();
+}
+
+
+void CLinearClassificationDlg::OnBnClickedTenFold()
+{
+	ten_fold_value = 0;
 }

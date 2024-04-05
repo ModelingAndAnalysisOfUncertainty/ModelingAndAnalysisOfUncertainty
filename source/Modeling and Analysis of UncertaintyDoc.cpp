@@ -6212,13 +6212,22 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	SplitData(data, data_spec, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel, 0.85);
 
 	if (LCdlg.DoModal() == IDOK) {
+		// After the calculation done, Initialze the global variable
 		for (int i = 0; i < fprList.size();i++) {
 			fprList[i].clear();
 		}
 		for (int i = 0; i < tprList.size(); i++) {
 			tprList[i].clear();
 		}
-		
+		accuracies.clear();
+		sensitivities.clear();
+		specificities.clear();
+		ppvs.clear();
+		f1_scores.clear();
+		mccs.clear();
+		auc_totals.clear();
+		LOO = false;
+
 		if (LCdlg.training_validation ==0) {
 			TestLinearClassifier();
 		}
@@ -6239,13 +6248,13 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 				CArray<double> emptySww;
 				bool validation = true;
 				GetRegressionVector(trainData, trainData_spec, trainLabel, emptySww, validation);
-			
+		
 				EvaluateModel(testData, testData_spec, testLabel, numFeatures, accuracies, sensitivities, specificities, ppvs, f1_scores, mccs, auc_totals,tprList,fprList,fold);
 			}
 	
 		
 		}
-		else if (LCdlg.ten_fold_value ==0) {
+		else if (LCdlg.ten_fold_value == 0) {
 			numFolds = 10;
 			int numRows = data_spec[0];
 			int numCols = data_spec[1];
@@ -6266,7 +6275,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 			}
 		}
 		else if (LCdlg.LOO_value ==0) {
-		
+			LOO = true;
 		}
 		
 
