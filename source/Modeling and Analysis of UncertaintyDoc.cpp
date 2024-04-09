@@ -6076,6 +6076,8 @@ void CModelingandAnalysisofUncertaintyDoc::SplitDataForKFold(int currentFold, in
 	testData_spec[0] = testIdx;    
 	testData_spec[1] = numCols;    
 	testData_spec[2] = 0;         
+
+	
 }
 
 void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel, int numFeatures,
@@ -6101,6 +6103,7 @@ void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(CArray<double>& testDat
 	int mismatch = 0;
 
 	for (int i = 0; i < predictions.GetSize(); i++) {
+
 		outfile << "predictions:" << predictions[i] << "  actual labels:" << testLabel[i];
 		if (predictions[i] != testLabel[i]) {
 			outfile << "   Mismatch" << std::endl;
@@ -6111,6 +6114,13 @@ void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(CArray<double>& testDat
 		}
 	}
 	outfile << "Number of mismatch: " << mismatch << std::endl;
+	
+	outfile << std::endl;
+	outfile << "w" << std::endl;
+	for (int i = 0; i < w.GetSize(); i++) {
+		outfile << "w[" << i << "]: " << w[i];
+		
+	}
 	outfile.close();
 
 
@@ -6227,7 +6237,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	std::string newFilePath = CW2A(PathAndFileName.GetString(), CP_UTF8);
 	std::string subpath = ExtractSubpathAfterSource(newFilePath);
 	int numFeatures = LoadData(subpath, data, data_spec, label);
-	StandardizeData(numFeatures, data, data_spec);
+	
 	ShuffleData(data, data_spec, label);
 	SplitData(data, data_spec, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel, 0.85);
 
@@ -6249,7 +6259,12 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 		LOO = false;
 		
 		std::ofstream outfile("A_test_split.txt");
-
+	
+		for (int i = 0; i < trainData_spec.GetSize(); i++) {
+			outfile << "trainData_spec:" << trainData_spec[i]<< std::endl;
+		}
+	
+	
 		outfile << "raw Data: "<< std::endl;
 		for (int i = 0; i < data.GetSize(); i++) {
 			outfile << data[i];
@@ -6284,8 +6299,8 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 				CArray<double> trainData, testData, trainLabel, testLabel;
 				CArray<int> trainData_spec, testData_spec;
 				SplitDataForKFold(fold, foldSize, numFolds, numRows, numCols, data, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel);
-		
-
+				StandardizeData(numFeatures, trainData, trainData_spec);
+				StandardizeData(numFeatures, testData, testData_spec);
 				CArray<double> emptySww;
 				bool validation = true;
 				GetRegressionVector(trainData, trainData_spec, trainLabel, emptySww, validation);
