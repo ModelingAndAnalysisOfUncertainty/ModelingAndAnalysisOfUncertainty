@@ -31,6 +31,7 @@ public:
 	int linearClassificationSelection = 0; //   0: Training Validation, 1: 5 fold, 2: 10fold, 3: LOO
 
 	int training_validation;
+	int validation_value;
 	int cross_validation;
 	afx_msg void OnBnClickedCross();
 	afx_msg void OnBnClickedTraining();

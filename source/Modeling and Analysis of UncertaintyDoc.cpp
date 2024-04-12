@@ -5966,7 +5966,7 @@ void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
 	mcc_test = (TP * TN - FP * FN) / sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN));
 	
 	std::vector<double> thresholds;
-	
+
 	for (int i = 0; i < numSamples; i++) {
 		double score = 0.0;
 		for (int j = 0; j < numFeatures; j++) {
@@ -5978,6 +5978,15 @@ void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
 	std::sort(thresholds.begin(), thresholds.end());
 	auto last = std::unique(thresholds.begin(), thresholds.end());
 	thresholds.erase(last, thresholds.end());
+
+	std::vector<double> newThresholds;
+	for (size_t i = 0; i < thresholds.size() - 1; ++i) {
+		newThresholds.push_back(thresholds[i]);
+		double midPoint = (thresholds[i] + thresholds[i + 1]) / 2;
+		newThresholds.push_back(midPoint);  
+	}
+	newThresholds.push_back(thresholds.back()); 
+	thresholds = std::move(newThresholds); 
 
 	for (double threshold : thresholds) {
 		int TP = 0, TN = 0, FP = 0, FN = 0;
@@ -6165,7 +6174,7 @@ void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(CArray<double>& testDat
 	double maxScore = *std::max_element(thresholds.begin(), thresholds.end());
 
 	// Decide how many thresholds you want to generate
-	int numThresholds = 50;  // for example, 100 thresholds
+	int numThresholds = 100;  // for example, 100 thresholds
 	std::vector<double> newThresholds;
 
 	// Generate thresholds at regular intervals between min and max score
@@ -6188,8 +6197,8 @@ void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(CArray<double>& testDat
 		}
 		double TPR = static_cast<double>(TP) / (TP + FN);
 		double FPR = static_cast<double>(FP) / (FP + TN);
-		tpr.push_back(TPR);
-		fpr.push_back(FPR);
+		//tpr.push_back(TPR);
+		//fpr.push_back(FPR);
 		tprList[fold].push_back(TPR);
 		fprList[fold].push_back(FPR);
 	}
@@ -6257,35 +6266,14 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 		mccs.clear();
 		auc_totals.clear();
 		LOO = false;
-		
-		std::ofstream outfile("A_test_split.txt");
+		TrainingValidation = false;
 	
-		for (int i = 0; i < trainData_spec.GetSize(); i++) {
-			outfile << "trainData_spec:" << trainData_spec[i]<< std::endl;
-		}
-	
-	
-		outfile << "raw Data: "<< std::endl;
-		for (int i = 0; i < data.GetSize(); i++) {
-			outfile << data[i];
-			if (i > 0 && i % numFeatures == 0) {
-				outfile << std::endl;
-			}
-		}
-		/*
-		for (int i = 0; i < 10; i++) {
-			for (int j = 0; j < numFeatures; j++) {
-				outfile << data[i*numFeatures+j] ;
-			}
-			outfile << std::endl;
-		}
-		*/
-		outfile.close();
-		if (LCdlg.training_validation == 0) {
+		if (LCdlg.validation_value == 0) {
+			TrainingValidation = true;
 			TestLinearClassifier();
 		}
 		else if (LCdlg.five_fold_value==0) {
-
+			TrainingValidation = false;
 			numFolds = 5;
 			int numRows = data_spec[0]; 
 			int numCols = data_spec[1]; 
@@ -6310,7 +6298,8 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 	
 			
 		}
-		else if (LCdlg.ten_fold_value == 0) {
+		else if (LCdlg.ten_fold_value == 0 ) {
+			TrainingValidation = false;
 			numFolds = 10;
 			int numRows = data_spec[0];
 			int numCols = data_spec[1];
@@ -6323,6 +6312,8 @@ void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
 				CArray<double> trainData, testData, trainLabel, testLabel;
 				CArray<int> trainData_spec, testData_spec;
 				SplitDataForKFold(fold, foldSize, numFolds, numRows, numCols, data, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel);
+				StandardizeData(numFeatures, trainData, trainData_spec);
+				StandardizeData(numFeatures, testData, testData_spec);
 				CArray<double> emptySww;
 				bool validation = true;
 				GetRegressionVector(trainData, trainData_spec, trainLabel, emptySww, validation);

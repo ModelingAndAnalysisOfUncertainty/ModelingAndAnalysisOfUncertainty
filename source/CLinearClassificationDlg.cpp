@@ -16,7 +16,7 @@ CLinearClassificationDlg::CLinearClassificationDlg(CWnd* pParent /*=nullptr*/)
 	, five_fold_value(0)
 	, ten_fold_value(1)
 	, LOO_value(1)
-	
+	, validation_value(1)
 	,training_validation(1)
 	,cross_validation(0)
 {
@@ -54,6 +54,7 @@ END_MESSAGE_MAP()
 
 void CLinearClassificationDlg::OnBnClickedCross()
 {
+	validation_value = 1;
 	CWnd* pGroupBox = GetDlgItem(IDC_Cross_Validation);
 	pGroupBox->ShowWindow(SW_SHOW);
 	five_fold.ShowWindow(SW_SHOW);
@@ -64,9 +65,11 @@ void CLinearClassificationDlg::OnBnClickedCross()
 
 void CLinearClassificationDlg::OnBnClickedTraining()
 {
+	validation_value = 0;
 	five_fold.ShowWindow(SW_HIDE);
 	ten_fold.ShowWindow(SW_HIDE);
 	LOO.ShowWindow(SW_HIDE);
+
 	CWnd* pGroupBox = GetDlgItem(IDC_Cross_Validation);
 	pGroupBox->ShowWindow(SW_HIDE);
 }
