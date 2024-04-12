@@ -303,6 +303,8 @@ protected:
 	void StandardizeData(int numFeatures, CArray<double>& data, CArray<int>& data_spec);
 	// Pre-train helper function that standardize the label for regression problem.
 	void StandardizeLabel(CArray<double>& label);
+	// Pre-train functions testing
+	void DataTest();
 	// *******************************************
 	// *** Multivariate Statistical Operations ***
 	// *******************************************
@@ -360,20 +362,20 @@ protected:
 		// Default constructor
 		SMOModel() : b(0) {}
 
-		// Custom copy constructor
+		// copy constructor
 		SMOModel(const SMOModel& other) : b(other.b) {
-			// Manually copy elements of alphas
+			// copy elements of alphas
 			for (int i = 0; i < other.alphas.GetSize(); ++i) {
 				alphas.Add(other.alphas[i]);
 			}
-			// Manually copy elements of supportVectorIndices
+			// copy elements of supportVectorIndices
 			for (int i = 0; i < other.supportVectorIndices.GetSize(); ++i) {
 				supportVectorIndices.Add(other.supportVectorIndices[i]);
 			}
 		}
-		// Custom copy assignment operator
+		// copy assignment operator
 		SMOModel& operator=(const SMOModel& other) {
-			if (this != &other) { // self-assignment check
+			if (this != &other) {
 				b = other.b;
 				alphas.RemoveAll();
 				supportVectorIndices.RemoveAll();
@@ -394,7 +396,7 @@ protected:
 	double svmOutput(CArray<double>&, CArray<double>&, CArray<double>&, CArray<int>&, CArray<double>&, double);
 	// Select the alpha pair for optimization
 	bool selectAlphaPair(int&, int&, CArray<double>&, CArray<double>&, CArray<int>&, CArray<double>&, double&, double&, double);
-	// Optimize a pair of Lagrange multipliers
+	// Optimize a pair of Lagrange multipliers, and bias update
 	bool optimizeAlphaPair(int, int, CArray<double>&, CArray<double>&, CArray<double>&, CArray<int>&, double&, double);
 	// train SVM with SMO
 	SMOModel trainSMO(CArray<double>&, CArray<int>&, CArray<double>&, double, double, int);

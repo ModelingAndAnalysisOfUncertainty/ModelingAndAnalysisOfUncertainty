@@ -3234,6 +3234,75 @@ void CModelingandAnalysisofUncertaintyDoc::StandardizeLabel(CArray<double>& labe
 	}
 }
 
+// Helper function to log DataTest() output
+void LogDataset(std::ofstream& logFile, const CArray<double>& data, const CArray<int>& data_spec, const CArray<double>& label, const std::string& labelPrefix) {
+	int numRows = data_spec[0];
+	int numCols = data_spec[1];
+	for (int i = 0; i < min(numRows, 10); ++i) { // Log only up to the first 10 rows to keep file size manageable
+		logFile << labelPrefix << " Data Row " << i + 1 << ": ";
+		for (int j = 0; j < numCols; ++j) {
+			logFile << data.GetAt(i * numCols + j) << (j < numCols - 1 ? ", " : "");
+		}
+		logFile << " | Label: " << label.GetAt(i) << std::endl;
+	}
+}
+
+// Test Pre-train functions
+void CModelingandAnalysisofUncertaintyDoc::DataTest() {
+	// Path to dataset file
+	std::string filename = "datasets/Loadtest.FDA";
+
+	// Initialize the CArrays for data processing
+	CArray<double> data;
+	CArray<int> data_spec;
+	CArray<double> label;
+	CArray<double> trainData, testData;
+	CArray<int> trainData_spec, testData_spec;
+	CArray<double> trainLabel, testLabel;
+
+	// Open a file for logging
+	std::ofstream logFile("datasets/test.txt", std::ios::out);
+	if (!logFile) {
+		AfxMessageBox(_T("Unable to open log file.\n"));
+		return;
+	}
+
+	logFile << "Data processing test results:" << std::endl;
+	// Load the data
+	int numFeatures = LoadData(filename, data, data_spec, label);
+	if (numFeatures == -1) {
+		return; // Exit if loading failed
+	}
+	logFile << "Loaded Data:" << std::endl;
+	LogDataset(logFile, data, data_spec, label, "Initial");
+
+	// Shuffle the data
+	ShuffleData(data, data_spec, label);
+	logFile << "Shuffled Data:" << std::endl;
+	LogDataset(logFile, data, data_spec, label, "Shuffled");
+
+	// Split the data
+	float splitRatio = 0.6;
+	SplitData(data, data_spec, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel, splitRatio);
+	logFile << "Split Data:" << std::endl;
+	logFile << "Training Data:" << std::endl;
+	LogDataset(logFile, trainData, trainData_spec, trainLabel, "Train");
+	logFile << "Testing Data:" << std::endl;
+	LogDataset(logFile, testData, testData_spec, testLabel, "Test");
+
+	// Standardize the data
+	StandardizeData(numFeatures, trainData, trainData_spec);
+	StandardizeData(numFeatures, testData, testData_spec);
+	logFile << "Standardized Data:" << std::endl;
+	logFile << "Standardized Training Data:" << std::endl;
+	LogDataset(logFile, trainData, trainData_spec, trainLabel, "Standardized Train");
+	logFile << "Standardized Testing Data:" << std::endl;
+	LogDataset(logFile, testData, testData_spec, testLabel, "Standardized Test");
+
+	AfxMessageBox(_T("Data processing test completed and logged."));
+	logFile.close();
+}
+
 #ifdef SHARED_HANDLERS
 
 // Support for thumbnails
@@ -7176,7 +7245,6 @@ bool CModelingandAnalysisofUncertaintyDoc::selectAlphaPair(int& out_i, int& out_
 		for (int j = 0; j < m; ++j) {
 			// Skip if it's the same point
 			if (i == j) continue;
-
 			// Calculate Ej = f(x_j) - y_j for the second alpha
 			CArray<double> xj;
 			GetRow(data, data_spec, xj, j);
@@ -7199,16 +7267,13 @@ bool CModelingandAnalysisofUncertaintyDoc::selectAlphaPair(int& out_i, int& out_
 // Function to optimize a pair of Lagrange multipliers
 bool CModelingandAnalysisofUncertaintyDoc::optimizeAlphaPair(int i, int j, CArray<double>& alphas, CArray<double>& label, CArray<double>& data, CArray<int>& data_spec, double& b, double C) {
 	if (i == j) return false;
-
 	// Extract the feature vectors for i and j
 	CArray<double> xi, xj;
 	GetRow(data, data_spec, xi, i);
 	GetRow(data, data_spec, xj, j);
-
 	// Current alphas
 	double alpha_i_old = alphas[i];
 	double alpha_j_old = alphas[j];
-
 	// Compute the bounds L and H for alpha_j
 	double L, H;
 	if (label[i] != label[j]) {
@@ -7220,25 +7285,19 @@ bool CModelingandAnalysisofUncertaintyDoc::optimizeAlphaPair(int i, int j, CArra
 		H = min(C, alpha_i_old + alpha_j_old);
 	}
 	if (L == H) return false;
-
 	// Compute eta
 	double eta = 2.0 * linearKernal(xi, xj) - linearKernal(xi, xi) - linearKernal(xj, xj);
 	if (eta >= 0) return false;
-
 	// Compute and clip the new value for alpha_j
 	double alpha_j_new = alpha_j_old - (label[j] * (svmOutput(xi, alphas, data, data_spec, label, b) - b - label[i] + label[j] * b)) / eta;
 	alpha_j_new = min(H, max(L, alpha_j_new));
-
 	if (std::abs(alpha_j_new - alpha_j_old) < 1e-5) return false;
-
 	// Update alpha_i based on the change in alpha_j
 	double alpha_i_new = alpha_i_old + label[i] * label[j] * (alpha_j_old - alpha_j_new);
-
-	// Update the threshold b
+	// Update bias
 	double b1 = b - svmOutput(xi, alphas, data, data_spec, label, b) + label[i] * (alpha_i_old - alpha_i_new) * linearKernal(xi, xi) + label[j] * (alpha_j_old - alpha_j_new) * linearKernal(xi, xj);
 	double b2 = b - svmOutput(xj, alphas, data, data_spec, label, b) + label[i] * (alpha_i_old - alpha_i_new) * linearKernal(xi, xj) + label[j] * (alpha_j_old - alpha_j_new) * linearKernal(xj, xj);
 	b = (b1 + b2) / 2;
-
 	// Update alphas in the array
 	alphas[i] = alpha_i_new;
 	alphas[j] = alpha_j_new;
@@ -7252,7 +7311,6 @@ CModelingandAnalysisofUncertaintyDoc::SMOModel CModelingandAnalysisofUncertainty
 	alphas.SetSize(data_spec[0], 0.0); // One alpha per data point, initialized to 0
 	double b = 0;
 	int passes = 0;
-
 	while (passes < maxPasses) {
 		int numChangedAlphas = 0;
 		for (int i = 0; i < data_spec[0]; i++) {
@@ -7265,13 +7323,14 @@ CModelingandAnalysisofUncertaintyDoc::SMOModel CModelingandAnalysisofUncertainty
 				int j;
 				double Ej;
 				if (selectAlphaPair(i, j, alphas, data, data_spec, label, Ei, Ej, b)) {
+					AfxMessageBox(L"1");
 					if (optimizeAlphaPair(i, j, alphas, label, data, data_spec, b, C)) {
 						numChangedAlphas++;
+						AfxMessageBox(L"2");
 					}
 				}
 			}
 		}
-
 		if (numChangedAlphas == 0) {
 			passes++;
 		}
@@ -7279,17 +7338,15 @@ CModelingandAnalysisofUncertaintyDoc::SMOModel CModelingandAnalysisofUncertainty
 			passes = 0;
 		}
 	}
-
 	// Construct the SVM model
 	SMOModel model;
 	for (int i = 0; i < alphas.GetSize(); ++i) {
 		model.alphas.Add(alphas[i]);
 	}
 	model.b = b;
-
-	// Identify support vector indices
+	// find support vector indices
 	for (int i = 0; i < alphas.GetSize(); i++) {
-		if (alphas[i] > 0) { // A non-zero alpha indicates a support vector
+		if (alphas[i] > 0) {
 			model.supportVectorIndices.Add(i);
 		}
 	}
@@ -7328,11 +7385,12 @@ void CModelingandAnalysisofUncertaintyDoc::OnSVM() {
 	StandardizeData(numFeatures, data, data_spec);
 	ShuffleData(data, data_spec, label);
 	SplitData(data, data_spec, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel, 0.85);
+	AfxMessageBox(L"Dataset loaded");
 
 	// SMO Set up
-	double C = 1.0; // Regularization parameter
-	double tol = 0.001; // Tolerance for stopping criterion
-	int maxPasses = 10; // Maximum number of passes
+	double C = 1; // Regularization parameter
+	double tol = 0.0001; // Tolerance for stopping criterion
+	int maxPasses = 10; // Maximum number of passes without progress
 
 	// Train
 	SMOModel model = trainSMO(trainData, trainData_spec, label, C, tol, maxPasses);
