@@ -6109,59 +6109,71 @@ void CModelingandAnalysisofUncertaintyDoc::OnKPCA() {
 //***            Compute  logistic regression  model            ***
 //*****************************************************************
 
+int generateRandomInt(int min, int max) {
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<int> dis(min, max);
+	return dis(gen);
+}
+
 void CModelingandAnalysisofUncertaintyDoc::OnLR_test(double eta, CArray<double>& w,
 	const CArray < CArray<double> >& XTrain, const CArray < CArray<double> >& XVal,
-	const CArray<int>& YTrain, const CArray<int>& YVal, int NTrain, int NVal, int nIter) {
-	int N = XTrain.GetSize();
+	const CArray<int>& YTrain, const CArray<int>& YVal, int nIter) {
+
 	int M = XTrain[0].GetSize();
-	for (int i = 0; i < nIter; ++i) {
+	int NTrain = XTrain.GetSize();
+	int NVal = XVal.GetSize();
+
+	int k, y_i;
+	double t, yhat_p, delta;
+
+	for (int i = 0; i < nIter; i++) {
 		// check what value rand gives
-		int k = rand() % NTrain;
+		k = generateRandomInt(0,NTrain-1);
 		CArray<double> x;
 		x.Copy(XTrain[k]);
-		x.Add(1);
-		int y_i = YTrain[k];
-		double t = ScalarProduct(x, w);
-		double yhat = 1 / (1 + exp(-t));
-		double delta = y_i - yhat;
-
-		for (int j = 0; j <= M; ++j) {
+		x.Add(1.0);
+		y_i = YTrain[k];
+		t = ScalarProduct(x, w);
+		yhat_p = 1.0 / (1.0 + (double)exp(-t));
+		delta = (double)y_i - yhat_p;
+		for (int j = 0; j < M+1; j++) {
 			w[j] += eta * x[j] * delta;
 		}
 	}
 
-
-	CArray<CArray<double>> XtrainExtended;
 	CArray<double> T;
 	for (int i = 0; i < NTrain; i++) {
-		CArray<double> temp;
 		for (int j = 0; j < M; j++) {
-			temp.Add(XTrain[i][j]);
+			T.Add(0.0);
+			double val = XTrain[i][j]*w[j]; 
+			T[i] += val;
 		}
-		temp.Add(1.0);
-		T.Add(ScalarProduct(temp, w));
 	} 
 
 	CArray<double> T0;
 	for (int i = 0; i < NVal; i++) {
 		CArray<double> temp;
 		for (int j = 0; j < M; j++) {
-			temp.Add(XTrain[i][j]);
+			temp.Add(XVal[i][j]);
 		}
 		temp.Add(1.0);
-		T0.Add(ScalarProduct(temp, w));
+		double val = ScalarProduct(temp, w);
+		T0.Add(val);
 	}
 
 	CArray<double> yhat;
 	CArray<double> yhat_0;
 	for (int i = 0; i < NTrain; i++) { 
-		yhat.Add(1 / (1 + exp(-T[i])));
+		double yhat_val = 1.0 / (1.0 + (double)exp(-T[i]));
+		yhat.Add(yhat_val);
 	}
 	for (int i = 0; i < NVal; i++) {
-		yhat_0.Add(1 / (1 + exp(-T0[i])));
+		yhat_0.Add(1.0 / (1.0 + exp(-T0[i])));
 	}
-	SaveVector("LR_test.txt", yhat_0);
-	SaveVector("LR_test.txt", yhat);
+
+	SaveVector("LR_valid.txt", yhat_0);
+	SaveVector("LR_train.txt", yhat);
 }
 
 
