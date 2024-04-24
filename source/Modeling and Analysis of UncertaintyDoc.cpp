@@ -6181,6 +6181,44 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR_test(double eta, CArray<double>&
 	// At the end here we have yhat for validation and yhat for training
 	// yhat is for training, yhat_0 is for validation
 
+	int TPtra = 0, FNtra = 0, FPtra = 0, TNtra = 0;
+	for (int i = 0; i < NTrain; ++i) {
+		if (YTrain[i] == 1 && yhat[i] >= 0.5) {
+			TPtra++;
+		}
+		else if (YTrain[i] == 1 && yhat[i] < 0.5) {
+			FNtra++;
+		}
+		else if (YTrain[i] == 0 && yhat[i] < 0.5) {
+			TNtra++;
+		}
+		else {
+			FPtra++;
+		}
+	}
+	// TPtra is the true pos for training, FN is false neg,
+	// FP is false pos, and TN is true neg. This is for training!
+
+	// same applies for these but for validation!
+	int TPval = 0, FNval = 0, FPval = 0, TNval = 0;
+	for (int i = 0; i < NVal; ++i) {
+		if (YVal[i] == 1 && yhat_0[i] >= 0.5) {
+			TPval++;
+		}
+		else if (YVal[i] == 1 && yhat_0[i] < 0.5) {
+			FNval++;
+		}
+		else if (YVal[i] == 0 && yhat_0[i] < 0.5) {
+			TNval++;
+		}
+		else {
+			FPval++;
+		}
+	}
+
+	// NEXT STEPS: The data is all here, now it just has to leave
+	// the scope of the function! Do something with these datavalues,
+	// from my testing this code worked the same as the correct MATLAB code
 }
 
 
