@@ -6120,13 +6120,16 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR_test(double eta, CArray<double>&
 	const CArray < CArray<double> >& XTrain, const CArray < CArray<double> >& XVal,
 	const CArray<int>& YTrain, const CArray<int>& YVal, int nIter) {
 
+	// holding these variables for abstraction
 	int M = XTrain[0].GetSize();
 	int NTrain = XTrain.GetSize();
 	int NVal = XVal.GetSize();
 
+	// variables for getting weights
 	int k, y_i;
-	double t, yhat_p, delta;
+	double t, yhat_temp, delta;
 
+	// getting the weights after niter repetitions
 	for (int i = 0; i < nIter; i++) {
 		// check what value rand gives
 		k = generateRandomInt(0,NTrain-1);
@@ -6135,13 +6138,14 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR_test(double eta, CArray<double>&
 		x.Add(1.0);
 		y_i = YTrain[k];
 		t = ScalarProduct(x, w);
-		yhat_p = 1.0 / (1.0 + (double)exp(-t));
-		delta = (double)y_i - yhat_p;
+		yhat_temp = 1.0 / (1.0 + (double)exp(-t));
+		delta = (double)y_i - yhat_temp;
 		for (int j = 0; j < M+1; j++) {
 			w[j] += eta * x[j] * delta;
 		}
 	}
 
+	// calculating T for training dataset
 	CArray<double> T;
 	for (int i = 0; i < NTrain; i++) {
 		for (int j = 0; j < M; j++) {
@@ -6151,6 +6155,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR_test(double eta, CArray<double>&
 		}
 	} 
 
+	// calculating T for validation dataset
 	CArray<double> T0;
 	for (int i = 0; i < NVal; i++) {
 		CArray<double> temp;
@@ -6162,6 +6167,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR_test(double eta, CArray<double>&
 		T0.Add(val);
 	}
 
+	// calculating yhat and yhat0
 	CArray<double> yhat;
 	CArray<double> yhat_0;
 	for (int i = 0; i < NTrain; i++) { 
@@ -6172,8 +6178,9 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR_test(double eta, CArray<double>&
 		yhat_0.Add(1.0 / (1.0 + exp(-T0[i])));
 	}
 
-	SaveVector("LR_valid.txt", yhat_0);
-	SaveVector("LR_train.txt", yhat);
+	// At the end here we have yhat for validation and yhat for training
+	// yhat is for training, yhat_0 is for validation
+
 }
 
 
