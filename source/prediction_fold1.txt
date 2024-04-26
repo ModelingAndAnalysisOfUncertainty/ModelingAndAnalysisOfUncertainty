@@ -1,0 +1,121 @@
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:1
+predictions:2  actual labels:2
+predictions:2  actual labels:2
+predictions:2  actual labels:1   Mismatch
+predictions:1  actual labels:1
+predictions:1  actual labels:1
+predictions:2  actual labels:1   Mismatch
+predictions:2  actual labels:2
+predictions:2  actual labels:1   Mismatch
+predictions:1  actual labels:1
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:1
+predictions:2  actual labels:2
+predictions:1  actual labels:2   Mismatch
+predictions:2  actual labels:2
+predictions:1  actual labels:1
+predictions:2  actual labels:1   Mismatch
+predictions:2  actual labels:1   Mismatch
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:1
+predictions:2  actual labels:1   Mismatch
+predictions:2  actual labels:2
+predictions:2  actual labels:2
+predictions:1  actual labels:1
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:2   Mismatch
+predictions:2  actual labels:2
+predictions:1  actual labels:1
+predictions:2  actual labels:2
+predictions:1  actual labels:2   Mismatch
+predictions:2  actual labels:2
+predictions:1  actual labels:1
+predictions:1  actual labels:1
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:1
+predictions:1  actual labels:2   Mismatch
+predictions:2  actual labels:2
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:1
+predictions:2  actual labels:1   Mismatch
+predictions:1  actual labels:1
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:2   Mismatch
+predictions:2  actual labels:1   Mismatch
+predictions:1  actual labels:2   Mismatch
+predictions:2  actual labels:2
+predictions:2  actual labels:2
+predictions:1  actual labels:1
+predictions:1  actual labels:2   Mismatch
+predictions:2  actual labels:2
+predictions:2  actual labels:2
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:1
+predictions:2  actual labels:1   Mismatch
+predictions:2  actual labels:2
+predictions:1  actual labels:2   Mismatch
+predictions:2  actual labels:2
+predictions:2  actual labels:1   Mismatch
+predictions:1  actual labels:1
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:2   Mismatch
+predictions:2  actual labels:1   Mismatch
+predictions:2  actual labels:2
+predictions:1  actual labels:1
+predictions:2  actual labels:2
+predictions:2  actual labels:2
+predictions:2  actual labels:2
+predictions:1  actual labels:1
+predictions:2  actual labels:1   Mismatch
+predictions:1  actual labels:1
+predictions:2  actual labels:1   Mismatch
+predictions:1  actual labels:1
+predictions:2  actual labels:2
+predictions:2  actual labels:1   Mismatch
+predictions:2  actual labels:2
+predictions:1  actual labels:1
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:1
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:1
+predictions:2  actual labels:2
+predictions:1  actual labels:1
+predictions:2  actual labels:2
+predictions:2  actual labels:2
+predictions:1  actual labels:1
+predictions:1  actual labels:2   Mismatch
+predictions:2  actual labels:1   Mismatch
+predictions:1  actual labels:1
+predictions:1  actual labels:2   Mismatch
+predictions:2  actual labels:2
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:2   Mismatch
+predictions:2  actual labels:1   Mismatch
+predictions:1  actual labels:2   Mismatch
+predictions:2  actual labels:1   Mismatch
+predictions:1  actual labels:1
+predictions:1  actual labels:1
+predictions:1  actual labels:1
+predictions:1  actual labels:1
+predictions:1  actual labels:1
+predictions:1  actual labels:1
+predictions:2  actual labels:2
+predictions:1  actual labels:2   Mismatch
+predictions:1  actual labels:1
+predictions:2  actual labels:2
+predictions:2  actual labels:2
+predictions:2  actual labels:2
+predictions:1  actual labels:2   Mismatch
+Number of mismatch: 52
+
+w
+w[0]: -0.0330225w[1]: -0.123342w[2]: -0.276976w[3]: 0.171662w[4]: 0.295677w[5]: 0.156564w[6]: 0.198886w[7]: -0.379728w[8]: -0.194387w[9]: 0.229798w[10]: -0.0190202w[11]: -0.109852w[12]: -0.081698w[13]: -0.207691w[14]: -0.250953w[15]: 0.0496796w[16]: -0.0214515w[17]: 0.337775w[18]: -0.0903281w[19]: 0.155688w[20]: -0.105864w[21]: 0.388535w[22]: -0.0012318w[23]: 0.10759w[24]: 0.0409205w[25]: -0.159952w[26]: -0.0438753w[27]: -0.0646588w[28]: 0.0175375w[29]: 0.175751

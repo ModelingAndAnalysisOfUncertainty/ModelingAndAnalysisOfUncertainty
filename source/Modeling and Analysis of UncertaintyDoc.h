@@ -5,7 +5,7 @@
 #include "ProbabilityDistributions.h"
 #include <vector>
 #include <omp.h>
-
+#include <stdlib.h>
 
 #pragma once
 
@@ -161,12 +161,21 @@ public:
 	bool FDA = false;
 	CArray <double> Class_Y, Label_Y, avg_ClassY, ROC_Y, ROC_X;
 	CArray <int> Class_count, Confusion_Label;
-	int TP, FP, TN, FN;// True_Label, False_Label;
+	int TP, FP, TN, FN, numFolds;// True_Label, False_Label;
 	double sensitivity, specificity, mcc_test, ppv_test, F1_test, acc_test, AUC_Total;
+	std::vector<double>accuracies,sensitivities,specificities,ppvs,f1_scores,mccs, auc_totals;
+	std::vector<double> tpr, fpr;
+	std::vector<std::vector<double>> tprList, fprList;  // save tpr,fpr for the k-fold
+	CArray<double> y_pred_class, y_true_class;
 	// FLAGS FOR LINEAR MULTIPLE REGRESSION ANALYSIS
+	bool TrainingValidation = false;
+	bool LOO = false;
 	bool RegressionAnalysis = false;
 	bool RegressionAnalysis_Independent = false;
 	bool ShowStatisticalAnalysis = false;
+	// FLAGS FOR LINEAR CLASSIFICATION
+	bool Linear_Classification = false;
+	
 	// FLAGS FOR ARTIFICIAL NEURAL NETWORKS
 	bool ANN_Training = false;
 	std::vector<double> Loss_Ann;
@@ -234,6 +243,7 @@ protected:
 	double GetLength(CArray <double>&);
 	double GetSquaredLength(CArray <double>&);
 	void CenterVector(CArray <double>&);
+	double ScalarProduct(CArray <double>&, CArray <double>&);
 	// *******************************************
 	// ***     Basic   Matrix   Operations     ***
 	// *******************************************
@@ -289,6 +299,21 @@ protected:
 	void Transformation(CArray <double>& Temp, CArray <int>& Temp_spec, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
 	void GEVD(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, int, bool&);
 	// *******************************************
+	// ***      Pre-train Helper Functions     ***
+	// *******************************************
+	// Pre-train helper function that load a dataset given the file path, return the int for features for the dataset
+	int LoadData(const std::string& filename, CArray<double>& data, CArray <int>& data_spec,CArray<double>& label);
+	//Pre-train helper function that shuffle a dataset
+	void ShuffleData(CArray<double>& data, CArray <int>& data_spec,CArray<double>& label);
+	//Pre-train helper function that split the dataset into training and validation set given the split ratio
+	void SplitData(const CArray<double>& data, const CArray<int>& data_spec, const CArray<double>& label,
+				   CArray<double>& trainData, CArray<int>& trainData_spec, CArray<double>& trainLabel,
+				   CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel, float ratio = 0.85);
+	// Pre-train helper function that standardize the dataset
+	void StandardizeData(int numFeatures, CArray<double>& data, CArray<int>& data_spec);
+	// Pre-train helper function that standardize the label for regression problem.
+	void StandardizeLabel(CArray<double>& label);
+	// *******************************************
 	// *** Multivariate Statistical Operations ***
 	// *******************************************
 	void StandardizeDataMatrix(CArray <double>&, CArray <double>&, CArray <double>&);
@@ -296,7 +321,6 @@ protected:
 	void VPC(CArray <double>&, CArray <int>&, int&);
 	void VRE(CArray <double>&, CArray <int>&, int&);
 	// *** Additional functions
-	void QPPSolver();
 	double GetOptimalBandwidth(CArray <double>&);
 	double NumericalIntegration(CArray <double>&, double);
 	void SetUpFDAMatrices(CArray <double>&, CArray <double>&, CArray <int>&, CArray <double>&);
@@ -338,7 +362,14 @@ protected:
 	void CModelingandAnalysisofUncertaintyDoc::GetConfusionMatrix(CArray<int>& ConfusionMatrix,
 		std::vector<int>& yass0, std::vector<int>& ytrue);
 
-	// Generated message map functions
+	// Linear Classification
+	void CModelingandAnalysisofUncertaintyDoc::SplitDataForKFold(int currentFold, int foldSize, int numFolds, int numRows, int numCols, CArray<double>& data, CArray<double>& label,
+		CArray<double>& trainData, CArray<int>& trainData_spec, CArray<double>& trainLabel, CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel);
+	void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel, int numFeatures,
+		std::vector<double>& accuracies,std::vector<double>& sensitivities,std::vector<double>& specificities,std::vector<double>& ppvs,std::vector<double>& f1_scores,
+		std::vector<double>& mccs,std::vector<double>& auc_totals, std::vector<std::vector <double>>& tprList, std::vector<std::vector <double>>& fprList, int iteration) ;
+	void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier();
+	void CModelingandAnalysisofUncertaintyDoc::CalculateClassificationMetrics(const CArray<double>& y_pred, const CArray<double>& y_true, double threshold);
 protected:
 	DECLARE_MESSAGE_MAP()
 
@@ -370,8 +401,7 @@ public:
 	afx_msg void OnL1_Regularization();
 	afx_msg void OnL2_Regularization();
 	afx_msg void OnKPLS();
-	afx_msg void OnANN();
-	afx_msg void OnQPPSolver();
+	afx_msg void OnQPSolver();
 	afx_msg void OnANN_MFC();
 	afx_msg void OnANN_MFC_layer1(double learningRate, int epochs, int batchSize,HANDLE hEvent);
 	afx_msg void OnANN_batchParallel();
@@ -399,5 +429,4 @@ public:
 	afx_msg void OnUpdateKPLS(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateANN(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateMachinelearningArtificialneuralnetworkwithaccuracy(CCmdUI* pCmdUI);
-
 };

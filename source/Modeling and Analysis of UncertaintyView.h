@@ -140,6 +140,10 @@ private:
 	//----------------------------------
 	void CModelingandAnalysisofUncertaintyView::DisplayConfusionMatrix();
 
+	// Linear Classifier
+	void DisplayFoldMetrics(int foldIndex);
+	void DisplayLinearClassifierMetrics();
+
 public:
 	CButton Next_Variable;
 	CButton Previous_Variable;

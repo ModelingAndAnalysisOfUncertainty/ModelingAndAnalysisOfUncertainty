@@ -12,13 +12,9 @@
 #include "Modeling and Analysis of UncertaintyDoc.h"
 #include "Modeling and Analysis of UncertaintyView.h"
 
-#include<dlib/dnn.h>
-#include<dlib/data_io.h>
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
 
 // CModelingandAnalysisofUncertaintyApp
 
@@ -178,6 +174,7 @@ protected:
 protected:
 	DECLARE_MESSAGE_MAP()
 public:
+	afx_msg void OnBnClickedOk();
 };
 
 CAboutDlg::CAboutDlg() noexcept : CDialogEx(IDD_ABOUTBOX){
@@ -188,6 +185,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX){
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
+	ON_BN_CLICKED(IDOK, &CAboutDlg::OnBnClickedOk)
 END_MESSAGE_MAP()
 
 // App command to run the dialog
@@ -212,3 +210,10 @@ void CModelingandAnalysisofUncertaintyApp::LoadCustomState(){
 void CModelingandAnalysisofUncertaintyApp::SaveCustomState(){
 }
 
+
+
+void CAboutDlg::OnBnClickedOk()
+{	
+
+	CDialogEx::OnOK();
+}

@@ -6,7 +6,6 @@
 #include "framework.h"
 #include <vector>
 #include <algorithm>
-
 #include <iostream>
 #include <cmath>
 #include <vector>
@@ -15,9 +14,10 @@
 #include <ctime>        
 #include <random>
 #include <chrono>
-
-
-
+#include <iomanip>
+#include <numeric>
+#include <set>
+#include <map>
 
 // SHARED_HANDLERS can be defined in an ATL project implementing preview, thumbnail
 // and search filter handlers and allows sharing of document code with that project.
@@ -34,14 +34,8 @@
 #include "CSpecifyFactorAnalysis.h"
 #include "CSpecifyRegressionModel.h"
 #include "CANNForm.h"
-
-//Dlib for Aritificial Neural Netowrk
-#include <dlib/dnn.h>
-#include <dlib/data_io.h>
-
-// QPP solver
-#include "quadprogpp/QuadProg++.hh"
-
+#include "CLinearClassificationDlg.h"
+#include <stdlib.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -377,6 +371,15 @@ void CModelingandAnalysisofUncertaintyDoc::CenterVector(CArray <double>& vector)
 	for (int i = 0; i < vector.GetSize(); i++) mean += vector.GetAt(i);
 	mean /= (double)(vector.GetSize());
 	for (int i = 0; i < vector.GetSize(); i++) vector.SetAt(i, vector.GetAt(i) - mean);
+}
+
+double CModelingandAnalysisofUncertaintyDoc::ScalarProduct(CArray <double>& a, CArray <double>& b) {
+	double temp = 0;
+	int dim_a = a.GetSize(), dim_b = b.GetSize();
+	if (dim_a == dim_b) {
+		for (int i = 0; i < dim_a; i++) temp += a.GetAt(i) * b.GetAt(i);
+	}
+	else return temp;
 }
 
 void CModelingandAnalysisofUncertaintyDoc::GetLargestElement(CArray <double>& A, CArray <int>& A_spec, double& max) {
@@ -3011,6 +3014,226 @@ BOOL CModelingandAnalysisofUncertaintyDoc::OnSaveDocument(LPCTSTR lpszPathName) 
 	return true;
 }
 
+// *******************************************
+// ***      Pre-train Helper Functions     ***
+// *******************************************
+/*
+	All helper functions use the project's CArray matrix implementation, where a matrix is stroed in a 1D CArray,
+	and use an additional CArray<int> of size 3 to define the matrix's specification.
+	spec[0] defines the number of row for the matrix
+	spec[1] defines the number of col for the matrix
+	spec[2] defines the matrix type
+	All pre-train helper functions assume matrix type is dense matrix (spec[2]=0)
+*/
+// Pre-train helper function that loads FDA datasets given the file path, return int of features
+int CModelingandAnalysisofUncertaintyDoc::LoadData(const std::string& filename, CArray<double>& data, CArray<int>& data_spec, CArray<double>& label) {
+	CString message;
+	std::ifstream file(filename);
+	if (!file) {
+		message.Format(_T("Unable to open file: %S\n"), filename.c_str());
+		AfxMessageBox(message);
+		return -1;
+	}
+	std::string line;
+	// Read the first line to get the number of features
+	if (!std::getline(file, line)) {
+		message.Format(_T("File description 1 format incorrect: %S\n"), filename.c_str());
+		AfxMessageBox(message);
+		return -1;
+	}
+	std::stringstream firstLine(line);
+	int num_features;
+	char comma;
+	if (!(firstLine >> num_features >> comma)) {
+		message.Format(_T("File description 2 format incorrect: %S\n"), filename.c_str());
+		AfxMessageBox(message);
+		return -1;
+	}
+	// Decrement by 1 to exclude the label from the features count
+	num_features -= 1;
+	// Skip the remaining description lines
+	for (int i = 0; i < 3; ++i) {
+		if (!std::getline(file, line)) {
+			message.Format(_T("File description 3 format incorrect: %S\n"), filename.c_str());
+			AfxMessageBox(message);
+			return -1;
+		}
+	}
+	// Initialize data_spec for a dense matrix
+	data_spec.SetSize(3); // Ensure data_spec has size 3
+	data_spec[1] = num_features; // Number of columns (features)
+	data_spec[2] = 0; // Dense matrix
+	// Prepare to read data rows and labels
+	std::vector<double> tempRow(num_features);
+	int rowCount = 0;
+	// Read the data
+	while (std::getline(file, line)) {
+		std::stringstream ss(line);
+		// Parse the features
+		for (int i = 0; i < num_features; ++i) {
+			if (!(ss >> tempRow[i])) {
+				message.Format(_T("File feature data format incorrect: %S\n"), filename.c_str());
+				AfxMessageBox(message);
+				return -1;
+			}
+			// Skip the comma
+			if (i < num_features - 1 && ss.peek() == ',') {
+				ss.ignore();
+			}
+		}
+		// Skip the comma before the label
+		if (ss.peek() == ',') {
+			ss.ignore();
+		}
+		// Get the label
+		double currentLabel;
+		if (!(ss >> currentLabel)) {
+			message.Format(_T("File label data format incorrect: %S\n"), filename.c_str());
+			AfxMessageBox(message);
+			return -1;
+		}
+		// Store the parsed row and label
+		for (auto value : tempRow) {
+			data.Add(value);
+		}
+		label.Add(currentLabel);
+		rowCount++;
+	}
+	// Finalize data_spec with the number of rows
+	data_spec[0] = rowCount; // Number of rows
+	return num_features;
+}
+
+//Pre-train helper function that shuffle a dataset
+void CModelingandAnalysisofUncertaintyDoc::ShuffleData(CArray<double>& data, CArray<int>& data_spec, CArray<double>& label) {
+	// Determine the number of rows and columns from data_spec
+	int numRows = data_spec[0];
+	int numCols = data_spec[1];
+	// Create a vector of indices for shuffling
+	std::vector<int> indices(numRows);
+	for (int i = 0; i < numRows; ++i) {
+		indices[i] = i;
+	}
+	// Random number generator
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::shuffle(indices.begin(), indices.end(), std::default_random_engine(seed));
+	// Temporary CArrays to hold the shuffled data and labels
+	CArray<double> shuffledData;
+	CArray<double> shuffledLabel;
+	// Preallocate space in the temporary arrays
+	shuffledData.SetSize(data.GetSize());
+	shuffledLabel.SetSize(label.GetSize());
+	// Reorder data and labels based on shuffled indices
+	for (int i = 0; i < numRows; ++i) {
+		int oldIndex = indices[i];
+		for (int j = 0; j < numCols; ++j) {
+			shuffledData.SetAt(i * numCols + j, data.GetAt(oldIndex * numCols + j));
+		}
+		shuffledLabel.SetAt(i, label.GetAt(oldIndex));
+	}
+	// Copy the shuffled data and labels back into the original CArrays
+	data.Copy(shuffledData);
+	label.Copy(shuffledLabel);
+}
+
+//Pre-train helper function that split the dataset into training and validation set given the split ratio
+void CModelingandAnalysisofUncertaintyDoc::SplitData(const CArray<double>& data, const CArray<int>& data_spec, const CArray<double>& label,
+	CArray<double>& trainData, CArray<int>& trainData_spec, CArray<double>& trainLabel,
+	CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel, float ratio) {
+	// Calculate the size of the training set
+	int numRows = data_spec[0];
+	int numCols = data_spec[1];
+	int trainSize = static_cast<int>(numRows * ratio);
+	// Prepare data_spec for both training and testing datasets
+	trainData_spec.SetSize(3);
+	testData_spec.SetSize(3);
+	// Copy specifications for dense matrices, adjusting row counts accordingly
+	trainData_spec[0] = trainSize; // Number of rows in the training set
+	trainData_spec[1] = numCols; // Number of columns/features remains the same
+	trainData_spec[2] = 0; // Dense matrix
+	testData_spec[0] = numRows - trainSize; // Number of rows in the testing set
+	testData_spec[1] = numCols; // Number of columns/features remains the same
+	testData_spec[2] = 0; // Dense matrix
+	// Allocate space for training and testing data and labels
+	trainData.SetSize(trainSize * numCols);
+	trainLabel.SetSize(trainSize);
+	testData.SetSize((numRows - trainSize) * numCols);
+	testLabel.SetSize(numRows - trainSize);
+	// Copy the first portion of the data into the training set
+	for (int i = 0; i < trainSize; ++i) {
+		for (int j = 0; j < numCols; ++j) {
+			trainData.SetAt(i * numCols + j, data.GetAt(i * numCols + j));
+		}
+		trainLabel.SetAt(i, label.GetAt(i));
+	}
+	// Copy the remaining data into the test set
+	for (int i = trainSize; i < numRows; ++i) {
+		for (int j = 0; j < numCols; ++j) {
+			testData.SetAt((i - trainSize) * numCols + j, data.GetAt(i * numCols + j));
+		}
+		testLabel.SetAt(i - trainSize, label.GetAt(i));
+	}
+}
+
+
+// Pre-train helper function that standardize the dataset
+void CModelingandAnalysisofUncertaintyDoc::StandardizeData(int numFeatures, CArray<double>& data, CArray<int>& data_spec) {
+	int numRows = data_spec[0];
+	CArray<double> mean, stddev;
+	mean.SetSize(numFeatures);
+	stddev.SetSize(numFeatures);
+	// Compute the mean for each feature
+	for (int i = 0; i < numFeatures; ++i) {
+		double sum = 0.0;
+		for (int j = 0; j < numRows; ++j) {
+			sum += data.GetAt(j * numFeatures + i);
+		}
+		mean.SetAt(i, sum / numRows);
+	}
+	// Compute the standard deviation for each feature
+	for (int i = 0; i < numFeatures; ++i) {
+		double sq_diff_sum = 0.0;
+		for (int j = 0; j < numRows; ++j) {
+			double value = data.GetAt(j * numFeatures + i) - mean.GetAt(i);
+			sq_diff_sum += std::pow(value, 2);
+		}
+		stddev.SetAt(i, std::sqrt(sq_diff_sum / numRows));
+	}
+	// Standardize the data
+	for (int j = 0; j < numRows; ++j) {
+		for (int i = 0; i < numFeatures; ++i) {
+			if (stddev.GetAt(i) != 0) { // Prevent division by zero
+				double standardizedValue = (data.GetAt(j * numFeatures + i) - mean.GetAt(i)) / stddev.GetAt(i);
+				data.SetAt(j * numFeatures + i, standardizedValue);
+			}
+		}
+	}
+}
+
+// Pre-train helper function that standardize the label for regression problem.
+void CModelingandAnalysisofUncertaintyDoc::StandardizeLabel(CArray<double>& label) {
+	int numLabels = label.GetSize();
+	double mean = 0.0;
+	double stddev = 0.0;
+	// Compute the mean of the labels
+	for (int i = 0; i < numLabels; ++i) {
+		mean += label.GetAt(i);
+	}
+	mean /= numLabels;
+	// Compute the standard deviation of the labels
+	for (int i = 0; i < numLabels; ++i) {
+		double diff = label.GetAt(i) - mean;
+		stddev += diff * diff;
+	}
+	stddev = std::sqrt(stddev / numLabels);
+	// Standardize the labels
+	for (int i = 0; i < numLabels; ++i) {
+		if (stddev != 0) { // Prevent division by zero
+			label.SetAt(i, (label.GetAt(i) - mean) / stddev);
+		}
+	}
+}
+
 #ifdef SHARED_HANDLERS
 
 // Support for thumbnails
@@ -5233,6 +5456,759 @@ void CModelingandAnalysisofUncertaintyDoc::SetUpFDAMatrices(CArray <double>& Sb,
 	}
 }
 
+/************** Helper functions for standardize dataset **************/
+/* This function standardize the dataset based on number of features */
+
+void standardize_data(CArray<double>& data, int num_features) {
+	int num_samples = data.GetSize() / num_features;
+
+	for (int i = 0; i < num_features; ++i) {
+		double mean = 0.0;
+		for (int j = 0; j < num_samples; ++j) {
+			mean += data[j * num_features + i];
+		}
+		mean /= num_samples;
+
+		double variance = 0.0;
+		for (int j = 0; j < num_samples; ++j) {
+			double diff = data[j * num_features + i] - mean;
+			variance += diff * diff;
+		}
+		double stddev = std::sqrt(variance / num_samples);
+
+		for (int j = 0; j < num_samples; ++j) {
+			data[j * num_features + i] = (data[j * num_features + i] - mean) / stddev;
+		}
+	}
+}
+
+
+
+/*************** Helper functions for splitting and shuffling dataset ***************/
+/* This function split the dataset into training and testing sets and shuffle them */
+void split_data(const CArray<double>& data, const CArray<unsigned long>& labels,
+	CArray<double>& training_data, CArray<int>& training_labels,
+	CArray<double>& testing_data, CArray<int>& testing_labels,
+	int num_features, float ratio = 0.85f) {
+	int num_samples = data.GetSize() / num_features;
+	CArray<size_t> indices;
+	for (size_t i = 0; i < num_samples; ++i) {
+		indices.Add(i);
+	}
+
+	// Shuffle indices
+	std::random_device rd;
+	std::mt19937 g(rd());
+	std::shuffle(indices.GetData(), indices.GetData() + num_samples, g);
+
+	int training_size = static_cast<int>(ratio * num_samples);
+
+	for (int i = 0; i < num_samples; ++i) {
+		if (i < training_size) {
+			for (int j = 0; j < num_features; ++j) {
+				training_data.Add(data[indices[i] * num_features + j]);
+			}
+			training_labels.Add(labels[indices[i]]);
+		}
+		else {
+			for (int j = 0; j < num_features; ++j) {
+				testing_data.Add(data[indices[i] * num_features + j]);
+			}
+			testing_labels.Add(labels[indices[i]]);
+		}
+	}
+}
+
+
+
+
+/*************** Redefinition about Linear Classification***************/
+
+
+class LinearClassifier {
+private:
+	std::vector<std::vector<float>> weights; // For OvR, we need a dweight vector per class
+	std::vector<float> biases; // A bias term for each class
+	float learning_rate;
+	bool is_multiclass;
+	int num_classes;
+
+	// Helper function to perform a dot product
+	static float dot_product(const std::vector<float>& v1, const std::vector<float>& v2) {
+		if (v1.size() != v2.size()) {
+			throw std::invalid_argument("Vectors must be the same length for dot product.");
+		}
+		return std::inner_product(v1.begin(), v1.end(), v2.begin(), 0.0f);
+	}
+
+	// Sigmoid activation function for binary classification
+	static float activation(float z) {
+		return z;
+	}
+
+public:
+	LinearClassifier(int num_features, const std::vector<unsigned long>& labels, float lr = 0.01) {
+		learning_rate = lr;
+
+		// Determine unique labels to figure out if this is binary or multiclass
+		std::set<unsigned long> unique_labels(labels.begin(), labels.end());
+		num_classes = unique_labels.size();
+		is_multiclass = num_classes > 2;
+
+		// Initialize weights and biases
+		weights.resize(is_multiclass ? num_classes : 1, std::vector<float>(num_features, 0.0));
+		biases.resize(is_multiclass ? num_classes : 1, 0.0);
+	}
+
+	// Training method
+	void train(const std::vector<std::vector<float>>& training_data, const std::vector<unsigned long>& labels,
+		int epochs = 4000) {
+		
+		// transformed_labels strat from 0 rather than 1
+		std::vector<unsigned long> transformed_labels = labels;
+		std::transform(transformed_labels.begin(), transformed_labels.end(), transformed_labels.begin(),
+			[](unsigned long label) { return label - 1; });
+		for (int epoch = 0; epoch < epochs; ++epoch) {
+			for (size_t i = 0; i < training_data.size(); ++i) {
+				const std::vector<float>& feature_vector = training_data[i];
+				unsigned long label = transformed_labels[i];
+				if (is_multiclass) {
+					for (size_t class_idx = 0; class_idx < num_classes; ++class_idx) {
+						unsigned long predicted_label = class_idx;
+
+						// Calculate prediction using current weights and bias for this class
+						float z = dot_product(weights[class_idx], feature_vector) + biases[class_idx];
+						float prediction = activation(z);
+
+						// Determine if this instance's actual label is the current class
+						float target = (label == predicted_label) ? 1.0f : 0.0f;
+
+						// Calculate the error
+						float error = target - prediction;
+
+						// Update weights and bias for this class
+						for (size_t feature_idx = 0; feature_idx < feature_vector.size(); ++feature_idx) {
+							weights[class_idx][feature_idx] += learning_rate * (error * feature_vector[feature_idx] - weights[class_idx][feature_idx]);
+						}
+						biases[class_idx] += learning_rate * error;
+					}
+				}
+				else {
+					// Binary classification logic
+					float z = dot_product(weights[0], feature_vector) + biases[0];
+					float prediction = activation(z);
+
+					float error = label - prediction;
+					
+					for (size_t j = 0; j < weights[0].size(); ++j) {
+						weights[0][j] += learning_rate * (error * feature_vector[j] - weights[0][j]);
+					}
+					biases[0] += learning_rate * error;
+				}
+			}
+		}
+	}
+
+	// predict function
+	std::vector<float> predict(const std::vector<float>& feature_vector) const {
+		std::vector<float> predictions(num_classes, 0.0);
+
+		if (is_multiclass) {
+			// Multiclass prediction logic (compute scores for all classes)
+			// Compute the scores for each class
+			std::vector<float> scores(num_classes, 0.0);
+			for (size_t class_idx = 0; class_idx < num_classes; ++class_idx) {
+				scores[class_idx] = dot_product(weights[class_idx], feature_vector) + biases[class_idx];
+			}
+
+			// Apply the softmax function to get probabilities
+			float max_score = *std::max_element(scores.begin(), scores.end());
+			float sum_exp_scores = 0.0f;
+			for (size_t class_idx = 0; class_idx < num_classes; ++class_idx) {
+				scores[class_idx] = std::exp(scores[class_idx] - max_score);  // Subtract max_score for numerical stability
+				sum_exp_scores += scores[class_idx];
+			}
+
+			for (size_t class_idx = 0; class_idx < num_classes; ++class_idx) {
+				predictions[class_idx] = scores[class_idx] / sum_exp_scores;
+			}
+		}
+		else {
+			// Binary classification prediction logic
+			float z = dot_product(weights[0], feature_vector) + biases[0];
+			predictions[0] = activation(z);
+		}
+
+		return predictions;
+	}
+
+	
+	void CalculateROCAndAUC(const std::vector<double>& predictions, const std::vector<unsigned long>& labels, std::vector<double>& tpr, std::vector<double>& fpr, double& auc) const {
+		std::vector<std::pair<double, unsigned long>> score_label_pairs;
+		for (size_t i = 0; i < predictions.size(); ++i) {
+			score_label_pairs.push_back(std::make_pair(predictions[i], labels[i]));
+		}
+
+		// Sort by prediction score in descending order
+		std::sort(score_label_pairs.rbegin(), score_label_pairs.rend());
+
+		size_t positive_count = std::count(labels.begin(), labels.end(), 1);
+		size_t negative_count = labels.size() - positive_count;
+
+		// Variables to store true positives and false positives
+		size_t TP = 0, FP = 0;
+		double prev_fpr = 0.0, prev_tpr = 0.0;
+		auc = 0.0;
+
+		// Initialize AUC calculation
+		for (size_t i = 0; i < score_label_pairs.size(); ++i) {
+			// Threshold is the current score
+			double threshold = score_label_pairs[i].first;
+			size_t temp_TP = 0, temp_FP = 0;
+
+			// Calculate TP and FP for the current threshold
+			for (size_t j = 0; j < score_label_pairs.size(); ++j) {
+				if (score_label_pairs[j].first >= threshold) {
+					if (score_label_pairs[j].second == 1) temp_TP++;
+					else temp_FP++;
+				}
+			}
+
+			double tpr_value = static_cast<double>(temp_TP) / positive_count;
+			double fpr_value = static_cast<double>(temp_FP) / negative_count;
+
+			// Add to the TPR and FPR lists
+			tpr.push_back(tpr_value);
+			fpr.push_back(fpr_value);
+
+			// Calculate the area using trapezoidal rule
+			if (i > 0) {
+				auc += (fpr_value - prev_fpr) * (tpr_value + prev_tpr) / 2.0;
+			}
+
+			// Update previous TPR and FPR for next iteration
+			prev_tpr = tpr_value;
+			prev_fpr = fpr_value;
+		}
+
+		// Final segment of AUC if needed
+		if (prev_fpr < 1.0 || prev_tpr < 1.0) {
+			auc += (1.0 - prev_fpr) * (1.0 + prev_tpr) / 2.0;
+			tpr.push_back(1.0);
+			fpr.push_back(1.0);
+		}
+	}
+
+	// Test the linear classifier and compute confusion matrix
+	void test(const std::vector<std::vector<float>>& testing_data, const std::vector<unsigned long>& testing_labels,
+		int& TP, int& TN, int& FP, int& FN, double& PPV, double& F1, double& MCC, double& accuracy, double&sensitivity, double& specificity, double& AUC,std::vector<double>&TPr, std::vector<double>&FPr) const {
+		TP = TN = FP = FN = 0;
+		std::map<unsigned long, int> classCounts;
+		std::vector<double> predictions; 
+		std::vector<unsigned long> actual_labels; 
+		for (auto& label : testing_labels) {
+			// Initialize or increment class count
+			classCounts[label]++;
+		}
+		std::ofstream outfile("predictions.txt");
+		
+		for (size_t i = 0; i < testing_data.size(); ++i) {
+			std::vector<float> prediction_scores = predict(testing_data[i]);
+			outfile << "raw prediction_scores: " << prediction_scores[0] << std::endl;
+			unsigned long actual_label = testing_labels[i];
+			unsigned long predicted_label;
+			if (is_multiclass) {
+				predicted_label = std::distance(prediction_scores.begin(),
+					std::max_element(prediction_scores.begin(), prediction_scores.end()));
+				// For multiclass, adjust TP, TN, FP, FN for each class accordingly
+				for (auto& classCount : classCounts) {
+					if (classCount.first == actual_label) {
+						if (actual_label == predicted_label) {
+							TP++;
+						}
+						else {
+							FN++;
+						}
+					}
+					else {
+						if (predicted_label == classCount.first) {
+							FP++;
+						}
+						else {
+							TN++;
+						}
+					}
+				}
+			}
+			else {
+				// Assuming the first score is for the positive class in binary classification
+				double positive_class_probability = prediction_scores[0];
+				outfile << "prediction_scores: " << prediction_scores[0] << std::endl;
+				predictions.push_back(positive_class_probability);
+				actual_labels.push_back(actual_label);
+			
+				
+
+				predicted_label = prediction_scores[0] > 0.5 ? 1 : 0;
+				if (predicted_label == 1 && actual_label == 1) ++TP;
+				else if (predicted_label == 0 && actual_label == 0) ++TN;
+				else if (predicted_label == 1 && actual_label == 0) ++FP;
+				else if (predicted_label == 0 && actual_label == 1) ++FN;
+			}
+		}
+		outfile.close();
+		// Recalculate TN for binary classification by subtracting the sum of TP, FP, FN from total predictions
+		if (!is_multiclass) {
+			TN = testing_data.size() - (TP + FP + FN);
+		}
+
+		accuracy = (TP + TN) / static_cast<double>(TP + TN + FP + FN);
+		sensitivity = TP / static_cast<double>(TP + FN);
+		specificity = TN / static_cast<double>(TN + FP);
+		PPV = TP / static_cast<double>(TP + FP);
+		F1 = 2 * (PPV * sensitivity) / (PPV + sensitivity);
+		MCC = (TP * TN - FP * FN) / sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN));
+
+		// 	   Calculate tpr, fpr to draw ROC
+		
+		CalculateROCAndAUC(predictions, actual_labels, TPr, FPr, AUC);
+
+		
+	}
+
+
+};
+
+
+// helper function to test the data. Only take labels here, Data should saved in the gloable variable CArray<double > Data
+void ReadDataFromFile(const std::string& filename, CArray<double>& data, CArray<unsigned long>& labels) {
+	std::ifstream inFile(filename);
+	if (!inFile.is_open()) {
+		throw std::runtime_error("Unable to open file: " + filename);
+	}
+
+	std::string line;
+	// Read the first line to determine the number of columns
+	std::getline(inFile, line);
+	std::istringstream headerStream(line);
+	int numColumns;
+	headerStream >> numColumns;
+	int numFeatures = numColumns - 1; // Subtract one for the label column
+
+	// Skip the next three lines of metadata
+	for (int i = 0; i < 3; ++i) {
+		std::getline(inFile, line);
+	}
+
+	// Read the actual data
+	while (std::getline(inFile, line)) {
+		std::replace(line.begin(), line.end(), ',', ' '); // Replace commas with spaces for easier parsing
+		std::istringstream iss(line);
+
+		// Read feature values
+		for (int i = 0; i < numFeatures; ++i) {
+			float featureValue;
+			if (!(iss >> featureValue)) {
+				throw std::runtime_error("Error reading feature value from line: " + line);
+			}
+			data.Add(static_cast<double>(featureValue));
+		}
+
+		// Read label value
+		unsigned long labelValue;
+		if (!(iss >> labelValue)) {
+			throw std::runtime_error("Error reading label value from line: " + line);
+		}
+
+		// Add label to the array
+		labels.Add(labelValue);
+	}
+
+	inFile.close();
+}
+
+// helper function to get the file path after source, eg: datasets/Wisconsin.FDA
+std::string ExtractSubpathAfterSource(const std::string& fullPath) {
+	std::string identifier = "source";
+	size_t pos = fullPath.find(identifier);
+
+	if (pos != std::string::npos) {
+		pos += identifier.length() + 1;
+		if (pos < fullPath.length()) {
+			// file path after source
+			return fullPath.substr(pos);
+		}
+	}
+	return "";
+}
+
+
+class SimplePerceptron {
+public:
+	CArray<double> w;
+	int M;
+
+	SimplePerceptron(int featureCount) : M(featureCount) {
+		srand(static_cast<unsigned int>(time(NULL)));
+	}
+
+	void InitializeWeights() {
+		for (int i = 0; i <= M; ++i) {
+			double randVal = (rand() / (double)RAND_MAX - 0.5) * sqrt(3.0 / M);
+			w.Add(randVal);
+		}
+	}
+
+	void Train(CArray<double>& Xtrain, CArray<int>& ytrain, int nIter = 10000) {
+		InitializeWeights();
+
+		int Ntrain = ytrain.GetSize();
+		for (int iter = 0; iter < nIter; ++iter) {
+			for (int idx = 0; idx < Ntrain; ++idx) {
+				int k = idx * M;
+				double bias = 1.0;
+				CArray<double> x;
+				for (int j = 0; j < M; ++j) {
+					x.Add(Xtrain[k + j]);
+				}
+				x.Add(bias);
+				int y = ytrain[idx];
+
+				double prediction = DotProduct(w, x);
+				if ((y == 1 && prediction <= 0) || (y == -1 && prediction > 0)) {
+					UpdateWeights(x, y);
+				}
+			}
+		}
+	}
+
+
+	int Predict(CArray<double>& x) {
+		double bias = 1.0;
+		x.Add(bias);
+		double prediction = DotProduct(w, x);
+		return (prediction >= 0) ? 1 : -1;
+	}
+
+private:
+	double DotProduct(const CArray<double>& a, const CArray<double>& b) {
+		double sum = 0.0;
+		for (int i = 0; i < a.GetSize(); ++i) {
+			sum += a[i] * b[i];
+		}
+		return sum;
+	}
+
+	void UpdateWeights(CArray<double>& x, int label) {
+		for (int i = 0; i <= M; ++i) {
+			w[i] += label * x[i];
+		}
+	}
+};
+
+double CalculateAUC(const std::vector<double>& tpr, const std::vector<double>& fpr) {
+	double auc = 0.0;
+	for (size_t i = 1; i < fpr.size(); ++i) {
+		double x1 = fpr[i - 1], x2 = fpr[i];
+		double y1 = tpr[i - 1], y2 = tpr[i];
+		auc += (x1 - x2) * (y2 + y1) / 2.0;
+	}
+	return auc;
+
+
+}
+
+void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
+	// Read data and labels
+	CArray<double> data, trainData, testData;
+	CArray<int> data_spec, trainData_spec, testData_spec;
+	CArray<double> label, trainLabel, testLabel;
+	CArray<double> emptySww;
+	std::string newFilePath = CW2A(PathAndFileName.GetString(), CP_UTF8);
+	std::string subpath = ExtractSubpathAfterSource(newFilePath);
+	int numFeatures = LoadData(subpath, data,  data_spec, label);
+	StandardizeData(numFeatures, data, data_spec);
+	ShuffleData(data, data_spec, label);
+	SplitData(data, data_spec,label,trainData, trainData_spec, trainLabel,testData,testData_spec, testLabel, 0.85);
+	bool validation = true;
+	GetRegressionVector(trainData, trainData_spec, trainLabel, emptySww, validation);
+
+	
+	// Calculate TP, TN, FP, FN 
+	CArray<double> predictions;
+	tpr.clear();
+	fpr.clear();
+	double threshold = 0;
+	int numSamples = testData.GetSize() / numFeatures;
+	for (int i = 0; i < numSamples; i++) {
+		double score = 0.0;
+		for (int j = 0; j < numFeatures; j++) {
+			score += testData[i * numFeatures + j] * w[j]; 
+		}
+		int predictedLabel = (score > threshold) ? 2 : 1;
+		predictions.Add(predictedLabel);
+	}
+	TP = 0; TN = 0; FP = 0; FN = 0;
+	AUC_Total = 0; acc_test = 0; sensitivity = 0; specificity = 0; ppv_test = 0; F1_test = 0; mcc_test = 0;
+	for (int i = 0; i < testLabel.GetSize(); i++) {
+		if (predictions[i] == 2 && testLabel[i] == 2) TP++;
+		else if (predictions[i] == 1 && testLabel[i] == 1) TN++;
+		else if (predictions[i] == 2 && testLabel[i] == 1) FP++;
+		else if (predictions[i] == 1 && testLabel[i] == 2) FN++;
+	}
+	acc_test = (TP + TN) / static_cast<double>(TP + TN + FP + FN);
+	sensitivity = TP / static_cast<double>(TP + FN);
+	specificity = TN / static_cast<double>(TN + FP);
+	ppv_test = static_cast<double>(TP) / (TP + FP); // Positive Predictive Value (Precision)
+	double recall_test = static_cast<double>(TP) / (TP + FN); // Recall (True Positive Rate)
+	F1_test = 2 * ppv_test * recall_test / (ppv_test + recall_test); // F1 Score
+	mcc_test = (TP * TN - FP * FN) / sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN));
+	
+	std::vector<double> thresholds;
+
+	for (int i = 0; i < numSamples; i++) {
+		double score = 0.0;
+		for (int j = 0; j < numFeatures; j++) {
+			score += testData[i * numFeatures + j] * w[j];
+		}
+		thresholds.push_back(score);
+	}
+
+	std::sort(thresholds.begin(), thresholds.end());
+	auto last = std::unique(thresholds.begin(), thresholds.end());
+	thresholds.erase(last, thresholds.end());
+
+	std::vector<double> newThresholds;
+	for (size_t i = 0; i < thresholds.size() - 1; ++i) {
+		newThresholds.push_back(thresholds[i]);
+		double midPoint = (thresholds[i] + thresholds[i + 1]) / 2;
+		newThresholds.push_back(midPoint);  
+	}
+	newThresholds.push_back(thresholds.back()); 
+	thresholds = std::move(newThresholds); 
+
+	for (double threshold : thresholds) {
+		int TP = 0, TN = 0, FP = 0, FN = 0;
+		for (int i = 0; i < numSamples; i++) {
+			double score = 0.0;
+			for (int j = 0; j < numFeatures; j++) {
+				score += testData[i * numFeatures + j] * w[j];
+			}
+			int predictedLabel = (score > threshold) ? 2 : 1;
+			if (predictedLabel == 2 && testLabel[i] == 2) TP++;
+			else if (predictedLabel == 1 && testLabel[i] == 1) TN++;
+			else if (predictedLabel == 2 && testLabel[i] == 1) FP++;
+			else if (predictedLabel == 1 && testLabel[i] == 2) FN++;
+		}
+		double TPR = static_cast<double>(TP) / (TP + FN);
+		double FPR = static_cast<double>(FP) / (FP + TN);
+		tpr.push_back(TPR);
+		fpr.push_back(FPR);
+	}
+
+	AUC_Total = CalculateAUC(fpr, tpr);
+	// Test model and calculate confusion matrix
+
+	// Write output
+	std::ofstream outfile("linear_class_confusion_matrix.txt");
+	
+	outfile << "True Positives (TP): " << TP << std::endl;
+	outfile << "True Negatives (TN): " << TN << std::endl;
+	outfile << "False Positives (FP): " << FP << std::endl;
+	outfile << "False Negatives (FN): " << FN << std::endl;
+	outfile << "Positive Predictive Value (PPV): " << ppv_test << std::endl;
+	outfile << "F1 Score: " << F1_test << std::endl;
+	outfile << "Matthews Correlation Coefficient (MCC): " << mcc_test << std::endl;
+	outfile << "AUC: " << AUC_Total<<std::endl;
+
+	for (int i = 0; i < predictions.GetSize(); i++) {
+		outfile<<i << " Predictions: " << predictions[i] << " Actual Label "<< testLabel[i] << std::endl;
+
+	}
+	for (int i = 0; i < w.GetSize(); i++) {
+		outfile << "W: " << i << " : " << w[i] << std::endl;
+	}
+	outfile.close();
+	UpdateAllViews(NULL);
+}
+
+
+void CModelingandAnalysisofUncertaintyDoc::SplitDataForKFold(int currentFold, int foldSize, int numFolds,
+	int numRows, int numCols, CArray<double>& data, CArray<double>& label, CArray<double>& trainData, 
+	CArray<int>& trainData_spec, CArray<double>& trainLabel, CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel) {
+
+	trainData.RemoveAll();
+	testData.RemoveAll();
+	trainLabel.RemoveAll();
+	testLabel.RemoveAll();
+
+	// Calculate the indices for the start and end of the test fold
+	int startIdx = currentFold * foldSize;
+	//ensure the endIdx does not exceed the total number of rows
+	int endIdx = (currentFold == numFolds - 1) ? numRows : (currentFold + 1) * foldSize;
+
+	// Allocate space for the training and testing data based on the indices
+	testData.SetSize((endIdx - startIdx) * numCols);
+	trainData.SetSize((numRows - (endIdx - startIdx)) * numCols);
+	testLabel.SetSize(endIdx - startIdx);
+	trainLabel.SetSize(numRows - (endIdx - startIdx));
+	int trainIdx = 0, testIdx = 0;
+
+	// Iterate over the dataset and allocate to train or test based on current fold
+	for (int i = 0; i < numRows; ++i) {
+		for (int j = 0; j < numCols; ++j) {
+			if (i >= startIdx && i < endIdx) {
+				testData[testIdx * numCols + j] = data[i * numCols + j];
+			}
+			else {
+				trainData[trainIdx * numCols + j] = data[i * numCols + j];
+			}
+		}
+		if (i >= startIdx && i < endIdx) {
+			testLabel[testIdx] = label[i];
+			testIdx++;
+		}
+		else {
+			trainLabel[trainIdx] = label[i];
+			trainIdx++;
+		}
+	}
+
+	// Set the specifications for the training and testing data
+	trainData_spec.SetSize(3);
+	testData_spec.SetSize(3);
+	trainData_spec[0] = trainIdx;  
+	trainData_spec[1] = numCols;  
+	trainData_spec[2] = 0;       
+
+	testData_spec[0] = testIdx;    
+	testData_spec[1] = numCols;    
+	testData_spec[2] = 0;         
+
+	
+}
+
+void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel, int numFeatures,
+	std::vector<double>& accuracies, std::vector<double>& sensitivities, std::vector<double>& specificities, std::vector<double>& ppvs, std::vector<double>& f1_scores,
+	std::vector<double>& mccs, std::vector<double>& auc_totals, std::vector<std::vector <double>>& tprList, std::vector<std::vector <double>>& fprList, int fold) {
+
+	CArray<double> predictions;
+	int TP = 0, TN = 0, FP = 0, FN = 0;
+	double threshold = 0; 
+	int numSamples = testData.GetSize() / numFeatures;
+	
+	for (int i = 0; i < numSamples; i++) {
+		double score = 0.0;
+		for (int j = 0; j < numFeatures; j++) {
+			score += testData[i * numFeatures + j] * w[j];
+			
+		}
+		int predictedLabel = (score > threshold) ? 2 : 1;
+		predictions.Add(predictedLabel);
+	}
+	
+	std::ofstream outfile("prediction_fold1.txt");
+	int mismatch = 0;
+
+	for (int i = 0; i < predictions.GetSize(); i++) {
+
+		outfile << "predictions:" << predictions[i] << "  actual labels:" << testLabel[i];
+		if (predictions[i] != testLabel[i]) {
+			outfile << "   Mismatch" << std::endl;
+			mismatch++;
+		}
+		else {
+			outfile << std::endl;
+		}
+	}
+	outfile << "Number of mismatch: " << mismatch << std::endl;
+	
+	outfile << std::endl;
+	outfile << "w" << std::endl;
+	for (int i = 0; i < w.GetSize(); i++) {
+		outfile << "w[" << i << "]: " << w[i];
+		
+	}
+	outfile.close();
+
+
+	for (int i = 0; i < testLabel.GetSize(); i++) {
+		if (predictions[i] == 2 && testLabel[i] == 2) TP++;
+		else if (predictions[i] == 1 && testLabel[i] == 1) TN++;
+		else if (predictions[i] == 2 && testLabel[i] == 1) FP++;
+		else if (predictions[i] == 1 && testLabel[i] == 2) FN++;
+	}
+
+	double acc = (TP + TN) / static_cast<double>(TP + TN + FP + FN);
+	double sensitivity = TP / static_cast<double>(TP + FN);
+	double specificity = TN / static_cast<double>(TN + FP);
+	double ppv = static_cast<double>(TP) / (TP + FP);
+	double recall = static_cast<double>(TP) / (TP + FN);
+	double f1 = 2 * ppv * recall / (ppv + recall);
+	double mcc = (TP * TN - FP * FN) / sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN));
+
+
+	accuracies.push_back(acc);
+	sensitivities.push_back(sensitivity);
+	specificities.push_back(specificity);
+	ppvs.push_back(ppv);
+	f1_scores.push_back(f1);
+	mccs.push_back(mcc);
+
+
+	std::vector<double> thresholds;
+
+	for (int i = 0; i < numSamples; i++) {
+		double score = 0.0;
+		for (int j = 0; j < numFeatures; j++) {
+			score += testData[i * numFeatures + j] * w[j];
+		}
+		thresholds.push_back(score);
+	}
+
+	std::sort(thresholds.begin(), thresholds.end());
+	auto last = std::unique(thresholds.begin(), thresholds.end());
+	thresholds.erase(last, thresholds.end());
+	double minScore = *std::min_element(thresholds.begin(), thresholds.end());
+	double maxScore = *std::max_element(thresholds.begin(), thresholds.end());
+
+	// Decide how many thresholds you want to generate
+	int numThresholds = 100;  // for example, 100 thresholds
+	std::vector<double> newThresholds;
+
+	// Generate thresholds at regular intervals between min and max score
+	double step = (maxScore - minScore) / numThresholds;
+	for (int i = 0; i <= numThresholds; ++i) {
+		newThresholds.push_back(minScore + i * step);
+	}
+	for (double threshold : newThresholds) {
+		int TP = 0, TN = 0, FP = 0, FN = 0;
+		for (int i = 0; i < numSamples; i++) {
+			double score = 0.0;
+			for (int j = 0; j < numFeatures; j++) {
+				score += testData[i * numFeatures + j] * w[j];
+			}
+			int predictedLabel = (score > threshold) ? 2 : 1;
+			if (predictedLabel == 2 && testLabel[i] == 2) TP++;
+			else if (predictedLabel == 1 && testLabel[i] == 1) TN++;
+			else if (predictedLabel == 2 && testLabel[i] == 1) FP++;
+			else if (predictedLabel == 1 && testLabel[i] == 2) FN++;
+		}
+		double TPR = static_cast<double>(TP) / (TP + FN);
+		double FPR = static_cast<double>(FP) / (FP + TN);
+		//tpr.push_back(TPR);
+		//fpr.push_back(FPR);
+		tprList[fold].push_back(TPR);
+		fprList[fold].push_back(FPR);
+	}
+	double AUC_Total = CalculateAUC(tprList[fold], fprList[fold]);
+	auc_totals.push_back(AUC_Total);
+
+
+}
+
+
+
 
 //*****************************************************************
 //***            Compute linear classification model            ***
@@ -5240,195 +6216,150 @@ void CModelingandAnalysisofUncertaintyDoc::SetUpFDAMatrices(CArray <double>& Sb,
 
 
 void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
+	OnOpenedFile = false;
+	DescriptiveStatistics = false;
+	HypothesisTesting_OneSample = false;
+	HypothesisTesting_TwoSample = false;
+	ShapiroWilkTest = false;
+	AndersonDarlingTest = false;
+	ANOVA = false;
+	PCA_Select_PCs = false;
+	PCA_Display_PCs_Standard = false;
+	PCA_Display_Scores = false;
+	PCA_Display_Loadings = false;
+	FA_Display_Standard = false;
+	FA_Display_Loadings = false;
+	FA_Display_Scores = false;
+	FA_Display_Matrices = false;
+	FDA = false;
+	ANN_Training = false;
+	Linear_Classification = true;
+
+	CWnd* pParent = nullptr;
+
+	CLinearClassificationDlg LCdlg(pParent);
+	CArray<double> data, trainData, testData;
+	CArray<int> data_spec, trainData_spec, testData_spec;
+	CArray<double> label, trainLabel, testLabel;
+	CArray<double> emptySww;
+	std::string newFilePath = CW2A(PathAndFileName.GetString(), CP_UTF8);
+	std::string subpath = ExtractSubpathAfterSource(newFilePath);
+	int numFeatures = LoadData(subpath, data, data_spec, label);
 	
-	//AfxMessageBox(L"Now we are working on establishing an linear classification model");
-	//curent data 
-	//get data to parse through
+	ShuffleData(data, data_spec, label);
+	SplitData(data, data_spec, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel, 0.85);
 
-	/// CArray <double>& Data_0, CArray <double>& bar, CArray <double>& std
-	//CArray for 3 classification
-	CArray<double> y;
-	y.SetSize(n_Obs);
-	CArray<double> value;
-	std::vector<int> indices(n_Obs);
-	std::iota(indices.begin(), indices.end(), 0);  // Fill with 0, 1, ..., data.size() - 1
-
-	std::random_device rd;
-	std::mt19937 g(rd());
-	std::shuffle(indices.begin(), indices.end(), g);
-	//shuffle the data
-	//We want to train with 85% of the data
-	int y_train = (int)floor(n_Obs * 0.85);
-	value.SetSize(y_train);
-
-	//Declare the train data array and the specifications of it
-	CArray<double> data2;
-	CArray<double> label;
-	data2.SetSize(static_cast <int64_t> (n_Var*y_train));
-	label.SetSize(static_cast <int64_t> (y_train));
-    //new data size with new n object
-	CArray <int> Traindata_spec;
-	Traindata_spec.SetSize(3);
-	Traindata_spec.SetAt(0, y_train), Traindata_spec.SetAt(1, n_Var), Traindata_spec.SetAt(2, 0);
-	double temp_1, temp_3, temp_2, temp_4, temp_5;
-	//test data 15 percent
-	CArray<double> testData;
-	testData.SetSize(static_cast <int64_t> (n_Var * (n_Obs - y_train)));
-	CArray <int> testData_spec;
-	testData_spec.SetSize(3);
-	//Declare the test data array and the specifications of it
-	CArray<double> testlabel1;
-	testlabel1.SetSize(static_cast <int64_t> ((n_Obs - y_train)));
-	CArray<double> testlabel2;
-	testlabel2.SetSize(static_cast <int64_t> ((n_Obs - y_train)));
-	CArray<double> testlabel3;
-	testlabel3.SetSize(static_cast <int64_t> ((n_Obs - y_train)));
-	int k = 0;
-	testData_spec.SetAt(0, (n_Obs - y_train)), testData_spec.SetAt(1, n_Var), testData_spec.SetAt(2, 0);
-	 for (int i = y_train; i < n_Obs; i++) {
+	if (LCdlg.DoModal() == IDOK) {
+		// After the calculation done, Initialze the global variable
+		for (int i = 0; i < fprList.size();i++) {
+			fprList[i].clear();
+		}
+		for (int i = 0; i < tprList.size(); i++) {
+			tprList[i].clear();
+		}
+		accuracies.clear();
+		sensitivities.clear();
+		specificities.clear();
+		ppvs.clear();
+		f1_scores.clear();
+		mccs.clear();
+		auc_totals.clear();
+		LOO = false;
+		TrainingValidation = false;
+	
+		if (LCdlg.validation_value == 0) {
+			TrainingValidation = true;
+			TestLinearClassifier();
+		}
+		else if (LCdlg.five_fold_value==0) {
+			TrainingValidation = false;
+			numFolds = 5;
+			int numRows = data_spec[0]; 
+			int numCols = data_spec[1]; 
+			int foldSize = numRows / numFolds;
 		
-		 for (int j = 0; j < n_Var - 1; j++) {
-	     	int val_pos = static_cast <int64_t>(GetPosition(k, j, testData_spec));
-	    	temp_2 = Data.GetAt(static_cast <int64_t>(GetPosition(indices[i], j, Data_spec)));
-	    	testData.SetAt(val_pos, temp_2);
+			tprList.resize(5);
+			fprList.resize(5);
+
+			for (int fold = 0; fold < numFolds; fold++) {
+				
+				CArray<double> trainData, testData, trainLabel, testLabel;
+				CArray<int> trainData_spec, testData_spec;
+				SplitDataForKFold(fold, foldSize, numFolds, numRows, numCols, data, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel);
+				StandardizeData(numFeatures, trainData, trainData_spec);
+				StandardizeData(numFeatures, testData, testData_spec);
+				CArray<double> emptySww;
+				bool validation = true;
+				GetRegressionVector(trainData, trainData_spec, trainLabel, emptySww, validation);
+				
+				EvaluateModel(testData, testData_spec, testLabel, numFeatures, accuracies, sensitivities, specificities, ppvs, f1_scores, mccs, auc_totals,tprList,fprList,fold);
 			}
-	//	///*int val_posconstant = static_cast <int64_t>(GetPosition(k, n_Var - 1, testData_spec));
-	//	//data2.SetAt(val_posconstant, (double)1);*/
-	      k++;
-	 }
-
-
-
-	 //time to test data and create 3 models
-
-	// For loop gets new test train vector data
-
-
-	 //3 model data coeficient declare array declare 3 label 
-	 CArray<double> label2;
-	 label2.SetSize(static_cast <int64_t> (y_train));
-	 CArray<double> label3;
-	 label3.SetSize(static_cast <int64_t> (y_train));
-
-
-	for (int i = 0; i < y_train; i++) {
-
-		temp_1 = Data.GetAt(static_cast <int64_t>(GetPosition(indices[i], n_Var - 1, Data_spec)));
-		temp_4 = temp_1;
-		temp_5 = temp_4;
-
-		if (temp_1 != 1) temp_1 = -1;
-		if (temp_4 != 2) temp_4 = -1;
-		if (temp_5 != 3) temp_4 = -3;
-		for (int j = 0; j < n_Var - 1; j++) {
-			int val_pos = static_cast <int64_t>(GetPosition(i, j, Traindata_spec));
-			temp_2 = Data.GetAt(static_cast <int64_t>(GetPosition(indices[i], j, Data_spec)));
-			data2.SetAt(val_pos, temp_2);
+	
+			
 		}
-		label.SetAt(i, temp_1);
-		label2.SetAt(i, temp_4);
-		label3.SetAt(i, temp_5);
-		int val_posconstant = static_cast <int64_t>(GetPosition(i, n_Var - 1, Traindata_spec));
-		data2.SetAt(val_posconstant, (double)1);
+		else if (LCdlg.ten_fold_value == 0 ) {
+			TrainingValidation = false;
+			numFolds = 10;
+			int numRows = data_spec[0];
+			int numCols = data_spec[1];
+			int foldSize = numRows / numFolds;
 
+			tprList.resize(10);
+			fprList.resize(10);
+
+			for (int fold = 0; fold < numFolds; fold++) {
+				CArray<double> trainData, testData, trainLabel, testLabel;
+				CArray<int> trainData_spec, testData_spec;
+				SplitDataForKFold(fold, foldSize, numFolds, numRows, numCols, data, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel);
+				StandardizeData(numFeatures, trainData, trainData_spec);
+				StandardizeData(numFeatures, testData, testData_spec);
+				CArray<double> emptySww;
+				bool validation = true;
+				GetRegressionVector(trainData, trainData_spec, trainLabel, emptySww, validation);
+
+				EvaluateModel(testData, testData_spec, testLabel, numFeatures, accuracies, sensitivities, specificities, ppvs, f1_scores, mccs, auc_totals, tprList, fprList, fold);
+			}
+		}
+		else if (LCdlg.LOO_value ==0) {
+			LOO = true;
+		}
+		
+
+		UpdateAllViews(NULL);
+	
 	}
-	CArray <double> Sww;
-
-	GetRegressionVector(data2, Traindata_spec, label, Sww, true);
-	SaveVector("Model1_coefficient.txt", w);
-	MatrixVectorProduct(testData, testData_spec, w, testlabel1);
-	SaveVector("testlabel1.txt", testlabel1);
-
-
-	GetRegressionVector(data2, Traindata_spec, label2, Sww, true);
-	SaveVector("Model1_coefficient2.txt", w);
-	MatrixVectorProduct(testData, testData_spec, w, testlabel2);
-	SaveVector("testlabel2.txt", testlabel2);
-
-	GetRegressionVector(data2, Traindata_spec, label2, Sww, true);
-	SaveVector("Model1_coefficient3.txt", w);
-	MatrixVectorProduct(testData, testData_spec, w, testlabel3);
-	SaveVector("testlabel3.txt", testlabel3);
-
-
-
-
-	SaveVector("test7.txt", value);
-	SaveVector("label.txt", label);
-	SaveMatrix("traindata.txt", data2, Traindata_spec);
-
-		SaveMatrix("traindata.txt", data2, Traindata_spec);
-
-	//We need standardized data
-	//Classification metrics
-	//member matrix vector product
 	
-	//MatrixVectorProduct(Data, Data_spec, w, y_hat);
 
-	//SaveVector("ypredv.txt", n_classes);
-	//SaveVector("swwvalue.txt", Sww);
-	//SaveVector("yvalue.txt", y);
-	//SaveVector("yhatvalue.txt", y_hat);
-	//MatrixVectorProduct(z, z_spec, w, y_hat)
 
-	//GetRegressionVector
-	//GetStandardRegressionModel(data2, Traindata_spec, label, Sww, w);
-	
-	
-	//Sww.SetSize(y_train * n_Var);
-	CArray<double> W;
-	CArray<int> W_spec;
-	CArray<double> y_hat;
-	W.SetSize(n_Var*3);
-	W_spec.SetSize(3);
-	W_spec.SetAt(0, n_Var); W_spec.SetAt(1, 3); W_spec.SetAt(2, 0);
 
-	for (int j = 1; j <= 3;j++) {
-		//(n_Obs * n_Var) - n_Obs; i < n_Obs * n_Var; i++
-		for (int i = 0; i < n_Obs; i++) {
-			double setValue;
-			if (Data.GetAt((n_Obs * n_Var) - n_Obs + i) == j) {
-				setValue = 1;
-			}
-			else {
-				setValue = -1;
-			}
-			y.SetAt(i, setValue);
-		}
-		SaveVector("yvalue.txt", y);
-		GetRegressionVector(Data, Data_spec, y, Sww, true);
-		MatrixVectorProduct(Data, Data_spec, w, y_hat);
-		for (int i = 0; i < w.GetSize(); i++) {
-			W.SetAt(i + w.GetSize() * (j-1), w.GetAt(i));
-		}
+
+
+
+} 
+void CModelingandAnalysisofUncertaintyDoc::CalculateClassificationMetrics(const CArray<double>& y_pred, const CArray<double>& y_true, double threshold) {
+
+	int TP = 0, TN = 0, FP = 0, FN = 0;
+	for (int i = 0; i < y_pred.GetSize(); i++) {
+		int predicted = y_pred.GetAt(i) > threshold ? 1 : 0;
+		int actual = y_true.GetAt(i);
+
+		if (predicted == 1 && actual == 1) TP++;
+		else if (predicted == 0 && actual == 0) TN++;
+		else if (predicted == 1 && actual == 0) FP++;
+		else if (predicted == 0 && actual == 1) FN++;
 	}
-
-	SaveMatrix("resultValue.txt", W, W_spec);
-	SaveMatrix("traindata2.txt", W, W_spec);
-
-	SaveVector("wvalue.txt", w);
-	SaveVector("swwvalue.txt", Sww);
-	SaveVector("yvalue.txt", y);
-	SaveVector("yhatvalue.txt", y_hat);
-	//MatrixVectorProduct(z, z_spec, w, y_hat)
-
+	
+	sensitivity = double(TP) / (TP + FN);
+	specificity = double(TN) / (TN + FP);
+	mcc_test = (TP * TN - FP * FN) / sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN));
+	ppv_test = double(TP) / (TP + FP); // PPV
+	F1_test = 2 * (ppv_test * sensitivity) / (ppv_test + sensitivity); // F1 score
+	acc_test = double(TP + TN) / (TP + TN + FP + FN); 
 	
 	
-
-	//SaveVector("data3.txt", Data);
-	SaveVector("test2.txt", label);
-	//SaveMatrix("traindata.txt", data2, Traindata_spec);
-
-	AfxMessageBox(L"I believe I have just saved a file!");
-
-	//if w is the matci
-	// 
-	//w matrix for coefficent 
-	//Response vector is x w coefficient  and b multiplied by the input data araay to get the coreesponsing clasifcatuin 
-	//if y i 1 or0 in ebtwenn round
-
-	//CArray <double>& X, CArray <int>& X_spec, CArray <double>& y
-} //insert data thw iwll have x muTIple by w to get y value remebet for x array to add 1 at ebd bases on predictir decide class 1 or ,-1 
+	tpr.push_back(sensitivity);
+	fpr.push_back(1 - specificity);
+}
 
 
 //*****************************************************************
@@ -6010,6 +6941,7 @@ void CModelingandAnalysisofUncertaintyDoc::GetRegressionVector(CArray <double>& 
 	rxy.SetSize(static_cast <int64_t>(n_var));
 	Rx_spec.SetSize(3);
 	Rx_spec.SetAt(0, n_var), Rx_spec.SetAt(1, n_var), Rx_spec.SetAt(2, 3);
+	
 	for (int i = 0; i < n_var; i++) {
 		for (int j = i; j < n_var; j++) {
 			value = R.GetAt(GetPosition(i, j, R_spec));
@@ -6316,1301 +7248,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnKPLS() {
 //***       Compute artificial neural network (ANN) model       ***
 //*****************************************************************
 
-/****************** Helper functions for loading dataset ******************/
-/* This function read the FDA files, load the features into a dlib matrix
-   and load the label into a vector. Then output the number of features. */
-int load_data(const std::string& filename, std::vector<dlib::matrix<float>>& data, std::vector<unsigned long>& labels) {
-	// Check if files can be opened
-	CString message;
-	std::ifstream file(filename);
-	if (!file) {
-		message.Format(_T("Unable to open file: %S\n"), filename.c_str());
-		AfxMessageBox(message);
-		return -1;
-	}
-
-	std::string line;
-	// Read the first line to get the number of features
-	if (!std::getline(file, line)) {
-		message.Format(_T("File description 1 format incorrect: %S\n"), filename.c_str());
-		AfxMessageBox(message);
-		return -1;
-	}
-
-	std::stringstream firstLine(line);
-	int num_features;
-	char comma;
-	if (!(firstLine >> num_features >> comma)) {
-		message.Format(_T("File description 2 format incorrect: %S\n"), filename.c_str());
-		AfxMessageBox(message);
-		return -1;
-	}
-
-	// Decrement by 1 to exclude the label
-	num_features -= 1;
-
-	// Skip the remaining description lines
-	for (int i = 0; i < 3; ++i) {
-		if (!std::getline(file, line)) {
-			message.Format(_T("File description 3 format incorrect: %S\n"), filename.c_str());
-			AfxMessageBox(message);
-			return -1;
-		}
-	}
-
-	// Read the data
-	while (std::getline(file, line)) {
-		std::stringstream ss(line);
-		dlib::matrix<float> datapoint;
-		datapoint.set_size(1, num_features);
-
-		// Parse the features
-		for (int i = 0; i < num_features; ++i) {
-			if (!(ss >> datapoint(0, i))) {
-				message.Format(_T("File feature data format incorrect: %S\n"), filename.c_str());
-				AfxMessageBox(message);
-				return -1;
-			}
-
-			// Skip the comma
-			if (i < num_features - 1 && ss.peek() == ',') {
-				ss.ignore();
-			}
-		}
-
-		// Skip the comma before the label
-		if (ss.peek() == ',') {
-			ss.ignore();
-		}
-
-		// Get the label
-		unsigned long label;
-		if (!(ss >> label)) {
-			message.Format(_T("File label data format incorrect: %S\n"), filename.c_str());
-			AfxMessageBox(message);
-			return -1;
-		}
-
-		data.push_back(datapoint);
-		labels.push_back(label - 1); // Dlib's labels are zero-indexed, but our data is 1-indexed
-	}
-
-	return num_features;
-}
-
-/************** Helper functions for standardize dataset **************/
-/* This function standardize the dataset based on number of features */
-void standardize_data(int num_features, std::vector<dlib::matrix<float>>& data) {
-	// Compute the mean and standard deviation for each feature
-	dlib::matrix<float> mean(1, num_features);
-	dlib::matrix<float> stddev(1, num_features);
-	for (int i = 0; i < num_features; ++i) {
-		float sum = 0.0;
-		for (const auto& datapoint : data) {
-			sum += datapoint(0, i);
-		}
-		mean(0, i) = sum / data.size();
-
-		float sq_diff_sum = 0.0;
-		for (const auto& datapoint : data) {
-			sq_diff_sum += pow(datapoint(0, i) - mean(0, i), 2);
-		}
-		stddev(0, i) = sqrt(sq_diff_sum / data.size());
-	}
-
-	// Standardize the data
-	for (auto& datapoint : data) {
-		for (int i = 0; i < num_features; ++i) {
-			datapoint(0, i) = (datapoint(0, i) - mean(0, i)) / stddev(0, i);
-		}
-	}
-}
-
-/*************** Helper functions for splitting and shuffling dataset ***************/
-/* This function split the dataset into training and testing sets and shuffle them */
-void split_data(const std::vector<dlib::matrix<float>>& data, const std::vector<unsigned long>& labels,
-	std::vector<dlib::matrix<float>>& training_data, std::vector<unsigned long>& training_labels,
-	std::vector<dlib::matrix<float>>& testing_data, std::vector<unsigned long>& testing_labels, float ratio = 0.85) {
-	//generating number y variable
-	std::vector<int> indices(data.size());
-	std::iota(indices.begin(), indices.end(), 0);  // Fill with 0, 1, ..., data.size() - 1
-
-	std::random_device rd;
-	std::mt19937 g(rd());
-	std::shuffle(indices.begin(), indices.end(), g);
-
-	int training_size = ratio * data.size();
-	training_data.resize(training_size);
-	training_labels.resize(training_size);
-	testing_data.resize(data.size() - training_size);
-	testing_labels.resize(data.size() - training_size);
-
-	for (int i = 0; i < indices.size(); ++i) {
-		if (i < training_size) {
-			training_data[i] = data[indices[i]];
-			training_labels[i] = labels[indices[i]];
-		}
-		else {
-			testing_data[i - training_size] = data[indices[i]];
-			testing_labels[i - training_size] = labels[indices[i]];
-		}
-	}
-}
-
-/*************** Helper functions for saving training status ***************/
-/* This function takes in epoch number and loss and record into a txt file */
-void record_loss(const std::string& message) {
-	std::ofstream outFile("ANN_Update/training_loss.txt", std::ios::app); // Open in append mode
-	if (!outFile.is_open())
-	{
-		AfxMessageBox(L"Failed to open the output file!");
-		return;
-	}
-
-	outFile << message << std::endl;
-	outFile.close();
-}
-
-// record the accuracy of the training and testing set
-void record_acc(const std::string& message) {
-	std::ofstream outFile("ANN_Update/training_acc.txt", std::ios::app); // Open in append mode
-	if (!outFile.is_open())
-	{
-		AfxMessageBox(L"Failed to open the output file!");
-		return;
-	}
-
-	outFile << message << std::endl;
-	outFile.close();
-}
-
-/***************************************************/
-/******************* EEA Dataset *******************/
-/***************************************************/
-
-/* Run the neural network through the EEA dataset allow user to define
-   Learning rate, total number of epoch, batch size, and the frequency
-   of training status */
-
-   // Data Structure for user input
-struct ANNStruct {
-	double lr;
-	int total_epoch;
-	int batch_sizes;
-	std::vector<double> losses;
-	std::vector<double> training_accuracies;
-	std::vector<double> testing_accuracies;
-
-	HANDLE hEvent;
-};
-
-// EEA Neural Network 1 layers
-void ANN_EEA1(double lr, int total_epoch, int batch_sizes, HANDLE hEvent) {
-	// Load the data from file
-	std::vector<dlib::matrix<float>> data;
-	std::vector<unsigned long> labels;
-	int num_features = load_data("datasets/EEA1-Tom20-6Classes-R21.FDA", data, labels);
-
-	// Clear the status txt file
-	std::ofstream clear_file_loss("ANN_Update/training_loss.txt", std::ios::trunc);
-	clear_file_loss.close();
-	std::ofstream clear_file_acc("ANN_Update/training_acc.txt", std::ios::trunc);
-	clear_file_acc.close();
-
-	// Standardize the data
-	standardize_data(num_features, data);
-
-	// Split and shuffle data
-	std::vector<dlib::matrix<float>> training_data;
-	std::vector<unsigned long>       training_labels;
-	std::vector<dlib::matrix<float>> testing_data;
-	std::vector<unsigned long>       testing_labels;
-	split_data(data, labels, training_data, training_labels, testing_data, testing_labels);
-
-	std::vector<double> losses;
-	std::vector<double> training_accuracies;
-	std::vector<double> testing_accuracies;
-
-	// define the network
-	using net_type = dlib::loss_multiclass_log<
-		dlib::fc< 6,
-		dlib::htan<dlib::fc<100,
-		dlib::input<dlib::matrix<float>>
-		>>>>;
-
-	//make a network instance
-	net_type net;
-
-	// And then train it using the EEA1 data.
-	dlib::dnn_trainer<net_type, dlib::adam> trainer(net, dlib::adam(0.0005, 0.9, 0.999));
-	trainer.set_learning_rate(lr);
-
-	// training setting
-	int num_epochs = total_epoch;
-	int batch_size = batch_sizes;
-
-	// Begin training.
-	std::vector<dlib::matrix<float>> batch_data;
-	std::vector<unsigned long>		 batch_labels;
-	dlib::rand rnd(time(0));
-	double batch_loss;
-
-	auto start = std::chrono::high_resolution_clock::now(); // Record start time
-	// Calculate total number of mini-batches
-	int total_batches = (training_data.size() + batch_size - 1) / batch_size;
-
-	for (int epoch = 0; epoch < num_epochs; ++epoch)
-	{
-		// Loop over mini-batches
-		for (int batch_idx = 0; batch_idx < total_batches; ++batch_idx)
-		{
-			// clear the previous batch
-			batch_data.clear();
-			batch_labels.clear();
-
-			// Create a batch
-			int start_idx = batch_idx * batch_size;
-			batch_loss = 0.0;
-			for (int idx = start_idx; idx < std::min(start_idx + batch_size, (int)training_data.size()); ++idx)
-			{
-				batch_data.push_back(training_data[idx]);
-				batch_labels.push_back(training_labels[idx]);
-			}
-
-			// train with batch data
-			trainer.train_one_step(batch_data, batch_labels);
-
-			// Compute the loss for the batch
-			batch_loss = trainer.get_average_loss();
-			trainer.clear_average_loss();
-			losses.push_back(batch_loss);
-
-			// Record the loss
-			std::ostringstream message;
-			message << "Epoch " << epoch + 1 << " iteration " << (batch_idx + 1) << "/" << total_batches << " loss: " << batch_loss;
-			record_loss(message.str());
-		}
-
-		// Calculate and record the accuracy for the training set
-		auto training_predictions = net(training_data);
-		int correct_predictions = std::inner_product(training_predictions.begin(), training_predictions.end(), training_labels.begin(), 0,
-			std::plus<>(), std::equal_to<>());
-		double training_accuracy = correct_predictions / static_cast<double>(training_data.size());
-		std::ostringstream message;
-		message << "Epoch " << epoch + 1 << " training accuracy: " << training_accuracy;
-		record_acc(message.str());
-		training_accuracies.push_back(training_accuracy);
-
-		// Calculate and record the accuracy for the testing set
-		auto testing_predictions = net(testing_data);
-		correct_predictions = std::inner_product(testing_predictions.begin(), testing_predictions.end(), testing_labels.begin(), 0,
-			std::plus<>(), std::equal_to<>());
-		double testing_accuracy = correct_predictions / static_cast<double>(testing_data.size());
-		message.str("");
-		message << "Epoch " << epoch + 1 << " testing accuracy: " << testing_accuracy;
-		record_acc(message.str());
-		testing_accuracies.push_back(testing_accuracy);
-
-		SetEvent(hEvent);
-	}
-
-	// synchronization for seperate thread
-	trainer.get_net();
-	auto end = std::chrono::high_resolution_clock::now(); // Record end time
-
-	// Calculate time taken
-	std::chrono::duration<double> diff = end - start;
-
-	// Display the training duration
-	CString durationText;
-	durationText.Format(L"Training took %f seconds", diff.count());
-	AfxMessageBox(durationText);
-
-	// clean the network of the state from last batch
-	net.clean();
-
-	//dlib::serialize("ANN_Update/eea_network.dat") << net;
-	//dlib::deserialize("ANN_Update/meta_network.dat") >> net;
-
-	// Test the trained neural network
-	int num_right = 0;
-	int num_wrong = 0;
-	CString numRightText;
-	CString numWrongText;
-	CString accuracyText;
-
-	// training set
-	std::vector<unsigned long> predicted_labels = net(training_data);
-	for (size_t i = 0; i < training_data.size(); i++)
-	{
-		if (predicted_labels[i] == training_labels[i])
-			num_right++;
-		else
-			num_wrong++;
-
-	}
-	numRightText.Format(L"training num_right: %d", num_right);
-	numWrongText.Format(L"training num_wrong: %d", num_wrong);
-	accuracyText.Format(L"training accuracy: %f", num_right / static_cast<double>(num_right + num_wrong));
-	AfxMessageBox(numRightText);
-	AfxMessageBox(numWrongText);
-	AfxMessageBox(accuracyText);
-
-	// testing set
-	predicted_labels = net(testing_data);
-	num_right = 0;
-	num_wrong = 0;
-	for (size_t i = 0; i < testing_data.size(); ++i)
-	{
-		if (predicted_labels[i] == testing_labels[i])
-			++num_right;
-		else
-			++num_wrong;
-
-	}
-	numRightText.Empty(), numRightText.Format(L"testing num_right: %d", num_right);
-	numWrongText.Empty(), numWrongText.Format(L"testing num_wrong: %d", num_wrong);
-	accuracyText.Empty(), accuracyText.Format(L"testing accuracy: %f", num_right / static_cast<double>(num_right + num_wrong));
-	AfxMessageBox(numRightText);
-	AfxMessageBox(numWrongText);
-	AfxMessageBox(accuracyText);
-}
-
-// EEA Neural Network 2 layers
-void ANN_EEA2(double lr, int total_epoch, int batch_sizes, HANDLE hEvent) {
-	// Load the data from file
-	std::vector<dlib::matrix<float>> data;
-	std::vector<unsigned long> labels;
-	int num_features = load_data("datasets/EEA1-Tom20-6Classes-R21.FDA", data, labels);
-
-	// Clear the status txt file
-	std::ofstream clear_file_loss("ANN_Update/training_loss.txt", std::ios::trunc);
-	clear_file_loss.close();
-	std::ofstream clear_file_acc("ANN_Update/training_acc.txt", std::ios::trunc);
-	clear_file_acc.close();
-
-	// Standardize the data
-	standardize_data(num_features, data);
-
-	// Split and shuffle data
-	std::vector<dlib::matrix<float>> training_data;
-	std::vector<unsigned long>       training_labels;
-	std::vector<dlib::matrix<float>> testing_data;
-	std::vector<unsigned long>       testing_labels;
-	split_data(data, labels, training_data, training_labels, testing_data, testing_labels);
-
-	std::vector<double> losses;
-	std::vector<double> training_accuracies;
-	std::vector<double> testing_accuracies;
-
-	// define the network
-	using net_type = dlib::loss_multiclass_log<
-		dlib::fc< 6,
-		dlib::htan<dlib::fc<50,
-		dlib::htan<dlib::fc<100,
-		dlib::input<dlib::matrix<float>>
-		>>>>>>;
-
-	//make a network instance
-	net_type net;
-
-	// And then train it using the EEA1 data.
-	dlib::dnn_trainer<net_type, dlib::adam> trainer(net, dlib::adam(0.0005, 0.9, 0.999));
-	trainer.set_learning_rate(lr);
-
-	// training setting
-	int num_epochs = total_epoch;
-	int batch_size = batch_sizes;
-
-	// Begin training.
-	std::vector<dlib::matrix<float>> batch_data;
-	std::vector<unsigned long>		 batch_labels;
-	dlib::rand rnd(time(0));
-	double batch_loss;
-
-	auto start = std::chrono::high_resolution_clock::now(); // Record start time
-	// Calculate total number of mini-batches
-	int total_batches = (training_data.size() + batch_size - 1) / batch_size;
-
-	for (int epoch = 0; epoch < num_epochs; ++epoch)
-	{
-		// Loop over mini-batches
-		for (int batch_idx = 0; batch_idx < total_batches; ++batch_idx)
-		{
-			// clear the previous batch
-			batch_data.clear();
-			batch_labels.clear();
-
-			// Create a batch
-			int start_idx = batch_idx * batch_size;
-			batch_loss = 0.0;
-			for (int idx = start_idx; idx < std::min(start_idx + batch_size, (int)training_data.size()); ++idx)
-			{
-				batch_data.push_back(training_data[idx]);
-				batch_labels.push_back(training_labels[idx]);
-			}
-
-			// train with batch data
-			trainer.train_one_step(batch_data, batch_labels);
-
-			// Compute the loss for the batch
-			batch_loss = trainer.get_average_loss();
-			trainer.clear_average_loss();
-			losses.push_back(batch_loss);
-
-			// Record the loss
-			std::ostringstream message;
-			message << "Epoch " << epoch + 1 << " iteration " << (batch_idx + 1) << "/" << total_batches << " loss: " << batch_loss;
-			record_loss(message.str());
-		}
-
-		// Calculate and record the accuracy for the training set
-		auto training_predictions = net(training_data);
-		int correct_predictions = std::inner_product(training_predictions.begin(), training_predictions.end(), training_labels.begin(), 0,
-			std::plus<>(), std::equal_to<>());
-		double training_accuracy = correct_predictions / static_cast<double>(training_data.size());
-		std::ostringstream message;
-		message << "Epoch " << epoch + 1 << " training accuracy: " << training_accuracy;
-		record_acc(message.str());
-		training_accuracies.push_back(training_accuracy);
-
-		// Calculate and record the accuracy for the testing set
-		auto testing_predictions = net(testing_data);
-		correct_predictions = std::inner_product(testing_predictions.begin(), testing_predictions.end(), testing_labels.begin(), 0,
-			std::plus<>(), std::equal_to<>());
-		double testing_accuracy = correct_predictions / static_cast<double>(testing_data.size());
-		message.str("");
-		message << "Epoch " << epoch + 1 << " testing accuracy: " << testing_accuracy;
-		record_acc(message.str());
-		testing_accuracies.push_back(testing_accuracy);
-
-		SetEvent(hEvent);
-	}
-
-	// synchronization for seperate thread
-	trainer.get_net();
-	auto end = std::chrono::high_resolution_clock::now(); // Record end time
-
-	// Calculate time taken
-	std::chrono::duration<double> diff = end - start;
-
-	// Display the training duration
-	CString durationText;
-	durationText.Format(L"Training took %f seconds", diff.count());
-	AfxMessageBox(durationText);
-
-	// clean the network of the state from last batch
-	net.clean();
-
-	//dlib::serialize("ANN_Update/eea_network.dat") << net;
-	//dlib::deserialize("ANN_Update/meta_network.dat") >> net;
-
-	// Test the trained neural network
-	int num_right = 0;
-	int num_wrong = 0;
-	CString numRightText;
-	CString numWrongText;
-	CString accuracyText;
-
-	// training set
-	std::vector<unsigned long> predicted_labels = net(training_data);
-	for (size_t i = 0; i < training_data.size(); i++)
-	{
-		if (predicted_labels[i] == training_labels[i])
-			num_right++;
-		else
-			num_wrong++;
-
-	}
-	numRightText.Format(L"training num_right: %d", num_right);
-	numWrongText.Format(L"training num_wrong: %d", num_wrong);
-	accuracyText.Format(L"training accuracy: %f", num_right / static_cast<double>(num_right + num_wrong));
-	AfxMessageBox(numRightText);
-	AfxMessageBox(numWrongText);
-	AfxMessageBox(accuracyText);
-
-	// testing set
-	predicted_labels = net(testing_data);
-	num_right = 0;
-	num_wrong = 0;
-	for (size_t i = 0; i < testing_data.size(); ++i)
-	{
-		if (predicted_labels[i] == testing_labels[i])
-			++num_right;
-		else
-			++num_wrong;
-
-	}
-	numRightText.Empty(), numRightText.Format(L"testing num_right: %d", num_right);
-	numWrongText.Empty(), numWrongText.Format(L"testing num_wrong: %d", num_wrong);
-	accuracyText.Empty(), accuracyText.Format(L"testing accuracy: %f", num_right / static_cast<double>(num_right + num_wrong));
-	AfxMessageBox(numRightText);
-	AfxMessageBox(numWrongText);
-	AfxMessageBox(accuracyText);
-}
-
-// EEA Neural Network 3 layers
-void ANN_EEA3(double lr, int total_epoch, int batch_sizes, HANDLE hEvent) {
-	// Load the data from file
-	std::vector<dlib::matrix<float>> data;
-	std::vector<unsigned long> labels;
-	int num_features = load_data("datasets/EEA1-Tom20-6Classes-R21.FDA", data, labels);
-
-	// Clear the status txt file
-	std::ofstream clear_file_loss("ANN_Update/training_loss.txt", std::ios::trunc);
-	clear_file_loss.close();
-	std::ofstream clear_file_acc("ANN_Update/training_acc.txt", std::ios::trunc);
-	clear_file_acc.close();
-
-	// Standardize the data
-	standardize_data(num_features, data);
-
-	// Split and shuffle data
-	std::vector<dlib::matrix<float>> training_data;
-	std::vector<unsigned long>       training_labels;
-	std::vector<dlib::matrix<float>> testing_data;
-	std::vector<unsigned long>       testing_labels;
-	split_data(data, labels, training_data, training_labels, testing_data, testing_labels);
-
-	std::vector<double> losses;
-	std::vector<double> training_accuracies;
-	std::vector<double> testing_accuracies;
-
-	// define the network
-	using net_type = dlib::loss_multiclass_log<
-		dlib::fc< 6,
-		dlib::htan< dlib::fc<25,
-		dlib::htan<dlib::fc<50,
-		dlib::htan<dlib::fc<100,
-		dlib::input<dlib::matrix<float>>
-		>>>>>>>>;
-
-	//make a network instance
-	net_type net;
-
-	// And then train it using the EEA1 data.
-	dlib::dnn_trainer<net_type, dlib::adam> trainer(net, dlib::adam(0.0005, 0.9, 0.999));
-	trainer.set_learning_rate(lr);
-
-	// training setting
-	int num_epochs = total_epoch;
-	int batch_size = batch_sizes;
-
-	// Begin training.
-	std::vector<dlib::matrix<float>> batch_data;
-	std::vector<unsigned long>		 batch_labels;
-	dlib::rand rnd(time(0));
-	double batch_loss;
-
-	auto start = std::chrono::high_resolution_clock::now(); // Record start time
-	// Calculate total number of mini-batches
-	int total_batches = (training_data.size() + batch_size - 1) / batch_size;
-
-	for (int epoch = 0; epoch < num_epochs; ++epoch)
-	{
-		// Loop over mini-batches
-		for (int batch_idx = 0; batch_idx < total_batches; ++batch_idx)
-		{
-			// clear the previous batch
-			batch_data.clear();
-			batch_labels.clear();
-
-			// Create a batch
-			int start_idx = batch_idx * batch_size;
-			batch_loss = 0.0;
-			for (int idx = start_idx; idx < std::min(start_idx + batch_size, (int)training_data.size()); ++idx)
-			{
-				batch_data.push_back(training_data[idx]);
-				batch_labels.push_back(training_labels[idx]);
-			}
-
-			// train with batch data
-			trainer.train_one_step(batch_data, batch_labels);
-
-			// Compute the loss for the batch
-			batch_loss = trainer.get_average_loss();
-			trainer.clear_average_loss();
-			losses.push_back(batch_loss);
-
-			// Record the loss
-			std::ostringstream message;
-			message << "Epoch " << epoch + 1 << " iteration " << (batch_idx + 1) << "/" << total_batches << " loss: " << batch_loss;
-			record_loss(message.str());
-		}
-
-		// Calculate and record the accuracy for the training set
-		auto training_predictions = net(training_data);
-		int correct_predictions = std::inner_product(training_predictions.begin(), training_predictions.end(), training_labels.begin(), 0,
-			std::plus<>(), std::equal_to<>());
-		double training_accuracy = correct_predictions / static_cast<double>(training_data.size());
-		std::ostringstream message;
-		message << "Epoch " << epoch + 1 << " training accuracy: " << training_accuracy;
-		record_acc(message.str());
-		training_accuracies.push_back(training_accuracy);
-
-		// Calculate and record the accuracy for the testing set
-		auto testing_predictions = net(testing_data);
-		correct_predictions = std::inner_product(testing_predictions.begin(), testing_predictions.end(), testing_labels.begin(), 0,
-			std::plus<>(), std::equal_to<>());
-		double testing_accuracy = correct_predictions / static_cast<double>(testing_data.size());
-		message.str("");
-		message << "Epoch " << epoch + 1 << " testing accuracy: " << testing_accuracy;
-		record_acc(message.str());
-		testing_accuracies.push_back(testing_accuracy);
-
-		SetEvent(hEvent);
-	}
-
-	// synchronization for seperate thread
-	trainer.get_net();
-	auto end = std::chrono::high_resolution_clock::now(); // Record end time
-
-	// Calculate time taken
-	std::chrono::duration<double> diff = end - start;
-
-	// Display the training duration
-	CString durationText;
-	durationText.Format(L"Training took %f seconds", diff.count());
-	AfxMessageBox(durationText);
-
-	// clean the network of the state from last batch
-	net.clean();
-
-	//dlib::serialize("ANN_Update/eea_network.dat") << net;
-	//dlib::deserialize("ANN_Update/meta_network.dat") >> net;
-
-	// Test the trained neural network
-	int num_right = 0;
-	int num_wrong = 0;
-	CString numRightText;
-	CString numWrongText;
-	CString accuracyText;
-
-	// training set
-	std::vector<unsigned long> predicted_labels = net(training_data);
-	for (size_t i = 0; i < training_data.size(); i++)
-	{
-		if (predicted_labels[i] == training_labels[i])
-			num_right++;
-		else
-			num_wrong++;
-
-	}
-	numRightText.Format(L"training num_right: %d", num_right);
-	numWrongText.Format(L"training num_wrong: %d", num_wrong);
-	accuracyText.Format(L"training accuracy: %f", num_right / static_cast<double>(num_right + num_wrong));
-	AfxMessageBox(numRightText);
-	AfxMessageBox(numWrongText);
-	AfxMessageBox(accuracyText);
-
-	// testing set
-	predicted_labels = net(testing_data);
-	num_right = 0;
-	num_wrong = 0;
-	for (size_t i = 0; i < testing_data.size(); ++i)
-	{
-		if (predicted_labels[i] == testing_labels[i])
-			++num_right;
-		else
-			++num_wrong;
-
-	}
-	numRightText.Empty(), numRightText.Format(L"testing num_right: %d", num_right);
-	numWrongText.Empty(), numWrongText.Format(L"testing num_wrong: %d", num_wrong);
-	accuracyText.Empty(), accuracyText.Format(L"testing accuracy: %f", num_right / static_cast<double>(num_right + num_wrong));
-	AfxMessageBox(numRightText);
-	AfxMessageBox(numWrongText);
-	AfxMessageBox(accuracyText);
-}
-
-// EEA Neural Network 4 layers
-void ANN_EEA4(double lr, int total_epoch, int batch_sizes, HANDLE hEvent) {
-	// Load the data from file
-	std::vector<dlib::matrix<float>> data;
-	std::vector<unsigned long> labels;
-	int num_features = load_data("datasets/EEA1-Tom20-6Classes-R21.FDA", data, labels);
-
-	// Clear the status txt file
-	std::ofstream clear_file_loss("ANN_Update/training_loss.txt", std::ios::trunc);
-	clear_file_loss.close();
-	std::ofstream clear_file_acc("ANN_Update/training_acc.txt", std::ios::trunc);
-	clear_file_acc.close();
-
-	// Standardize the data
-	standardize_data(num_features, data);
-
-	// Split and shuffle data
-	std::vector<dlib::matrix<float>> training_data;
-	std::vector<unsigned long>       training_labels;
-	std::vector<dlib::matrix<float>> testing_data;
-	std::vector<unsigned long>       testing_labels;
-	split_data(data, labels, training_data, training_labels, testing_data, testing_labels);
-
-	std::vector<double> losses;
-	std::vector<double> training_accuracies;
-	std::vector<double> testing_accuracies;
-
-	// define the network
-	using net_type = dlib::loss_multiclass_log<
-		dlib::fc< 6,
-		dlib::htan< dlib::fc<25,
-		dlib::htan<dlib::fc<50,
-		dlib::htan<dlib::fc<100,
-		dlib::htan<dlib::fc<200,
-		dlib::input<dlib::matrix<float>>
-		>>>>>>>>>>;
-
-	//make a network instance
-	net_type net;
-
-	// And then train it using the EEA1 data.
-	dlib::dnn_trainer<net_type, dlib::adam> trainer(net, dlib::adam(0.0005, 0.9, 0.999));
-	trainer.set_learning_rate(lr);
-
-	// training setting
-	int num_epochs = total_epoch;
-	int batch_size = batch_sizes;
-
-	// Begin training.
-	std::vector<dlib::matrix<float>> batch_data;
-	std::vector<unsigned long>		 batch_labels;
-	dlib::rand rnd(time(0));
-	double batch_loss;
-
-	auto start = std::chrono::high_resolution_clock::now(); // Record start time
-	// Calculate total number of mini-batches
-	int total_batches = (training_data.size() + batch_size - 1) / batch_size;
-
-	for (int epoch = 0; epoch < num_epochs; ++epoch)
-	{
-		// Loop over mini-batches
-		for (int batch_idx = 0; batch_idx < total_batches; ++batch_idx)
-		{
-			// clear the previous batch
-			batch_data.clear();
-			batch_labels.clear();
-
-			// Create a batch
-			int start_idx = batch_idx * batch_size;
-			batch_loss = 0.0;
-			for (int idx = start_idx; idx < std::min(start_idx + batch_size, (int)training_data.size()); ++idx)
-			{
-				batch_data.push_back(training_data[idx]);
-				batch_labels.push_back(training_labels[idx]);
-			}
-
-			// train with batch data
-			trainer.train_one_step(batch_data, batch_labels);
-
-			// Compute the loss for the batch
-			batch_loss = trainer.get_average_loss();
-			trainer.clear_average_loss();
-			losses.push_back(batch_loss);
-
-			// Record the loss
-			std::ostringstream message;
-			message << "Epoch " << epoch + 1 << " iteration " << (batch_idx + 1) << "/" << total_batches << " loss: " << batch_loss;
-			record_loss(message.str());
-		}
-
-		// Calculate and record the accuracy for the training set
-		auto training_predictions = net(training_data);
-		int correct_predictions = std::inner_product(training_predictions.begin(), training_predictions.end(), training_labels.begin(), 0,
-			std::plus<>(), std::equal_to<>());
-		double training_accuracy = correct_predictions / static_cast<double>(training_data.size());
-		std::ostringstream message;
-		message << "Epoch " << epoch + 1 << " training accuracy: " << training_accuracy;
-		record_acc(message.str());
-		training_accuracies.push_back(training_accuracy);
-
-		// Calculate and record the accuracy for the testing set
-		auto testing_predictions = net(testing_data);
-		correct_predictions = std::inner_product(testing_predictions.begin(), testing_predictions.end(), testing_labels.begin(), 0,
-			std::plus<>(), std::equal_to<>());
-		double testing_accuracy = correct_predictions / static_cast<double>(testing_data.size());
-		message.str("");
-		message << "Epoch " << epoch + 1 << " testing accuracy: " << testing_accuracy;
-		record_acc(message.str());
-		testing_accuracies.push_back(testing_accuracy);
-
-		SetEvent(hEvent);
-	}
-
-	// synchronization for seperate thread
-	trainer.get_net();
-	auto end = std::chrono::high_resolution_clock::now(); // Record end time
-
-	// Calculate time taken
-	std::chrono::duration<double> diff = end - start;
-
-	// Display the training duration
-	CString durationText;
-	durationText.Format(L"Training took %f seconds", diff.count());
-	AfxMessageBox(durationText);
-
-	// clean the network of the state from last batch
-	net.clean();
-
-	//dlib::serialize("ANN_Update/eea_network.dat") << net;
-	//dlib::deserialize("ANN_Update/meta_network.dat") >> net;
-
-	// Test the trained neural network
-	int num_right = 0;
-	int num_wrong = 0;
-	CString numRightText;
-	CString numWrongText;
-	CString accuracyText;
-
-	// training set
-	std::vector<unsigned long> predicted_labels = net(training_data);
-	for (size_t i = 0; i < training_data.size(); i++)
-	{
-		if (predicted_labels[i] == training_labels[i])
-			num_right++;
-		else
-			num_wrong++;
-
-	}
-	numRightText.Format(L"training num_right: %d", num_right);
-	numWrongText.Format(L"training num_wrong: %d", num_wrong);
-	accuracyText.Format(L"training accuracy: %f", num_right / static_cast<double>(num_right + num_wrong));
-	AfxMessageBox(numRightText);
-	AfxMessageBox(numWrongText);
-	AfxMessageBox(accuracyText);
-
-	// testing set
-	predicted_labels = net(testing_data);
-	num_right = 0;
-	num_wrong = 0;
-	for (size_t i = 0; i < testing_data.size(); ++i)
-	{
-		if (predicted_labels[i] == testing_labels[i])
-			++num_right;
-		else
-			++num_wrong;
-
-	}
-	numRightText.Empty(), numRightText.Format(L"testing num_right: %d", num_right);
-	numWrongText.Empty(), numWrongText.Format(L"testing num_wrong: %d", num_wrong);
-	accuracyText.Empty(), accuracyText.Format(L"testing accuracy: %f", num_right / static_cast<double>(num_right + num_wrong));
-	AfxMessageBox(numRightText);
-	AfxMessageBox(numWrongText);
-	AfxMessageBox(accuracyText);
-}
-
-// EEA Neural Network 5 hidden layers
-void ANN_EEA5(double lr, int total_epoch, int batch_sizes, HANDLE hEvent) {
-	// Load the data from file
-	std::vector<dlib::matrix<float>> data;
-	std::vector<unsigned long> labels;
-	int num_features = load_data("datasets/EEA1-Tom20-6Classes-R21.FDA", data, labels);
-
-	// Clear the status txt file
-	std::ofstream clear_file_loss("ANN_Update/training_loss.txt", std::ios::trunc);
-	clear_file_loss.close();
-	std::ofstream clear_file_acc("ANN_Update/training_acc.txt", std::ios::trunc);
-	clear_file_acc.close();
-
-	// Standardize the data
-	standardize_data(num_features, data);
-
-	// Split and shuffle data
-	std::vector<dlib::matrix<float>> training_data;
-	std::vector<unsigned long>       training_labels;
-	std::vector<dlib::matrix<float>> testing_data;
-	std::vector<unsigned long>       testing_labels;
-	split_data(data, labels, training_data, training_labels, testing_data, testing_labels);
-
-	std::vector<double> losses;
-	std::vector<double> training_accuracies;
-	std::vector<double> testing_accuracies;
-
-	// define the network
-	using net_type = dlib::loss_multiclass_log<
-		dlib::fc< 6,
-		dlib::htan< dlib::fc<25,
-		dlib::htan<dlib::fc<50,
-		dlib::htan<dlib::fc<100,
-		dlib::htan<dlib::fc<200,
-		dlib::htan<dlib::fc<400,
-		dlib::input<dlib::matrix<float>>
-		>>>>>>>>>>>>;
-
-	//make a network instance
-	net_type net;
-
-	// And then train it using the EEA1 data.
-	dlib::dnn_trainer<net_type, dlib::adam> trainer(net, dlib::adam(0.0005, 0.9, 0.999));
-	trainer.set_learning_rate(lr);
-
-	// training setting
-	int num_epochs = total_epoch;
-	int batch_size = batch_sizes;
-
-	// Begin training.
-	std::vector<dlib::matrix<float>> batch_data;
-	std::vector<unsigned long>		 batch_labels;
-	dlib::rand rnd(time(0));
-	double batch_loss;
-
-	auto start = std::chrono::high_resolution_clock::now(); // Record start time
-	// Calculate total number of mini-batches
-	int total_batches = (training_data.size() + batch_size - 1) / batch_size;
-
-	for (int epoch = 0; epoch < num_epochs; ++epoch) {
-		// Loop over mini-batches
-		for (int batch_idx = 0; batch_idx < total_batches; ++batch_idx) {
-			// clear the previous batch
-			batch_data.clear();
-			batch_labels.clear();
-
-			// Create a batch
-			int start_idx = batch_idx * batch_size;
-			batch_loss = 0.0;
-			for (int idx = start_idx; idx < std::min(start_idx + batch_size, (int)training_data.size()); ++idx) {
-				batch_data.push_back(training_data[idx]);
-				batch_labels.push_back(training_labels[idx]);
-			}
-
-			// train with batch data
-			trainer.train_one_step(batch_data, batch_labels);
-
-			// Compute the loss for the batch
-			batch_loss = trainer.get_average_loss();
-			trainer.clear_average_loss();
-			losses.push_back(batch_loss);
-
-			// Record the loss
-			std::ostringstream message;
-			message << "Epoch " << epoch + 1 << " iteration " << (batch_idx + 1) << "/" << total_batches << " loss: " << batch_loss;
-			record_loss(message.str());
-		}
-
-
-		// Calculate and record the accuracy for the training set
-		auto training_predictions = net(training_data);
-		int correct_predictions = std::inner_product(training_predictions.begin(), training_predictions.end(), training_labels.begin(), 0,
-			std::plus<>(), std::equal_to<>());
-		double training_accuracy = correct_predictions / static_cast<double>(training_data.size());
-		std::ostringstream message;
-		message << "Epoch " << epoch + 1 << " training accuracy: " << training_accuracy;
-		record_acc(message.str());
-		training_accuracies.push_back(training_accuracy);
-
-		// Calculate and record the accuracy for the testing set
-		auto testing_predictions = net(testing_data);
-		correct_predictions = std::inner_product(testing_predictions.begin(), testing_predictions.end(), testing_labels.begin(), 0,
-			std::plus<>(), std::equal_to<>());
-		double testing_accuracy = correct_predictions / static_cast<double>(testing_data.size());
-		message.str("");
-		message << "Epoch " << epoch + 1 << " testing accuracy: " << testing_accuracy;
-		record_acc(message.str());
-		testing_accuracies.push_back(testing_accuracy);
-
-		SetEvent(hEvent);
-	}
-
-	// synchronization for seperate thread
-	trainer.get_net();
-	auto end = std::chrono::high_resolution_clock::now(); // Record end time
-
-	// Calculate time taken
-	std::chrono::duration<double> diff = end - start;
-
-	// Display the training duration
-	CString durationText;
-	durationText.Format(L"Training took %f seconds", diff.count());
-	AfxMessageBox(durationText);
-
-	// clean the network of the state from last batch
-	net.clean();
-
-	//dlib::serialize("ANN_Update/eea_network.dat") << net;
-	//dlib::deserialize("ANN_Update/meta_network.dat") >> net;
-
-	// Test the trained neural network
-	int num_right = 0;
-	int num_wrong = 0;
-	CString numRightText;
-	CString numWrongText;
-	CString accuracyText;
-
-	// training set
-	std::vector<unsigned long> predicted_labels = net(training_data);
-	for (size_t i = 0; i < training_data.size(); i++)
-	{
-		if (predicted_labels[i] == training_labels[i])
-			num_right++;
-		else
-			num_wrong++;
-
-	}
-	numRightText.Format(L"training num_right: %d", num_right);
-	numWrongText.Format(L"training num_wrong: %d", num_wrong);
-	accuracyText.Format(L"training accuracy: %f", num_right / static_cast<double>(num_right + num_wrong));
-	AfxMessageBox(numRightText);
-	AfxMessageBox(numWrongText);
-	AfxMessageBox(accuracyText);
-
-	// testing set
-	predicted_labels = net(testing_data);
-	num_right = 0;
-	num_wrong = 0;
-	for (size_t i = 0; i < testing_data.size(); ++i)
-	{
-		if (predicted_labels[i] == testing_labels[i])
-			++num_right;
-		else
-			++num_wrong;
-
-	}
-	numRightText.Empty(), numRightText.Format(L"testing num_right: %d", num_right);
-	numWrongText.Empty(), numWrongText.Format(L"testing num_wrong: %d", num_wrong);
-	accuracyText.Empty(), accuracyText.Format(L"testing accuracy: %f", num_right / static_cast<double>(num_right + num_wrong));
-	AfxMessageBox(numRightText);
-	AfxMessageBox(numWrongText);
-	AfxMessageBox(accuracyText);
-}
-
-// EEA1 worker thread to run in back ground
-UINT ANN_EEA1_ThreadProc(LPVOID pParam) {
-	// Convert the LPVOID parameter back to the data structure
-	ANNStruct* pData = (ANNStruct*)pParam;
-
-	// Call ANN_EEA with parameters from the structure
-	ANN_EEA1(pData->lr, pData->total_epoch, pData->batch_sizes, pData->hEvent);
-
-	AfxMessageBox(L"Dataset: EEA Topology: 100");
-
-	return 0;
-}
-
-// EEA2 worker thread to run in back ground
-UINT ANN_EEA2_ThreadProc(LPVOID pParam) {
-	// Convert the LPVOID parameter back to the data structure
-	ANNStruct* pData = (ANNStruct*)pParam;
-
-	// Call ANN_EEA with parameters from the structure
-	ANN_EEA2(pData->lr, pData->total_epoch, pData->batch_sizes, pData->hEvent);
-
-	AfxMessageBox(L"Dataset: EEA Topology: 100, 50");
-
-	return 0;
-}
-
-// EEA3 worker thread to run in back ground
-UINT ANN_EEA3_ThreadProc(LPVOID pParam) {
-	// Convert the LPVOID parameter back to the data structure
-	ANNStruct* pData = (ANNStruct*)pParam;
-
-	// Call ANN_EEA with parameters from the structure
-	ANN_EEA3(pData->lr, pData->total_epoch, pData->batch_sizes, pData->hEvent);
-
-	AfxMessageBox(L"Dataset: EEA Topology: 100, 50, 25");
-
-	return 0;
-}
-
-// EEA4 worker thread to run in back ground
-UINT ANN_EEA4_ThreadProc(LPVOID pParam) {
-	// Convert the LPVOID parameter back to the data structure
-	ANNStruct* pData = (ANNStruct*)pParam;
-
-	// Call ANN_EEA with parameters from the structure
-	ANN_EEA4(pData->lr, pData->total_epoch, pData->batch_sizes, pData->hEvent);
-
-	AfxMessageBox(L"Dataset: EEA Topology: 200, 100, 50, 25");
-
-	return 0;
-}
-
-// EEA5 worker thread to run in background
-UINT ANN_EEA5_ThreadProc(LPVOID pParam) {
-	// Convert the LPVOID parameter back to the data structure
-	ANNStruct* pData = (ANNStruct*)pParam;
-
-	// Call ANN_EEA with parameters from the structure
-	ANN_EEA5(pData->lr, pData->total_epoch, pData->batch_sizes, pData->hEvent);
-
-	AfxMessageBox(L"Dataset: EEA Topology: 400, 200, 100, 50, 25");
-
-	return 0;
-}
-
-
-// Wait for processing message
-void ProcessPendingMessages() {
-	MSG msg;
-	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
-}
-
-
-
-void CModelingandAnalysisofUncertaintyDoc::OnANN() {
-	CWnd* pParent = nullptr;
-	CANNForm Selection(pParent);
-	OnOpenedFile = false;
-	DescriptiveStatistics = false;
-	HypothesisTesting_OneSample = false;
-	HypothesisTesting_TwoSample = false;
-	ShapiroWilkTest = false;
-	AndersonDarlingTest = false;
-	ANOVA = false;
-	PCA_Select_PCs = false;
-	PCA_Display_PCs_Standard = false;
-	PCA_Display_Scores = false;
-	PCA_Display_Loadings = false;
-	FA_Display_Standard = false;
-	FA_Display_Loadings = false;
-	FA_Display_Scores = false;
-	FA_Display_Matrices = false;
-	FDA = false;
-	ANN_Training = true;
-
-	// Get training setting from user
-	Selection.DoModal();
-	double lr = Selection.learning_rate;
-	int epoch_num = Selection.total_epoch;
-	int batch_num = Selection.batch_size;
-
-	HANDLE hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-
-	// Passing in training settings
-	ANNStruct* pData = new ANNStruct;
-	pData->lr = lr;
-	pData->total_epoch = epoch_num;
-	pData->batch_sizes = batch_num;
-	pData->hEvent = hEvent;
-
-	if (Selection.m_selectedTask == 1) {
-		AfxBeginThread(ANN_EEA1_ThreadProc, pData);
-	}
-	else if (Selection.m_selectedTask == 2) {
-		AfxBeginThread(ANN_EEA2_ThreadProc, pData);
-	}
-	else if (Selection.m_selectedTask == 3) {
-		AfxBeginThread(ANN_EEA3_ThreadProc, pData);
-	}
-	else if (Selection.m_selectedTask == 4) {
-		AfxBeginThread(ANN_EEA4_ThreadProc, pData);
-	}
-	else if (Selection.m_selectedTask == 5) {
-		AfxBeginThread(ANN_EEA5_ThreadProc, pData);
-	}
-
-	for (int i = 0; i < epoch_num; ++i) {
-		DWORD dwResult = WaitForSingleObject(hEvent, INFINITE);
-		if (dwResult == WAIT_OBJECT_0) {
-			ProcessPendingMessages();
-			// The event is signaled, so update the views
-			UpdateAllViews(NULL);
-			ResetEvent(hEvent);  // Reset the event for the next epoch
-		}
-	}
-	CloseHandle(hEvent);
-}
-
-// *******************************************
-// ***      Matrix  Format  Conversion     ***
-// *******************************************
-
-// These helper functions are for ANN, where they convert CArray/2D Vector Matrixs and vectors.
-// Two functions' return type are void because MFC prevent CArray from shallow copying. 
-
-// Matrix helper function that convert the CArray to 2D Vector
-// Input: 1D cArray Matrix, 1D cArray Matrix Spec
-// Output: 2D std Vector Matrix
-// Usage:
-// std::vector<std::vector<double>> myVMatrix = CarrayToVectorM(M, M_spec);
-std::vector<std::vector<double>> CModelingandAnalysisofUncertaintyDoc::CarrayToVectorM(CArray <double>& M, CArray <int>& M_spec) {
-	// std 2D vector to be returned
-	std::vector<std::vector<double>> matrix;
-	// Temp CArray to get a row
-	CArray<double> rowArray;
-	int numRows = M_spec.GetAt(0);
-
-	// For each row in the matrix, copy the row to 2D vector
-	for (int i = 0; i < numRows; ++i) {
-		GetRow(M, M_spec, rowArray, i);
-		std::vector<double> row(rowArray.GetSize());
-		for (int j = 0; j < rowArray.GetSize(); ++j) {
-			row[j] = rowArray.GetAt(j);
-		}
-		matrix.push_back(row);
-	}
-
-	return matrix;
-}
-
-// Matrix helper function that convert the 2D Vector Matrix to CArray Matrix
-// Input: 2D std Vector, 1D Carray M, 1D Carray M_spec
-// Usage:
-/* std::vector<double> myVector = {{1, 2, 3}, {3, 4, 5}, {6, 7, 8}};
-   CArray<double> myCArray, myCArray_spec;
-   VectorToCarrayM(myVector, myCArray, myCArray_spec);
-*/
-void CModelingandAnalysisofUncertaintyDoc::VectorToCarrayM(std::vector<std::vector<double>>& A, CArray <double>& M, CArray <int>& M_spec) {
-	// Clear any existing data in M and M_spec
-	M.RemoveAll();
-	M_spec.RemoveAll();
-
-	// Determine the dimensions of the matrix A
-	int numRows = A.size();
-	int numCols = A.empty() ? 0 : A[0].size();
-
-	// Populate M_spec with matrix specifications
-	M_spec.Add(numRows); // Number of rows
-	M_spec.Add(numCols); // Number of columns
-	M_spec.Add(0);       // Matrix type: 0 for general matrix
-
-	// Populate M with the data from the 2D vector A
-	for (const auto& row : A) {
-		for (double val : row) {
-			M.Add(val);
-		}
-	}
-}
-
-// Vector helper function that convert the CArray to Vector
-// Input: 1D cArray
-// Output: 1D std vector
-// Usage:
-// std::vector<double> myVector = VectorToCarrayV(myCArray)
-std::vector<double> CModelingandAnalysisofUncertaintyDoc::CarrayToVectorV(CArray <double>& V) {
-	// Get the size of the target vector
-	std::vector<double> vector(V.GetSize());
-	// Copy into CArray
-	for (int i = 0; i < V.GetSize(); ++i) {
-		vector[i] = V.GetAt(i);
-	}
-	return vector;
-}
-
-// Vector helper function that convert the Vector to CArray
-// Input: 1D vector, 1D CArrray
-// Output: None
-// Usage:
-/* std::vector<double> myVector = {1, 2, 3};
-   CArray<double> myCArray;
-   VectorToCarrayV(myVector, myCArray)
-*/
- void CModelingandAnalysisofUncertaintyDoc::VectorToCarrayV(std::vector<double>& V, CArray <double>& output) {
-	// Clear the CArray
-	output.RemoveAll();
-	// Set Size for CArray
-	output.SetSize(V.size());
-	// Copying from vector to CArray vector
-	for (int i = 0; i < V.size(); ++i) {
-		output[i] = V[i];
-	}
-}
-
-// *******************************************
-// ***                ANN                  ***
-// *******************************************
 // Function to calculate the sum of squared errors
 double CModelingandAnalysisofUncertaintyDoc::sum_squared_error(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2) {
 	double error = 0.0;
@@ -7817,6 +7454,15 @@ UINT __cdecl ANN_MFC1_Thread(LPVOID pParam)
 
 	delete params;
 	return 0;
+}
+
+// Wait for processing message
+void ProcessPendingMessages() {
+	MSG msg;
+	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
 }
 
 void CModelingandAnalysisofUncertaintyDoc::OnANN_MFC() {
@@ -8729,84 +8375,9 @@ void CModelingandAnalysisofUncertaintyDoc::GetNetworkPredictionParallel(const st
 	}
 }
 
-// Enablers for modeling methods after datafile was read
-void CModelingandAnalysisofUncertaintyDoc::OnQPPSolver() {
-	quadprogpp::Matrix<double> G;
-	G.resize(2, 2);
-	G[0][0] = 2;
-	G[0][1] = 0;
-	G[1][0] = 0;
-	G[1][1] = 4;
-
-
-	quadprogpp::Vector<double> g0;
-	g0.resize(2);
-	g0[0] = -4;
-	g0[1] = -8;
-
-
-	// Constraint Equality LHS
-	quadprogpp::Matrix<double> CE;
-	CE.resize(2, 2); // must be 2 row, 1 column
-	CE[0][0] = 1;
-	CE[0][1] = 1;
-	CE[1][0] = -1;
-	// CE[1][1] = 0;
-	// CE[2][0] = 0;
-
-
-	// Constraint Equality RHS
-	quadprogpp::Vector<double> ce0;
-	ce0.resize(2);
-	ce0[0] = 3;
-	ce0[1] = 0;
-	// ce0[2] = 0;
-
-	// Constraint Inequality LHS
-	quadprogpp::Matrix<double> CI;
-	CI.resize(2, 1);
-	CI[0][0] = 0;
-	CI[0][1] = 0;
-	CI[1][0] = 0;
-	CI[1][1] = 0;
-
-	// Constraint Inequality RHS
-	quadprogpp::Vector<double> ci0;
-	ci0.resize(1);
-	ci0[0] = 0;
-	// ci0[1] = 0;
-
-	quadprogpp::Vector<double> x;
-	x.resize(2);
-
-	double result = solve_quadprog(G, g0, CE, ce0, CI, ci0, x);
-
-	std::ofstream outdata;
-
-	outdata.open("quadprogpp/qppOutput.txt");
-
-
-	outdata << result << std::endl;
-
-	outdata.close();
-
-
-
-	//std::cout << "Optimal value: " << result << std::endl;
-
-
-	//std::cout << "Optimal solution (x): ";
-	//for (int i = 0; i < x.size(); i++) {
-	//	std::cout << x[i] << " ";
-	//}
-	//std::cout << std::endl;
-	// } 
-
-
-
-	return;
-
+void CModelingandAnalysisofUncertaintyDoc::OnQPSolver() {
 }
+
 void CModelingandAnalysisofUncertaintyDoc::OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI) {
 	pCmdUI->Enable(FileOpen);
 }
