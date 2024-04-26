@@ -7207,151 +7207,169 @@ void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 //***         Compute  support  vector  machine  model          ***
 //*****************************************************************
 
-/***              SMO Algorithm Helper Functions               ***/
-// Linear Kernal Function, dot product of two vectors
-double CModelingandAnalysisofUncertaintyDoc::linearKernal(CArray <double>& a, CArray <double>& b) {
-	return ScalarProduct(a, b);
-}
+class SVM {
+private:
+	double C;
+	CArray<double> alphas;
+	double b = 0.0;
+	CArray<double> errors; // Error cache
+	CArray<double> dataset; // Flattened dataset
+	CArray<int> labels;
+	CArray<int> dataset_spec; // Dataset specification array
 
-// Helper function to calculate the SVM output for a given input vector
-double CModelingandAnalysisofUncertaintyDoc::svmOutput(CArray<double>& x, CArray<double>& alphas, CArray<double>& data, CArray<int>& data_spec, CArray<double>& label, double b) {
-	double sum = 0.0;
-	// Number of data points
-	int m = data_spec[0];
-	for (int i = 0; i < m; ++i) {
-		CArray<double> xi;
-		// Extract ith data row
-		GetRow(data, data_spec, xi, i);
-		double kernelValue = linearKernal(x, xi);
-		sum += alphas[i] * label[i] * kernelValue;
+	// Kernel function using dot product, adapted for CArray
+	double kernel(int idx1, int idx2) {
+		double result = 0.0;
+		int start1 = idx1 * dataset_spec[1]; // start index for row idx1
+		int start2 = idx2 * dataset_spec[1]; // start index for row idx2
+		for (int i = 0; i < dataset_spec[1]; i++) {
+			result += dataset[start1 + i] * dataset[start2 + i];
+		}
+		return result;
 	}
-	return sum + b;
-}
 
-// Function to select the alpha pair for optimization
-bool CModelingandAnalysisofUncertaintyDoc::selectAlphaPair(int& out_i, int& out_j, CArray<double>& alphas, CArray<double>& data, CArray<int>& data_spec, CArray<double>& label, double& Ei, double& Ej, double b) {
-	// Number of data points
-	int m = data_spec[0];
-	bool foundPair = false;
-	double maxDeltaE = 0;
+	// Compute the error for a given example
+	double computeError(int idx) {
+		double output = b;
+		int start_idx = idx * dataset_spec[1];
+		for (int i = 0; i < labels.GetSize(); i++) {
+			output += alphas[i] * labels[i] * kernel(idx, i);
+		}
+		return output - labels[idx];
+	}
 
-	for (int i = 0; i < m; ++i) {
-		// Calculate Ei = f(x_i) - y_i for the first alpha
-		CArray<double> xi;
-		GetRow(data, data_spec, xi, i);
-		double fxi = svmOutput(xi, alphas, data, data_spec, label, b);
-		Ei = fxi - label[i];
-
-		for (int j = 0; j < m; ++j) {
-			// Skip if it's the same point
-			if (i == j) continue;
-			// Calculate Ej = f(x_j) - y_j for the second alpha
-			CArray<double> xj;
-			GetRow(data, data_spec, xj, j);
-			double fxj = svmOutput(xj, alphas, data, data_spec, label, b);
-			Ej = fxj - label[j];
-
-			double deltaE = std::abs(Ei - Ej);
-			if (deltaE > maxDeltaE) {
-				// Update maxDeltaE, i, and j
-				maxDeltaE = deltaE;
-				out_i = i;
-				out_j = j;
-				foundPair = true;
-			}
+	// Update the error cache for all data points
+	void updateErrorCache() {
+		for (int i = 0; i < labels.GetSize(); i++) {
+			errors[i] = computeError(i);
 		}
 	}
-	return foundPair;
-}
 
-// Function to optimize a pair of Lagrange multipliers
-bool CModelingandAnalysisofUncertaintyDoc::optimizeAlphaPair(int i, int j, CArray<double>& alphas, CArray<double>& label, CArray<double>& data, CArray<int>& data_spec, double& b, double C) {
-	if (i == j) return false;
-	// Extract the feature vectors for i and j
-	CArray<double> xi, xj;
-	GetRow(data, data_spec, xi, i);
-	GetRow(data, data_spec, xj, j);
-	// Current alphas
-	double alpha_i_old = alphas[i];
-	double alpha_j_old = alphas[j];
-	// Compute the bounds L and H for alpha_j
-	double L, H;
-	if (label[i] != label[j]) {
-		L = max(0.0, alpha_j_old - alpha_i_old);
-		H = min(C, C + alpha_j_old - alpha_i_old);
+	// Implementing the SMO algorithm's main optimization step
+	bool takeStep(int i1, int i2) {
+		if (i1 == i2) return false;
+
+		double alpha1 = alphas[i1], alpha2 = alphas[i2];
+		int y1 = labels[i1], y2 = labels[i2];
+		double E1 = errors[i1], E2 = errors[i2];
+
+		// Calculate L and H
+		int s = y1 * y2;
+		double L, H;
+		if (y1 != y2) {
+			L = max(0.0, alpha2 - alpha1);
+			H = min(C, C + alpha2 - alpha1);
+		}
+		else {
+			L = max(0.0, alpha1 + alpha2 - C);
+			H = min(C, alpha1 + alpha2);
+		}
+
+		if (L == H) return false;
+
+		// Compute eta
+		double k11 = kernel(i1, i1), k22 = kernel(i2, i2), k12 = kernel(i1, i2);
+		double eta = k11 + k22 - 2 * k12;
+
+		if (eta <= 0) return false;
+
+		// Update alpha2
+		double a2 = alpha2 + y2 * (E1 - E2) / eta;
+		if (a2 < L) a2 = L;
+		else if (a2 > H) a2 = H;
+
+		if (abs(a2 - alpha2) < 1e-5) return false;
+
+		// Update alpha1
+		double a1 = alpha1 + s * (alpha2 - a2);
+
+		// Update bias
+		b -= E1 + y1 * (a1 - alpha1) * k11 + y2 * (a2 - alpha2) * k12;
+
+		alphas[i1] = a1;
+		alphas[i2] = a2;
+
+		// Update error cache
+		updateErrorCache();
+		return true;
 	}
-	else {
-		L = max(0.0, alpha_i_old + alpha_j_old - C);
-		H = min(C, alpha_i_old + alpha_j_old);
+
+public:
+	SVM(double C_val, int size) : C(C_val), alphas(size, 0.0), errors(size, 0.0), labels(size, 0) {
+		dataset_spec.SetSize(3);  // Assuming 3 elements for rows, cols, type
 	}
-	if (L == H) return false;
-	// Compute eta
-	double eta = 2.0 * linearKernal(xi, xj) - linearKernal(xi, xi) - linearKernal(xj, xj);
-	if (eta >= 0) return false;
-	// Compute and clip the new value for alpha_j
-	double alpha_j_new = alpha_j_old - (label[j] * (svmOutput(xi, alphas, data, data_spec, label, b) - b - label[i] + label[j] * b)) / eta;
-	alpha_j_new = min(H, max(L, alpha_j_new));
-	if (std::abs(alpha_j_new - alpha_j_old) < 1e-5) return false;
-	// Update alpha_i based on the change in alpha_j
-	double alpha_i_new = alpha_i_old + label[i] * label[j] * (alpha_j_old - alpha_j_new);
-	// Update bias
-	double b1 = b - svmOutput(xi, alphas, data, data_spec, label, b) + label[i] * (alpha_i_old - alpha_i_new) * linearKernal(xi, xi) + label[j] * (alpha_j_old - alpha_j_new) * linearKernal(xi, xj);
-	double b2 = b - svmOutput(xj, alphas, data, data_spec, label, b) + label[i] * (alpha_i_old - alpha_i_new) * linearKernal(xi, xj) + label[j] * (alpha_j_old - alpha_j_new) * linearKernal(xj, xj);
-	b = (b1 + b2) / 2;
-	// Update alphas in the array
-	alphas[i] = alpha_i_new;
-	alphas[j] = alpha_j_new;
 
-	return true;
-}
+	void train(const CArray<double>& data, const CArray<int>& data_spec, const CArray<double>& lbls, int maxPasses) {
+		dataset = data;
+		dataset_spec = data_spec;
+		labels = lbls;
+		alphas.SetSize(labels.GetSize());
+		errors.SetSize(labels.GetSize());
 
-CModelingandAnalysisofUncertaintyDoc::SMOModel CModelingandAnalysisofUncertaintyDoc::trainSMO(CArray<double>& data, CArray<int>& data_spec, CArray<double>& label, double C, double tol, int maxPasses) {
-	// Initialize alphas and bias
-	CArray<double> alphas;
-	alphas.SetSize(data_spec[0], 0.0); // One alpha per data point, initialized to 0
-	double b = 0;
-	int passes = 0;
-	while (passes < maxPasses) {
-		int numChangedAlphas = 0;
-		for (int i = 0; i < data_spec[0]; i++) {
-			// Error for alpha[i]
-			double Ei;
-			CArray<double> xi;
-			GetRow(data, data_spec, xi, i);
-			Ei = svmOutput(xi, alphas, data, data_spec, label, b) - label[i];
-			if ((label[i] * Ei < -tol && alphas[i] < C) || (label[i] * Ei > tol && alphas[i] > 0)) {
-				int j;
-				double Ej;
-				if (selectAlphaPair(i, j, alphas, data, data_spec, label, Ei, Ej, b)) {
-					AfxMessageBox(L"1");
-					if (optimizeAlphaPair(i, j, alphas, label, data, data_spec, b, C)) {
-						numChangedAlphas++;
-						AfxMessageBox(L"2");
+		updateErrorCache();  // Initialize error cache
+
+		int passes = 0;
+		bool numChanged = false;
+		while (passes < maxPasses) {
+			numChanged = false;
+			for (int i = 0; i < labels.GetSize(); ++i) {
+				for (int j = 0; j < labels.GetSize(); ++j) {
+					if (takeStep(i, j)) {
+						numChanged = true;
 					}
 				}
 			}
-		}
-		if (numChangedAlphas == 0) {
-			passes++;
-		}
-		else {
-			passes = 0;
-		}
-	}
-	// Construct the SVM model
-	SMOModel model;
-	for (int i = 0; i < alphas.GetSize(); ++i) {
-		model.alphas.Add(alphas[i]);
-	}
-	model.b = b;
-	// find support vector indices
-	for (int i = 0; i < alphas.GetSize(); i++) {
-		if (alphas[i] > 0) {
-			model.supportVectorIndices.Add(i);
+
+			if (!numChanged) {
+				passes++;
+			}
+			else {
+				passes = 0;
+			}
 		}
 	}
-	return model;
-}
+
+	double predict(const CArray<double>& x) const {
+		double result = b;
+		for (int i = 0; i < labels.GetSize(); ++i) {
+			result += alphas[i] * labels[i] * dotProduct(x, i);
+		}
+		return result;
+	}
+
+	void displayModel() const {
+		cout << "Model Bias (b): " << b << endl;
+		cout << "Support Vectors and their Alphas:" << endl;
+		for (int i = 0; i < alphas.GetSize(); ++i) {
+			if (alphas[i] != 0) {  // Print only support vectors
+				cout << "Alpha[" << i << "] = " << alphas[i] << ", Label = " << labels[i] << endl;
+				// Assuming a method to print a single data vector:
+				printDataVector(i);
+			}
+		}
+	}
+
+private:
+	// Additional helper method to print a single data vector
+	void printDataVector(int idx) const {
+		int start = idx * dataset_spec[1];
+		cout << "Vector: ";
+		for (int i = 0; i < dataset_spec[1]; ++i) {
+			cout << dataset[start + i] << " ";
+		}
+		cout << endl;
+	}
+
+	// Dot product considering the dataset is stored in a flat CArray
+	double dotProduct(const CArray<double>& x, int idx) const {
+		double sum = 0.0;
+		int start = idx * dataset_spec[1];
+		for (int i = 0; i < dataset_spec[1]; ++i) {
+			sum += x[i] * dataset[start + i];
+		}
+		return sum;
+	}
+};
 
 void CModelingandAnalysisofUncertaintyDoc::OnSVM() {
 	AfxMessageBox(L"Now we are working on establishing SVM model");
@@ -7387,14 +7405,6 @@ void CModelingandAnalysisofUncertaintyDoc::OnSVM() {
 	SplitData(data, data_spec, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel, 0.85);
 	AfxMessageBox(L"Dataset loaded");
 
-	// SMO Set up
-	double C = 1; // Regularization parameter
-	double tol = 0.0001; // Tolerance for stopping criterion
-	int maxPasses = 10; // Maximum number of passes without progress
-
-	// Train
-	SMOModel model = trainSMO(trainData, trainData_spec, label, C, tol, maxPasses);
-	AfxMessageBox(L"SVM model trained");
 }
 
 //*****************************************************************
