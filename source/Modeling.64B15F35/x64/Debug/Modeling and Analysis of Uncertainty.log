@@ -1,0 +1,1300 @@
+﻿  CLinearClassificationDlg.cpp
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\resource.h(172,1): warning C4005: 'IDC_CROSS': macro redefinition
+  (compiling source file '/CLinearClassificationDlg.cpp')
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0\um\winuser.h(10622,1):
+  see previous definition of 'IDC_CROSS'
+  
+  COneSampleHypothesisSelection.cpp
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\resource.h(172,1): warning C4005: 'IDC_CROSS': macro redefinition
+  (compiling source file '/COneSampleHypothesisSelection.cpp')
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0\um\winuser.h(10622,1):
+  see previous definition of 'IDC_CROSS'
+  
+  CSelectNumberPCs.cpp
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\resource.h(172,1): warning C4005: 'IDC_CROSS': macro redefinition
+  (compiling source file '/CSelectNumberPCs.cpp')
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0\um\winuser.h(10622,1):
+  see previous definition of 'IDC_CROSS'
+  
+  Modeling and Analysis of Uncertainty.cpp
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\resource.h(172,1): warning C4005: 'IDC_CROSS': macro redefinition
+  (compiling source file '/Modeling%20and%20Analysis%20of%20Uncertainty.cpp')
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0\um\winuser.h(10622,1):
+  see previous definition of 'IDC_CROSS'
+  
+  Modeling and Analysis of UncertaintyDoc.cpp
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\resource.h(172,1): warning C4005: 'IDC_CROSS': macro redefinition
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0\um\winuser.h(10622,1):
+  see previous definition of 'IDC_CROSS'
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(378,12): warning C4244: 'initializing': conversion from 'INT_PTR' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(378,33): warning C4244: 'initializing': conversion from 'INT_PTR' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(3118,16): warning C4244: 'initializing': conversion from '_Rep' to 'unsigned int', possible loss of data
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(3118,16): warning C4244:         with
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(3118,16): warning C4244:         [
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(3118,16): warning C4244:             _Rep=std::chrono::system_clock::rep
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(3118,16): warning C4244:         ]
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(3215,16): warning C4244: 'initializing': conversion from 'INT_PTR' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(3731,10): warning C4101: 'good1': unreferenced local variable
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(3782,10): warning C4101: 'good2': unreferenced local variable
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5184,26): warning C4244: '=': conversion from 'INT_PTR' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5289,17): warning C4244: 'argument': conversion from 'double' to 'INT_PTR', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5290,17): warning C4244: 'argument': conversion from 'double' to 'INT_PTR', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5322,12): warning C4244: 'initializing': conversion from 'INT_PTR' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5324,15): warning C4244: '=': conversion from 'TYPE' to 'float', possible loss of data
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5324,15): warning C4244:         with
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5324,15): warning C4244:         [
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5324,15): warning C4244:             TYPE=double
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5324,15): warning C4244:         ]
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5325,15): warning C4244: '=': conversion from 'TYPE' to 'float', possible loss of data
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5325,15): warning C4244:         with
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5325,15): warning C4244:         [
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5325,15): warning C4244:             TYPE=double
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5325,15): warning C4244:         ]
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5328,16): warning C4244: '=': conversion from 'TYPE' to 'float', possible loss of data
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5328,16): warning C4244:         with
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5328,16): warning C4244:         [
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5328,16): warning C4244:             TYPE=double
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5328,16): warning C4244:         ]
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5329,16): warning C4244: '=': conversion from 'TYPE' to 'float', possible loss of data
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5329,16): warning C4244:         with
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5329,16): warning C4244:         [
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5329,16): warning C4244:             TYPE=double
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5329,16): warning C4244:         ]
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5358,43): warning C4244: 'argument': conversion from 'TYPE' to 'INT_PTR', possible loss of data
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5358,43): warning C4244:         with
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5358,43): warning C4244:         [
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5358,43): warning C4244:             TYPE=double
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5358,43): warning C4244:         ]
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5463,18): warning C4244: 'initializing': conversion from 'INT_PTR' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5493,18): warning C4244: 'initializing': conversion from 'INT_PTR' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5555,35): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5577,37): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned long', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5721,36): warning C4244: '=': conversion from '__int64' to 'unsigned long', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5762,29): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5865,14): warning C4244: 'initializing': conversion from 'INT_PTR' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5932,107): warning C4305: 'argument': truncation from 'double' to 'float'
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(5942,17): warning C4244: 'initializing': conversion from 'INT_PTR' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(6098,17): warning C4244: 'initializing': conversion from 'INT_PTR' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(6250,111): warning C4305: 'argument': truncation from 'double' to 'float'
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(6344,14): warning C4244: 'initializing': conversion from 'const TYPE' to 'int', possible loss of data
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(6344,14): warning C4244:         with
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(6344,14): warning C4244:         [
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(6344,14): warning C4244:             TYPE=double
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(6344,14): warning C4244:         ]
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7254,14): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7255,14): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7268,14): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7269,14): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7283,14): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7284,14): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7312,14): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7313,14): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7391,8): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7570,8): warning C4244: 'argument': conversion from '_Ty' to 'const unsigned __int64', possible loss of data
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7570,8): warning C4244:         with
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7570,8): warning C4244:         [
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7570,8): warning C4244:             _Ty=double
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7570,8): warning C4244:         ]
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7777,14): warning C4858: discarding return value: This member function returns a bool indicating whether the container is empty and has no other effects. It is not useful to call this member function and discard the return value. Use the 'clear()' member function if you want to erase all elements.
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7780,14): warning C4858: discarding return value: This member function returns a bool indicating whether the container is empty and has no other effects. It is not useful to call this member function and discard the return value. Use the 'clear()' member function if you want to erase all elements.
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7839,8): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7947,8): warning C4244: 'argument': conversion from '_Ty' to 'const unsigned __int64', possible loss of data
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7947,8): warning C4244:         with
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7947,8): warning C4244:         [
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7947,8): warning C4244:             _Ty=double
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(7947,8): warning C4244:         ]
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(8060,17): warning C4858: discarding return value: This member function returns a bool indicating whether the container is empty and has no other effects. It is not useful to call this member function and discard the return value. Use the 'clear()' member function if you want to erase all elements.
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(8072,62): warning C4244: 'argument': conversion from 'const double' to 'const int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(8152,8): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(8153,8): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(8182,12): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(8346,8): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(8347,8): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyDoc.cpp')
+  
+  Modeling and Analysis of UncertaintyView.cpp
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\resource.h(172,1): warning C4005: 'IDC_CROSS': macro redefinition
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0\um\winuser.h(10622,1):
+  see previous definition of 'IDC_CROSS'
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(3279,19): warning C4101: 'value': unreferenced local variable
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(3278,145): warning C4101: 'pos': unreferenced local variable
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(3279,14): warning C4101: 'max': unreferenced local variable
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(3279,9): warning C4101: 'min': unreferenced local variable
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(3279,26): warning C4101: 'range': unreferenced local variable
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5168,32): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5169,38): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5171,42): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5201,40): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5201,89): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5202,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5202,97): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5204,40): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5204,100): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5204,73): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5205,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5205,108): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5205,81): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5206,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5206,108): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5206,77): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5207,48): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5207,116): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5207,85): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5222,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5237,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5248,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5259,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5285,40): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5285,89): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5286,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5286,97): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5288,40): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5288,100): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5288,73): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5289,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5289,108): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5289,81): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5290,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5290,108): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5290,77): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5291,48): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5291,116): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5291,85): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5306,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5323,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5334,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5345,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5387,40): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5387,89): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5388,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5388,97): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5390,40): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5390,100): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5390,73): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5391,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5391,108): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5391,81): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5392,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5392,108): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5392,77): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5393,48): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5393,116): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5393,85): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5409,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5426,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5428,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5440,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5441,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5453,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5455,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5473,40): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5473,89): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5474,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5474,97): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5476,40): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5476,100): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5476,73): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5477,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5477,108): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5477,81): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5478,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5478,108): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5478,77): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5479,48): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5479,116): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5479,85): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5487,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5526,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5528,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5540,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5541,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5553,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5555,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5600,32): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5658,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5711,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5712,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5718,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5777,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5778,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5784,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5824,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5836,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5847,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5895,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5948,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5949,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(5955,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6014,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6015,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6021,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6062,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6074,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6085,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6151,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6205,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6206,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6212,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6271,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6272,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6278,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6317,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6319,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6331,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6332,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6344,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6346,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6396,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6449,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6450,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6456,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6515,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6516,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6522,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6562,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6564,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6576,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6577,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6589,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6591,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6624,32): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6625,38): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6627,42): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6661,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6661,97): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6664,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6664,108): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6664,81): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6666,48): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6666,116): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6666,85): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6681,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6701,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6720,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6739,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6769,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6769,97): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6772,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6772,108): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6772,81): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6774,48): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6774,116): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6774,85): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6789,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6814,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6826,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6848,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6901,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6901,97): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6904,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6904,108): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6904,81): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6906,48): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6906,116): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6906,85): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6921,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6938,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6940,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6962,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6963,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6985,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(6987,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7015,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7015,97): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7018,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7018,108): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7018,81): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7020,48): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7020,116): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7020,85): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7028,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7066,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7076,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7089,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7090,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7113,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7115,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7171,32): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7229,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7282,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7283,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7289,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7348,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7349,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7355,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7396,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7408,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7419,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7468,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7521,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7522,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7528,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7587,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7588,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7594,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7635,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7647,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7658,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7724,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7778,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7779,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7785,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7844,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7845,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7851,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7890,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7892,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7904,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7905,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7917,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7919,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(7969,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8022,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8023,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8029,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8088,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8089,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8095,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8135,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8137,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8149,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8150,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8162,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8164,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8195,32): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8196,38): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8198,42): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8231,40): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8231,89): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8232,40): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8232,100): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8232,73): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8233,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8233,108): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8233,77): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8247,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8268,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8287,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8306,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8336,40): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8336,89): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8337,40): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8337,100): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8337,73): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8338,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8338,108): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8338,77): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8352,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8377,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8389,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8411,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8464,40): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8464,89): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8465,40): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8465,100): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8465,73): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8466,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8466,108): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8466,77): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8480,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8497,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8499,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8521,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8522,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8544,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8546,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8574,40): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8574,89): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8575,40): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8575,100): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8575,73): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8576,44): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8576,108): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8576,77): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8589,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8623,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8633,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8646,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8647,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8670,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8672,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8729,32): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8786,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8839,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8840,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8846,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8905,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8906,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8912,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8952,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8964,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(8975,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9023,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9076,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9077,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9083,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9142,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9143,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9149,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9190,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9202,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9213,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9278,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9332,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9333,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9339,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9398,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9399,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9405,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9444,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9446,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9458,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9459,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9471,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9473,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9523,46): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9576,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9577,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9583,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9642,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9643,22): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9649,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9689,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9691,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9703,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9704,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9716,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9718,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9909,42): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9910,42): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9921,41): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9922,41): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9923,41): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9959,33): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9969,9): warning C4244: 'initializing': conversion from 'INT_PTR' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(9970,9): warning C4244: 'initializing': conversion from 'INT_PTR' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyView.cpp(10265,42): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '/Modeling%20and%20Analysis%20of%20UncertaintyView.cpp')
+  
+  NewANN.cpp
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\resource.h(172,1): warning C4005: 'IDC_CROSS': macro redefinition
+  (compiling source file '/NewANN.cpp')
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0\um\winuser.h(10622,1):
+  see previous definition of 'IDC_CROSS'
+  
+  ProbabilityDistributions.cpp
+  Generating Code...
+C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\Modeling and Analysis of UncertaintyDoc.cpp(383,1): warning C4715: 'CModelingandAnalysisofUncertaintyDoc::ScalarProduct': not all control paths return a value
+  Modeling and Analysis of Uncertainty.vcxproj -> C:\Users\henry\Documents\GitHub\ModelingAndAnalysisOfUncertainty\source\x64\Debug\Modeling and Analysis of Uncertainty.exe

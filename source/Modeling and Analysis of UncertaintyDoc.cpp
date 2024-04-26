@@ -36,7 +36,6 @@
 #include "CANNForm.h"
 #include "CLinearClassificationDlg.h"
 #include <stdlib.h>
-#include "osqp.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

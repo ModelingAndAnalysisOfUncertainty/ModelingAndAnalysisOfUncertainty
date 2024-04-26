@@ -6,7 +6,6 @@
 #include <vector>
 #include <omp.h>
 #include <stdlib.h>
-#include "osqp.h"
 
 #pragma once
 
