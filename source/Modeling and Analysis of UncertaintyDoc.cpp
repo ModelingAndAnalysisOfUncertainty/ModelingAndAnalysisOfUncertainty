@@ -7041,6 +7041,119 @@ void CModelingandAnalysisofUncertaintyDoc::OnKPCA() {
 //***            Compute  logistic regression  model            ***
 //*****************************************************************
 
+int generateRandomInt(int min, int max) {
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<int> dis(min, max);
+	return dis(gen);
+}
+
+void CModelingandAnalysisofUncertaintyDoc::OnLR_test(double eta, CArray<double>& w,
+	const CArray < CArray<double> >& XTrain, const CArray < CArray<double> >& XVal,
+	const CArray<int>& YTrain, const CArray<int>& YVal, int nIter) {
+
+	// holding these variables for abstraction
+	int M = XTrain[0].GetSize();
+	int NTrain = XTrain.GetSize();
+	int NVal = XVal.GetSize();
+
+	// variables for getting weights
+	int k, y_i;
+	double t, yhat_temp, delta;
+
+	// getting the weights after niter repetitions
+	for (int i = 0; i < nIter; i++) {
+		// check what value rand gives
+		k = generateRandomInt(0,NTrain-1);
+		CArray<double> x;
+		x.Copy(XTrain[k]);
+		x.Add(1.0);
+		y_i = YTrain[k];
+		t = ScalarProduct(x, w);
+		yhat_temp = 1.0 / (1.0 + (double)exp(-t));
+		delta = (double)y_i - yhat_temp;
+		for (int j = 0; j < M+1; j++) {
+			w[j] += eta * x[j] * delta;
+		}
+	}
+
+	// calculating T for training dataset
+	CArray<double> T;
+	for (int i = 0; i < NTrain; i++) {
+		for (int j = 0; j < M; j++) {
+			T.Add(0.0);
+			double val = XTrain[i][j]*w[j]; 
+			T[i] += val;
+		}
+	} 
+
+	// calculating T for validation dataset
+	CArray<double> T0;
+	for (int i = 0; i < NVal; i++) {
+		CArray<double> temp;
+		for (int j = 0; j < M; j++) {
+			temp.Add(XVal[i][j]);
+		}
+		temp.Add(1.0);
+		double val = ScalarProduct(temp, w);
+		T0.Add(val);
+	}
+
+	// calculating yhat and yhat0
+	CArray<double> yhat;
+	CArray<double> yhat_0;
+	for (int i = 0; i < NTrain; i++) { 
+		double yhat_val = 1.0 / (1.0 + (double)exp(-T[i]));
+		yhat.Add(yhat_val);
+	}
+	for (int i = 0; i < NVal; i++) {
+		yhat_0.Add(1.0 / (1.0 + exp(-T0[i])));
+	}
+
+	// At the end here we have yhat for validation and yhat for training
+	// yhat is for training, yhat_0 is for validation
+
+	int TPtra = 0, FNtra = 0, FPtra = 0, TNtra = 0;
+	for (int i = 0; i < NTrain; ++i) {
+		if (YTrain[i] == 1 && yhat[i] >= 0.5) {
+			TPtra++;
+		}
+		else if (YTrain[i] == 1 && yhat[i] < 0.5) {
+			FNtra++;
+		}
+		else if (YTrain[i] == 0 && yhat[i] < 0.5) {
+			TNtra++;
+		}
+		else {
+			FPtra++;
+		}
+	}
+	// TPtra is the true pos for training, FN is false neg,
+	// FP is false pos, and TN is true neg. This is for training!
+
+	// same applies for these but for validation!
+	int TPval = 0, FNval = 0, FPval = 0, TNval = 0;
+	for (int i = 0; i < NVal; ++i) {
+		if (YVal[i] == 1 && yhat_0[i] >= 0.5) {
+			TPval++;
+		}
+		else if (YVal[i] == 1 && yhat_0[i] < 0.5) {
+			FNval++;
+		}
+		else if (YVal[i] == 0 && yhat_0[i] < 0.5) {
+			TNval++;
+		}
+		else {
+			FPval++;
+		}
+	}
+
+	// NEXT STEPS: The data is all here, now it just has to leave
+	// the scope of the function! Do something with these datavalues,
+	// from my testing this code worked the same as the correct MATLAB code
+}
+
+
 void CModelingandAnalysisofUncertaintyDoc::OnLR() {
 	AfxMessageBox(L"Now we are working on establishing logistic regression model");
 	AfxMessageBox(L"We are looking at for the Hessian Matrix and Gradient");
