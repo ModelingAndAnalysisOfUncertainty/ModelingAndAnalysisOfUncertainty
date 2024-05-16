@@ -18,6 +18,9 @@
 #include <numeric>
 #include <set>
 #include <map>
+#include <filesystem>
+#include <torch/torch.h>
+#include <torch/script.h>
 
 // SHARED_HANDLERS can be defined in an ATL project implementing preview, thumbnail
 // and search filter handlers and allows sharing of document code with that project.
@@ -73,6 +76,9 @@ BEGIN_MESSAGE_MAP(CModelingandAnalysisofUncertaintyDoc, CDocument)
 	ON_COMMAND(ID_REGULARIZATION_L2NORM, &CModelingandAnalysisofUncertaintyDoc::OnL2_Regularization)
 	ON_COMMAND(ID_MACHINELEARNING_KERNELPARTIALLEASTSQUARES, &CModelingandAnalysisofUncertaintyDoc::OnKPLS)
 	ON_COMMAND(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORK, &CModelingandAnalysisofUncertaintyDoc::OnANN_MFC)
+	ON_COMMAND(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORK_LIBTORCH, &CModelingandAnalysisofUncertaintyDoc::OnANN_LIBTORCH)
+
+
 
 	ON_UPDATE_COMMAND_UI(ID_BASICSTATISTICS_DESCRIPTIVESTATISTICS, &CModelingandAnalysisofUncertaintyDoc::OnUpdateDescriptiveStatistics)
 	ON_UPDATE_COMMAND_UI(ID_HYPOTHESISTESTING_ONESAMPLE, &CModelingandAnalysisofUncertaintyDoc::OnUpdateOnesample)
@@ -98,6 +104,7 @@ BEGIN_MESSAGE_MAP(CModelingandAnalysisofUncertaintyDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(ID_MACHINELEARNING_KERNELPARTIALLEASTSQUARES, &CModelingandAnalysisofUncertaintyDoc::OnUpdateKPLS)
 	ON_UPDATE_COMMAND_UI(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORK, &CModelingandAnalysisofUncertaintyDoc::OnUpdateKPLS)
 	ON_UPDATE_COMMAND_UI(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORKWITHACCURACY, &CModelingandAnalysisofUncertaintyDoc::OnUpdateMachinelearningArtificialneuralnetworkwithaccuracy)
+	ON_UPDATE_COMMAND_UI(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORK_LIBTORCH, &CModelingandAnalysisofUncertaintyDoc::OnUpdateMachinelearningArtificialneuralnetworkLIBTORCH)
 END_MESSAGE_MAP()
 
 // CModelingandAnalysisofUncertaintyDoc construction/destruction
@@ -3014,226 +3021,6 @@ BOOL CModelingandAnalysisofUncertaintyDoc::OnSaveDocument(LPCTSTR lpszPathName) 
 	return true;
 }
 
-// *******************************************
-// ***      Pre-train Helper Functions     ***
-// *******************************************
-/*
-	All helper functions use the project's CArray matrix implementation, where a matrix is stroed in a 1D CArray,
-	and use an additional CArray<int> of size 3 to define the matrix's specification.
-	spec[0] defines the number of row for the matrix
-	spec[1] defines the number of col for the matrix
-	spec[2] defines the matrix type
-	All pre-train helper functions assume matrix type is dense matrix (spec[2]=0)
-*/
-// Pre-train helper function that loads FDA datasets given the file path, return int of features
-int CModelingandAnalysisofUncertaintyDoc::LoadData(const std::string& filename, CArray<double>& data, CArray<int>& data_spec, CArray<double>& label) {
-	CString message;
-	std::ifstream file(filename);
-	if (!file) {
-		message.Format(_T("Unable to open file: %S\n"), filename.c_str());
-		AfxMessageBox(message);
-		return -1;
-	}
-	std::string line;
-	// Read the first line to get the number of features
-	if (!std::getline(file, line)) {
-		message.Format(_T("File description 1 format incorrect: %S\n"), filename.c_str());
-		AfxMessageBox(message);
-		return -1;
-	}
-	std::stringstream firstLine(line);
-	int num_features;
-	char comma;
-	if (!(firstLine >> num_features >> comma)) {
-		message.Format(_T("File description 2 format incorrect: %S\n"), filename.c_str());
-		AfxMessageBox(message);
-		return -1;
-	}
-	// Decrement by 1 to exclude the label from the features count
-	num_features -= 1;
-	// Skip the remaining description lines
-	for (int i = 0; i < 3; ++i) {
-		if (!std::getline(file, line)) {
-			message.Format(_T("File description 3 format incorrect: %S\n"), filename.c_str());
-			AfxMessageBox(message);
-			return -1;
-		}
-	}
-	// Initialize data_spec for a dense matrix
-	data_spec.SetSize(3); // Ensure data_spec has size 3
-	data_spec[1] = num_features; // Number of columns (features)
-	data_spec[2] = 0; // Dense matrix
-	// Prepare to read data rows and labels
-	std::vector<double> tempRow(num_features);
-	int rowCount = 0;
-	// Read the data
-	while (std::getline(file, line)) {
-		std::stringstream ss(line);
-		// Parse the features
-		for (int i = 0; i < num_features; ++i) {
-			if (!(ss >> tempRow[i])) {
-				message.Format(_T("File feature data format incorrect: %S\n"), filename.c_str());
-				AfxMessageBox(message);
-				return -1;
-			}
-			// Skip the comma
-			if (i < num_features - 1 && ss.peek() == ',') {
-				ss.ignore();
-			}
-		}
-		// Skip the comma before the label
-		if (ss.peek() == ',') {
-			ss.ignore();
-		}
-		// Get the label
-		double currentLabel;
-		if (!(ss >> currentLabel)) {
-			message.Format(_T("File label data format incorrect: %S\n"), filename.c_str());
-			AfxMessageBox(message);
-			return -1;
-		}
-		// Store the parsed row and label
-		for (auto value : tempRow) {
-			data.Add(value);
-		}
-		label.Add(currentLabel);
-		rowCount++;
-	}
-	// Finalize data_spec with the number of rows
-	data_spec[0] = rowCount; // Number of rows
-	return num_features;
-}
-
-//Pre-train helper function that shuffle a dataset
-void CModelingandAnalysisofUncertaintyDoc::ShuffleData(CArray<double>& data, CArray<int>& data_spec, CArray<double>& label) {
-	// Determine the number of rows and columns from data_spec
-	int numRows = data_spec[0];
-	int numCols = data_spec[1];
-	// Create a vector of indices for shuffling
-	std::vector<int> indices(numRows);
-	for (int i = 0; i < numRows; ++i) {
-		indices[i] = i;
-	}
-	// Random number generator
-	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-	std::shuffle(indices.begin(), indices.end(), std::default_random_engine(seed));
-	// Temporary CArrays to hold the shuffled data and labels
-	CArray<double> shuffledData;
-	CArray<double> shuffledLabel;
-	// Preallocate space in the temporary arrays
-	shuffledData.SetSize(data.GetSize());
-	shuffledLabel.SetSize(label.GetSize());
-	// Reorder data and labels based on shuffled indices
-	for (int i = 0; i < numRows; ++i) {
-		int oldIndex = indices[i];
-		for (int j = 0; j < numCols; ++j) {
-			shuffledData.SetAt(i * numCols + j, data.GetAt(oldIndex * numCols + j));
-		}
-		shuffledLabel.SetAt(i, label.GetAt(oldIndex));
-	}
-	// Copy the shuffled data and labels back into the original CArrays
-	data.Copy(shuffledData);
-	label.Copy(shuffledLabel);
-}
-
-//Pre-train helper function that split the dataset into training and validation set given the split ratio
-void CModelingandAnalysisofUncertaintyDoc::SplitData(const CArray<double>& data, const CArray<int>& data_spec, const CArray<double>& label,
-													 CArray<double>& trainData, CArray<int>& trainData_spec, CArray<double>& trainLabel,
-													 CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel, float ratio) {
-	// Calculate the size of the training set
-	int numRows = data_spec[0];
-	int numCols = data_spec[1];
-	int trainSize = static_cast<int>(numRows * ratio);
-	// Prepare data_spec for both training and testing datasets
-	trainData_spec.SetSize(3);
-	testData_spec.SetSize(3);
-	// Copy specifications for dense matrices, adjusting row counts accordingly
-	trainData_spec[0] = trainSize; // Number of rows in the training set
-	trainData_spec[1] = numCols; // Number of columns/features remains the same
-	trainData_spec[2] = 0; // Dense matrix
-	testData_spec[0] = numRows - trainSize; // Number of rows in the testing set
-	testData_spec[1] = numCols; // Number of columns/features remains the same
-	testData_spec[2] = 0; // Dense matrix
-	// Allocate space for training and testing data and labels
-	trainData.SetSize(trainSize * numCols);
-	trainLabel.SetSize(trainSize);
-	testData.SetSize((numRows - trainSize) * numCols);
-	testLabel.SetSize(numRows - trainSize);
-	// Copy the first portion of the data into the training set
-	for (int i = 0; i < trainSize; ++i) {
-		for (int j = 0; j < numCols; ++j) {
-			trainData.SetAt(i * numCols + j, data.GetAt(i * numCols + j));
-		}
-		trainLabel.SetAt(i, label.GetAt(i));
-	}
-	// Copy the remaining data into the test set
-	for (int i = trainSize; i < numRows; ++i) {
-		for (int j = 0; j < numCols; ++j) {
-			testData.SetAt((i - trainSize) * numCols + j, data.GetAt(i * numCols + j));
-		}
-		testLabel.SetAt(i - trainSize, label.GetAt(i));
-	}
-}
-
-
-// Pre-train helper function that standardize the dataset
-void CModelingandAnalysisofUncertaintyDoc::StandardizeData(int numFeatures, CArray<double>& data, CArray<int>& data_spec) {
-	int numRows = data_spec[0];
-	CArray<double> mean, stddev;
-	mean.SetSize(numFeatures);
-	stddev.SetSize(numFeatures);
-	// Compute the mean for each feature
-	for (int i = 0; i < numFeatures; ++i) {
-		double sum = 0.0;
-		for (int j = 0; j < numRows; ++j) {
-			sum += data.GetAt(j * numFeatures + i);
-		}
-		mean.SetAt(i, sum / numRows);
-	}
-	// Compute the standard deviation for each feature
-	for (int i = 0; i < numFeatures; ++i) {
-		double sq_diff_sum = 0.0;
-		for (int j = 0; j < numRows; ++j) {
-			double value = data.GetAt(j * numFeatures + i) - mean.GetAt(i);
-			sq_diff_sum += std::pow(value, 2);
-		}
-		stddev.SetAt(i, std::sqrt(sq_diff_sum / numRows));
-	}
-	// Standardize the data
-	for (int j = 0; j < numRows; ++j) {
-		for (int i = 0; i < numFeatures; ++i) {
-			if (stddev.GetAt(i) != 0) { // Prevent division by zero
-				double standardizedValue = (data.GetAt(j * numFeatures + i) - mean.GetAt(i)) / stddev.GetAt(i);
-				data.SetAt(j * numFeatures + i, standardizedValue);
-			}
-		}
-	}
-}
-
-// Pre-train helper function that standardize the label for regression problem.
-void CModelingandAnalysisofUncertaintyDoc::StandardizeLabel(CArray<double>& label) {
-	int numLabels = label.GetSize();
-	double mean = 0.0;
-	double stddev = 0.0;
-	// Compute the mean of the labels
-	for (int i = 0; i < numLabels; ++i) {
-		mean += label.GetAt(i);
-	}
-	mean /= numLabels;
-	// Compute the standard deviation of the labels
-	for (int i = 0; i < numLabels; ++i) {
-		double diff = label.GetAt(i) - mean;
-		stddev += diff * diff;
-	}
-	stddev = std::sqrt(stddev / numLabels);
-	// Standardize the labels
-	for (int i = 0; i < numLabels; ++i) {
-		if (stddev != 0) { // Prevent division by zero
-			label.SetAt(i, (label.GetAt(i) - mean) / stddev);
-		}
-	}
-}
-
 #ifdef SHARED_HANDLERS
 
 // Support for thumbnails
@@ -3482,7 +3269,10 @@ double CModelingandAnalysisofUncertaintyDoc::GetOptimalBandwidth(CArray <double>
 		std::vector<int> index;
 		index.clear();
 		for (int i = 0; i < n_Obs; i++) index.push_back(i);
-		std::random_shuffle(index.begin(), index.end());
+		// Use a random number generator
+		std::random_device rd;
+		std::mt19937 g(rd());
+		std::shuffle(index.begin(), index.end(), g);
 		for (int i = 0; i < 1000; i++) {
 			sample_copy.Add(sample.GetAt(index[i]));
 		}
@@ -5916,112 +5706,6 @@ double CalculateAUC(const std::vector<double>& tpr, const std::vector<double>& f
 	return auc;
 }
 
-void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier() {
-	// Read data and labels
-	CArray<double> data, trainData, testData;
-	CArray<int> data_spec, trainData_spec, testData_spec;
-	CArray<double> label, trainLabel, testLabel;
-	CArray<double> emptySww;
-	std::string newFilePath = CW2A(PathAndFileName.GetString(), CP_UTF8);
-	std::string subpath = ExtractSubpathAfterSource(newFilePath);
-	int numFeatures = LoadData(subpath, data,  data_spec, label);
-	StandardizeData(numFeatures, data, data_spec);
-	ShuffleData(data, data_spec, label);
-	SplitData(data, data_spec,label,trainData, trainData_spec, trainLabel,testData,testData_spec, testLabel, 0.85);
-	bool validation = true;
-	GetRegressionVector(trainData, trainData_spec, trainLabel, emptySww, validation);
-
-	
-	// Calculate TP, TN, FP, FN 
-	CArray<double> predictions;
-	tpr.clear();
-	fpr.clear();
-	double threshold = 0;
-	int numSamples = testData.GetSize() / numFeatures;
-	for (int i = 0; i < numSamples; i++) {
-		double score = 0.0;
-		for (int j = 0; j < numFeatures; j++) {
-			score += testData[i * numFeatures + j] * w[j]; 
-		}
-		int predictedLabel = (score > threshold) ? 2 : 1;
-		predictions.Add(predictedLabel);
-	}
-	TP = 0; TN = 0; FP = 0; FN = 0;
-	AUC_Total = 0; acc_test = 0; sensitivity = 0; specificity = 0; ppv_test = 0; F1_test = 0; mcc_test = 0;
-	for (int i = 0; i < testLabel.GetSize(); i++) {
-		if (predictions[i] == 2 && testLabel[i] == 2) TP++;
-		else if (predictions[i] == 1 && testLabel[i] == 1) TN++;
-		else if (predictions[i] == 2 && testLabel[i] == 1) FP++;
-		else if (predictions[i] == 1 && testLabel[i] == 2) FN++;
-	}
-	acc_test = (TP + TN) / static_cast<double>(TP + TN + FP + FN);
-	sensitivity = TP / static_cast<double>(TP + FN);
-	specificity = TN / static_cast<double>(TN + FP);
-	ppv_test = static_cast<double>(TP) / (TP + FP); // Positive Predictive Value (Precision)
-	double recall_test = static_cast<double>(TP) / (TP + FN); // Recall (True Positive Rate)
-	F1_test = 2 * ppv_test * recall_test / (ppv_test + recall_test); // F1 Score
-	mcc_test = (TP * TN - FP * FN) / sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN));
-	
-	std::vector<double> thresholds;
-	
-	for (int i = 0; i < numSamples; i++) {
-		double score = 0.0;
-		for (int j = 0; j < numFeatures; j++) {
-			score += testData[i * numFeatures + j] * w[j];
-		}
-		thresholds.push_back(score);
-	}
-
-	std::sort(thresholds.begin(), thresholds.end());
-	auto last = std::unique(thresholds.begin(), thresholds.end());
-	thresholds.erase(last, thresholds.end());
-
-	for (double threshold : thresholds) {
-		int TP = 0, TN = 0, FP = 0, FN = 0;
-		for (int i = 0; i < numSamples; i++) {
-			double score = 0.0;
-			for (int j = 0; j < numFeatures; j++) {
-				score += testData[i * numFeatures + j] * w[j];
-			}
-			int predictedLabel = (score > threshold) ? 2 : 1;
-			if (predictedLabel == 2 && testLabel[i] == 2) TP++;
-			else if (predictedLabel == 1 && testLabel[i] == 1) TN++;
-			else if (predictedLabel == 2 && testLabel[i] == 1) FP++;
-			else if (predictedLabel == 1 && testLabel[i] == 2) FN++;
-		}
-		double TPR = static_cast<double>(TP) / (TP + FN);
-		double FPR = static_cast<double>(FP) / (FP + TN);
-		tpr.push_back(TPR);
-		fpr.push_back(FPR);
-	}
-
-	AUC_Total = CalculateAUC(fpr, tpr);
-	// Test model and calculate confusion matrix
-
-	// Write output
-	std::ofstream outfile("linear_class_confusion_matrix.txt");
-	
-	outfile << "True Positives (TP): " << TP << std::endl;
-	outfile << "True Negatives (TN): " << TN << std::endl;
-	outfile << "False Positives (FP): " << FP << std::endl;
-	outfile << "False Negatives (FN): " << FN << std::endl;
-	outfile << "Positive Predictive Value (PPV): " << ppv_test << std::endl;
-	outfile << "F1 Score: " << F1_test << std::endl;
-	outfile << "Matthews Correlation Coefficient (MCC): " << mcc_test << std::endl;
-	outfile << "AUC: " << AUC_Total<<std::endl;
-
-	for (int i = 0; i < predictions.GetSize(); i++) {
-		outfile<<i << " Predictions: " << predictions[i] << " Actual Label "<< testLabel[i] << std::endl;
-
-	}
-	for (int i = 0; i < w.GetSize(); i++) {
-		outfile << "W: " << i << " : " << w[i] << std::endl;
-	}
-	outfile.close();
-	UpdateAllViews(NULL);
-}
-
-
 void CModelingandAnalysisofUncertaintyDoc::SplitDataForKFold(int currentFold, int foldSize, int numFolds,
 	int numRows, int numCols, CArray<double>& data, CArray<double>& label, CArray<double>& trainData, 
 	CArray<int>& trainData_spec, CArray<double>& trainLabel, CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel) {
@@ -6167,105 +5851,9 @@ void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(CArray<double>& testDat
 
 
 }
-
-
-
-
-//*****************************************************************
-//***            Compute linear classification model            ***
-//*****************************************************************
-
-
 void CModelingandAnalysisofUncertaintyDoc::OnLinearClassification() {
-	OnOpenedFile = false;
-	DescriptiveStatistics = false;
-	HypothesisTesting_OneSample = false;
-	HypothesisTesting_TwoSample = false;
-	ShapiroWilkTest = false;
-	AndersonDarlingTest = false;
-	ANOVA = false;
-	PCA_Select_PCs = false;
-	PCA_Display_PCs_Standard = false;
-	PCA_Display_Scores = false;
-	PCA_Display_Loadings = false;
-	FA_Display_Standard = false;
-	FA_Display_Loadings = false;
-	FA_Display_Scores = false;
-	FA_Display_Matrices = false;
-	FDA = false;
-	ANN_Training = false;
-	Linear_Classification = true;
+}
 
-	CWnd* pParent = nullptr;
-
-	CLinearClassificationDlg LCdlg(pParent);
-
-	if (LCdlg.DoModal() == IDOK) {
-	
-	
-		if (LCdlg.training_validation ==0) {
-			TestLinearClassifier();
-		}
-		else if (LCdlg.five_fold_value==0) {
-			CArray<double> data, trainData, testData;
-			CArray<int> data_spec, trainData_spec, testData_spec;
-			CArray<double> label, trainLabel, testLabel;
-			CArray<double> emptySww;
-			std::string newFilePath = CW2A(PathAndFileName.GetString(), CP_UTF8);
-			std::string subpath = ExtractSubpathAfterSource(newFilePath);
-			int numFeatures = LoadData(subpath, data, data_spec, label);
-			StandardizeData(numFeatures, data, data_spec);
-			ShuffleData(data, data_spec, label);
-			SplitData(data, data_spec, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel, 0.85);
-			int numFolds = 5;
-			int numRows = data_spec[0]; 
-			int numCols = data_spec[1]; 
-			int foldSize = numRows / numFolds;
-
-		
-			tprList.resize(5);
-			fprList.resize(5);
-
-			for (int fold = 0; fold < numFolds; fold++) {
-				CArray<double> trainData, testData, trainLabel, testLabel;
-				CArray<int> trainData_spec, testData_spec;
-				SplitDataForKFold(fold, foldSize, numFolds, numRows, numCols, data, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel);
-				CArray<double> emptySww;
-				bool validation = true;
-				GetRegressionVector(trainData, trainData_spec, trainLabel, emptySww, validation);
-			
-				EvaluateModel(testData, testData_spec, testLabel, numFeatures, accuracies, sensitivities, specificities, ppvs, f1_scores, mccs, auc_totals,tprList,fprList,fold);
-				//UpdateAllViews(NULL);
-			}
-			std::ofstream outfile("5-fold.txt");
-
-			for (int i = 0; i < 5; i++) {
-				for (int j = 0; j < tprList[i].size() - 1; j++) {
-					outfile << tprList[i][j] << " ";
-				}
-					
-			}
-		
-		}
-		else if (LCdlg.ten_fold_value ==0) {
-		
-		}
-		else if (LCdlg.LOO_value ==0) {
-		
-		}
-		
-
-		UpdateAllViews(NULL);
-	
-	}
-	
-
-
-
-
-
-
-} 
 void CModelingandAnalysisofUncertaintyDoc::CalculateClassificationMetrics(const CArray<double>& y_pred, const CArray<double>& y_true, double threshold) {
 
 	int TP = 0, TN = 0, FP = 0, FN = 0;
@@ -6520,7 +6108,10 @@ void CModelingandAnalysisofUncertaintyDoc::GetRegressionModel_5_Fold_CV(CArray <
 	X0.SetSize(static_cast <int64_t>(n_Obs) * n_var);
 	std::vector<int> index;
 	for (int i = 0; i < n_Obs; ++i) index.push_back(i);
-	std::random_shuffle(index.begin(), index.end());
+	// Use a random number generator
+	std::random_device rd;
+	std::mt19937 g(rd());
+	std::shuffle(index.begin(), index.end(), g);
 	for (int i = 0; i < n_Obs; i++) {
 		for (int j = 0; j < n_var; j++) {
 			value = X.GetAt(GetPosition(index[i], j, X_spec));
@@ -6624,7 +6215,10 @@ void CModelingandAnalysisofUncertaintyDoc::GetRegressionModel_10_Fold_CV(CArray 
 	xstd.SetSize(n_var);
 	std::vector<int> index;
 	for (int i = 0; i < n_Obs; ++i) index.push_back(i);
-	std::random_shuffle(index.begin(), index.end());
+	// Use a random number generator
+	std::random_device rd;
+	std::mt19937 g(rd());
+	std::shuffle(index.begin(), index.end(), g);
 	X0.SetSize(static_cast <int64_t>(n_Obs) * n_var);
 	for (int i = 0; i < n_Obs; i++) {
 		for (int j = 0; j < n_var; j++) {
@@ -6728,10 +6322,13 @@ void CModelingandAnalysisofUncertaintyDoc::GetRegressionModel_MonteCarlo(CArray 
 	e.SetSize(static_cast <int64_t>(n_Obs - n_train));
 	y0.SetSize(static_cast <int64_t>(n_Obs - n_train));
 	CString Text;
+	// Use a random number generator
+	std::random_device rd;
+	std::mt19937 g(rd());
 	for (int k = 0; k < nRuns; k++) {
 		index.clear();
 		for (int i = 0; i < n_Obs; i++) index.push_back(i);
-		std::random_shuffle(index.begin(), index.end());
+		std::shuffle(index.begin(), index.end(), g);
 		counter_train = 0, counter_test = 0;
 		for (int i = 0; i < n_Obs; i++) {
 			if (i < n_train) {
@@ -7212,12 +6809,12 @@ bool CModelingandAnalysisofUncertaintyDoc::optimizeAlphaPair(int i, int j, CArra
 	// Compute the bounds L and H for alpha_j
 	double L, H;
 	if (label[i] != label[j]) {
-		L = max(0.0, alpha_j_old - alpha_i_old);
-		H = min(C, C + alpha_j_old - alpha_i_old);
+		L = std::max(0.0, alpha_j_old - alpha_i_old);
+		H = std::min(C, C + alpha_j_old - alpha_i_old);
 	}
 	else {
-		L = max(0.0, alpha_i_old + alpha_j_old - C);
-		H = min(C, alpha_i_old + alpha_j_old);
+		L = std::max(0.0, alpha_i_old + alpha_j_old - C);
+		H = std::min(C, alpha_i_old + alpha_j_old);
 	}
 	if (L == H) return false;
 
@@ -7227,7 +6824,7 @@ bool CModelingandAnalysisofUncertaintyDoc::optimizeAlphaPair(int i, int j, CArra
 
 	// Compute and clip the new value for alpha_j
 	double alpha_j_new = alpha_j_old - (label[j] * (svmOutput(xi, alphas, data, data_spec, label, b) - b - label[i] + label[j] * b)) / eta;
-	alpha_j_new = min(H, max(L, alpha_j_new));
+	alpha_j_new = std::min(H, std::max(L, alpha_j_new));
 
 	if (std::abs(alpha_j_new - alpha_j_old) < 1e-5) return false;
 
@@ -7297,46 +6894,6 @@ CModelingandAnalysisofUncertaintyDoc::SMOModel CModelingandAnalysisofUncertainty
 }
 
 void CModelingandAnalysisofUncertaintyDoc::OnSVM() {
-	AfxMessageBox(L"Now we are working on establishing SVM model");
-	OnOpenedFile = false;
-	DescriptiveStatistics = false;
-	HypothesisTesting_OneSample = false;
-	HypothesisTesting_TwoSample = false;
-	ShapiroWilkTest = false;
-	AndersonDarlingTest = false;
-	ANOVA = false;
-	PCA_Select_PCs = false;
-	PCA_Display_PCs_Standard = false;
-	PCA_Display_Scores = false;
-	PCA_Display_Loadings = false;
-	FA_Display_Standard = false;
-	FA_Display_Loadings = false;
-	FA_Display_Scores = false;
-	FA_Display_Matrices = false;
-	FDA = false;
-	ANN_Training = false;
-
-	CWnd* pParent = nullptr;
-
-	// Set Up Dataset
-	CArray<double> data, trainData, testData;
-	CArray<int> data_spec, trainData_spec, testData_spec;
-	CArray<double> label, trainLabel, testLabel;
-	std::string newFilePath = CW2A(PathAndFileName.GetString(), CP_UTF8);
-	std::string subpath = ExtractSubpathAfterSource(newFilePath);
-	int numFeatures = LoadData(subpath, data, data_spec, label);
-	StandardizeData(numFeatures, data, data_spec);
-	ShuffleData(data, data_spec, label);
-	SplitData(data, data_spec, label, trainData, trainData_spec, trainLabel, testData, testData_spec, testLabel, 0.85);
-
-	// SMO Set up
-	double C = 1.0; // Regularization parameter
-	double tol = 0.001; // Tolerance for stopping criterion
-	int maxPasses = 10; // Maximum number of passes
-
-	// Train
-	SMOModel model = trainSMO(trainData, trainData_spec, label, C, tol, maxPasses);
-	AfxMessageBox(L"SVM model trained");
 }
 
 //*****************************************************************
@@ -7472,7 +7029,10 @@ std::vector<int> CModelingandAnalysisofUncertaintyDoc::randsample(int n, int k) 
 	for (int i = 0; i < n; ++i) {
 		indices[i] = i;
 	}
-	std::random_shuffle(indices.begin(), indices.end());
+	// Use a random number generator
+	std::random_device rd;
+	std::mt19937 g(rd());
+	std::shuffle(indices.begin(), indices.end(), g);
 	indices.resize(k);
 	return indices;
 }
@@ -8499,6 +8059,318 @@ void CModelingandAnalysisofUncertaintyDoc::GetNetworkPredictionParallel(const st
 	}
 }
 
+// *********************************
+// *** LibTorch Helper Functions ***
+// *********************************
+// Model configs
+/*
+Config txt file sample format:
+	splitRatio=0.85
+	isMulti=Y
+	fromPretrained=N
+	checkpointPath=path/to/your/checkpoint.pt
+	numLayers=3
+	layerNodes=64,128,64
+	learningRate=0.001
+	iterations=10000
+	batchSize=32
+*/
+void ParseLayerNodes(const std::string& value, std::vector<int>& layerNodes) {
+	std::istringstream iss(value);
+	std::string number;
+	while (std::getline(iss, number, ',')) {
+		layerNodes.push_back(std::stoi(number));
+	}
+}
+bool CModelingandAnalysisofUncertaintyDoc::ModelConfig::loadConfig() {
+	std::ifstream file(configPath);
+	if (!file) {
+		AfxMessageBox(_T("Unable to open configuration file. Training terminated."));
+		return false;
+	}
+	std::string line;
+	while (std::getline(file, line)) {
+		std::istringstream iss(line);
+		std::string key;
+		if (std::getline(iss, key, '=')) {
+			std::string value;
+			if (std::getline(iss, value)) {
+				if (key == "splitRatio") splitRatio = std::stof(value);
+				else if (key == "isMulti") isMulti = (value == "Y" || value == "y");
+				else if (key == "fromPretrained") fromPretrained = (value == "Y" || value == "y");
+				else if (key == "checkpointPath") checkpointPath = value;
+				else if (key == "numLayers") numLayers = std::stoi(value);
+				else if (key == "layerNodes") ParseLayerNodes(value, layerNodes);
+				else if (key == "learningRate") learningRate = std::stod(value);
+				else if (key == "iterations") iterations = std::stoi(value);
+				else if (key == "batchSize") batchSize = std::stoi(value);
+			}
+		}
+	}
+	return true;
+}
+
+// Data preprocessing
+bool CModelingandAnalysisofUncertaintyDoc::DataPreprocessor::prepareData(const ModelConfig& config) {
+	// pass configs to data preprocessor
+	splitRatio = config.splitRatio;
+	// Corner Test for File Path
+	std::ifstream file(filePath);
+	if (!file.is_open()) {
+		AfxMessageBox(_T("Fail to open file. Training terminated."));
+		return false;
+	}
+	// Reset size of dataset, datas, and labels
+	data.clear();
+	labels.clear();
+	// Skip the first line
+	std::string line;
+	std::getline(file, line);
+	// Read the second line to count the number of 'x' variables
+	std::getline(file, line);
+	size_t pos = 0;
+	numFeatures = 0;
+	numLabels = 0;
+	// Split the line at each comma and count 'x'
+	std::istringstream iss(line);
+	std::string token;
+	while (std::getline(iss, token, ',')) {
+		if (!token.empty()) {
+			if (token[0] == 'x') {
+				numFeatures++;
+			}
+		}
+	}
+	// Skip the next two lines
+	std::getline(file, line);
+	std::getline(file, line);
+	// Set to keep track of unique labels
+	std::set<float> labelSet;
+	// Read the data points
+	while (std::getline(file, line)) {
+		std::vector<float> dataPoint;
+		size_t start = 0;
+		size_t end = line.find(',', start);
+		while (end != std::string::npos) {
+			float value = std::stof(line.substr(start, end - start));
+			dataPoint.push_back(value);
+			start = end + 1;
+			end = line.find(',', start);
+		}
+		// Handle the last value in the line
+		if (start < line.length()) {
+			float value = std::stof(line.substr(start));
+			dataPoint.push_back(value);
+		}
+		float labelValue = dataPoint.back();
+		labels.push_back(labelValue); // Add the last value as label
+		labelSet.insert(labelValue); // Keep track of unique labels
+		dataPoint.pop_back(); // Remove the label from data point
+		data.push_back(dataPoint);
+		// Increment the number of data points
+	}
+	numLabels = labelSet.size();
+	// Corner Test
+	if (data.empty() || data[0].size() != numFeatures) {
+		AfxMessageBox(_T("Data is empty or feature size mismatch. Training terminated."));
+		return false;
+	}
+	// Initialize vectors to store mean and standard deviation for each feature
+	std::vector<float> mean(numFeatures, 0.0f);
+	std::vector<float> stddev(numFeatures, 0.0f);
+	// Compute the mean for each feature
+	for (const auto& datapoint : data) {
+		for (int i = 0; i < numFeatures; ++i) {
+			mean[i] += datapoint[i];
+		}
+	}
+	for (float& m : mean) {
+		m /= data.size();
+	}
+	// Compute the standard deviation for each feature
+	for (const auto& datapoint : data) {
+		for (int i = 0; i < numFeatures; ++i) {
+			stddev[i] += std::pow(datapoint[i] - mean[i], 2);
+		}
+	}
+	for (float& s : stddev) {
+		s = std::sqrt(s / data.size());
+	}
+	// Standardize the data
+	for (auto& datapoint : data) {
+		for (int i = 0; i < numFeatures; ++i) {
+			// To avoid division by zero
+			if (stddev[i] != 0) {
+				datapoint[i] = (datapoint[i] - mean[i]) / stddev[i];
+			}
+		}
+	}
+	// Corner test for splitRatio
+	if (splitRatio <= 0.0 || splitRatio >= 1.0) {
+		AfxMessageBox(_T("Invalid split ratio. It should be between 0 and 1. Training terminated."));
+		return false;
+	}
+	// Corner test for data size
+	int totalSize = data.size();
+	if (totalSize <= 0) {
+		AfxMessageBox(_T("No data available to split. Training terminated."));
+		return false;
+	}
+	// Generate indices and shuffle them
+	std::vector<int> indices(totalSize);
+	// Fill with 0, 1, ..., totalSize - 1
+	std::iota(indices.begin(), indices.end(), 0);
+	std::random_device rd;
+	std::mt19937 g(rd());
+	std::shuffle(indices.begin(), indices.end(), g);
+	// Calculate the size of the training set
+	int trainingSize = static_cast<int>(splitRatio * totalSize);
+	// Resize vectors for training and testing sets
+	dataTrain.resize(trainingSize);
+	labelsTrain.resize(trainingSize);
+	dataTest.resize(totalSize - trainingSize);
+	labelsTest.resize(totalSize - trainingSize);
+	// Split the data
+	for (int i = 0; i < totalSize; ++i) {
+		if (i < trainingSize) {
+			dataTrain[i] = data[indices[i]];
+			labelsTrain[i] = labels[indices[i]] - 1;
+		}
+		else {
+			dataTest[i - trainingSize] = data[indices[i]];
+			labelsTest[i - trainingSize] = labels[indices[i]] - 1;
+		}
+	}
+	// Data loading process
+	auto options = torch::TensorOptions().dtype(torch::kFloat32);
+	// Flatten 2D vector into a 1D vector
+	for (const auto& innerVec : dataTrain) {
+		flattenedDataTrain.insert(flattenedDataTrain.end(), innerVec.begin(), innerVec.end());
+	}
+	for (const auto& innerVec : dataTest) {
+		flattenedDataTest.insert(flattenedDataTest.end(), innerVec.begin(), innerVec.end());
+	}
+	// Convert the data and labels to tensors
+	auto tensor_options = torch::TensorOptions().dtype(torch::kFloat32);
+	trainData = torch::from_blob(flattenedDataTrain.data(), { static_cast<long>(dataTrain.size()), numFeatures }, tensor_options).clone();
+	testData = torch::from_blob(flattenedDataTest.data(), { static_cast<long>(dataTest.size()), numFeatures }, tensor_options).clone();
+	trainLabels = torch::tensor(labelsTrain, torch::kInt64);
+	testLabels = torch::tensor(labelsTest, torch::kInt64);
+	return true;
+}
+// Training utils
+template <typename DataLoader>
+std::pair<double, double> CModelingandAnalysisofUncertaintyDoc::trainModel (
+	NeuralNetwork& net,
+	DataLoader& trainLoader,
+	torch::optim::Optimizer& optimizer,
+	torch::Device device
+) {
+	net->train();
+
+	double epoch_loss = 0.0;
+	int correct_predictions = 0;
+	int total_samples = 0;
+	// Each batch
+	for (const auto& batch : trainLoader) {
+		auto data = batch.data.to(device);
+		auto target = batch.target.to(device).toType(torch::kInt64);
+		//std::cout << data << target << std::endl;
+		// foward & backward
+		auto output = net->forward(data);
+		auto loss = torch::cross_entropy_loss(output, target);
+
+		optimizer.zero_grad();
+		loss.backward();
+		optimizer.step();
+
+		// calculate loss
+		epoch_loss += loss.item<double>() * data.size(0);
+		auto prediction = output.argmax(1);
+		correct_predictions += prediction.eq(target).sum().item<int64_t>();
+		total_samples += target.size(0);
+	}
+
+	double avg_epoch_loss = epoch_loss / total_samples;
+	double accuracy = static_cast<double>(correct_predictions) / total_samples;
+	return std::make_pair(avg_epoch_loss, accuracy);
+}
+
+template <typename DataLoader>
+std::pair<double, double> CModelingandAnalysisofUncertaintyDoc::validateModel (
+	NeuralNetwork& net,
+	DataLoader& testLoader,
+	torch::Device device
+) {
+	net->eval();
+	torch::NoGradGuard no_grad;
+
+	double total_loss = 0.0;
+	int correct_predictions = 0;
+	int total_samples = 0;
+
+	for (const auto& batch : testLoader) {
+		auto data = batch.data.to(device);
+		auto target = batch.target.to(device).toType(torch::kInt64);
+		// forward pass
+		auto output = net->forward(data);
+		total_loss += torch::nn::functional::cross_entropy(output, target).item<double>() * data.size(0);
+		auto prediction = output.argmax(1);
+		correct_predictions += prediction.eq(target).sum().item<int>();
+		total_samples += target.size(0);
+	}
+	// Calculate log data
+	double avg_loss = total_loss / total_samples;
+	double accuracy = static_cast<double>(correct_predictions) / total_samples;
+
+	return std::make_pair(avg_loss, accuracy);
+}
+void CModelingandAnalysisofUncertaintyDoc::OnANN_LIBTORCH() {
+	// Create log file
+	std::filesystem::create_directory("LibTorch/result");
+	std::string logPath = "LibTorch/result/training_log.txt";
+	std::ofstream logFile(logPath);
+	// Load training configs
+	std::string configPath = "LibTorch/config.txt";
+	ModelConfig config(configPath);
+	bool config_loaded = config.loadConfig();
+	// Load and preprocess data
+	std::string newFilePath = CW2A(PathAndFileName.GetString(), CP_UTF8);
+	std::string subpath = ExtractSubpathAfterSource(newFilePath);
+	DataPreprocessor data_preprocessor(subpath);
+	bool data_processed = data_preprocessor.prepareData(config);
+	if (config_loaded) {
+		if (data_processed) {
+			auto train_set = CustomDataset(data_preprocessor.getTrainData(), data_preprocessor.getTrainLabels()).map(torch::data::transforms::Stack<>());
+			auto train_loader = torch::data::make_data_loader<torch::data::samplers::RandomSampler>(std::move(train_set), config.batchSize);
+			auto test_set = CustomDataset(data_preprocessor.getTestData(), data_preprocessor.getTestLabels()).map(torch::data::transforms::Stack<>());
+			auto test_loader = torch::data::make_data_loader<torch::data::samplers::RandomSampler>(std::move(test_set), config.batchSize);
+			bool isMulti = config.isMulti;
+			NeuralNetwork net(config, data_preprocessor.getNumFeatures(), data_preprocessor.getNumLabels());
+			net->to(config.device);
+			torch::optim::Adam optimizer(net->parameters(), torch::optim::AdamOptions(config.learningRate));
+			if (config.fromPretrained) {
+				logFile << "Load pretrained model from " << config.checkpointPath << "\n" << std::endl;
+				torch::load(net, config.checkpointPath);
+			}
+			logFile << net << "\n\n";
+			// Training loop
+			for (int epoch = 1; epoch <= config.iterations; ++epoch) {
+				auto [avg_training_loss, training_accuracy] = trainModel(net, *train_loader, optimizer, config.device);
+				auto [avg_validation_loss, validation_accuracy] = validateModel(net, *test_loader, config.device);
+				logFile << "Epoch [" << (epoch) << "/" << config.iterations << "] - Average Loss: "
+					<< avg_training_loss << ", Accuracy: " << training_accuracy * 100.0 << "%\n";
+				logFile << "Validation - Average Loss: " << avg_validation_loss << ", Accuracy: " << validation_accuracy * 100.0 << "%\n\n";
+			}
+			// Save model weights
+			torch::save(net, "Libtorch/result/model.pt");
+			logFile << "Training complete. Model parameters saved to 'Libtorch/result/model.pt'.\n";
+			logFile.close();
+			AfxMessageBox(CString(("Training Complete, training log output to " + logPath).c_str()));
+		}
+	}
+}
+
 void CModelingandAnalysisofUncertaintyDoc::OnQPSolver() {
 }
 
@@ -8596,6 +8468,11 @@ void CModelingandAnalysisofUncertaintyDoc::OnUpdateANN(CCmdUI* pCmdUI) {
 
 
 void CModelingandAnalysisofUncertaintyDoc::OnUpdateMachinelearningArtificialneuralnetworkwithaccuracy(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(FileOpen);
+}
+
+void CModelingandAnalysisofUncertaintyDoc::OnUpdateMachinelearningArtificialneuralnetworkLIBTORCH(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable(FileOpen);
 }

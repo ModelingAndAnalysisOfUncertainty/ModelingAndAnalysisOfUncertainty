@@ -1,0 +1,9 @@
+splitRatio=0.8
+isMulti=Y
+fromPretrained=Y
+checkpointPath=LibTorch/result/model.pt
+numLayers=3
+layerNodes=64,128,64
+learningRate=0.001
+iterations=5
+batchSize=32

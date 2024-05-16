@@ -34,3 +34,7 @@
 source/x64/*
 source/.vs/*
 .idea/*
+
+# Ignore LibTorch files
+source/LibTorch/debug
+source/LibTorch/release

@@ -5,6 +5,8 @@
 #include <vector>
 #include <omp.h>
 #include <stdlib.h>
+#include <torch/torch.h>
+#include <torch/script.h>
 
 #pragma once
 
@@ -289,21 +291,6 @@ protected:
 	void Transformation(CArray <double>& Temp, CArray <int>& Temp_spec, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
 	void GEVD(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, int, bool&);
 	// *******************************************
-	// ***      Pre-train Helper Functions     ***
-	// *******************************************
-	// Pre-train helper function that load a dataset given the file path, return the int for features for the dataset
-	int LoadData(const std::string& filename, CArray<double>& data, CArray <int>& data_spec,CArray<double>& label);
-	//Pre-train helper function that shuffle a dataset
-	void ShuffleData(CArray<double>& data, CArray <int>& data_spec,CArray<double>& label);
-	//Pre-train helper function that split the dataset into training and validation set given the split ratio
-	void SplitData(const CArray<double>& data, const CArray<int>& data_spec, const CArray<double>& label,
-				   CArray<double>& trainData, CArray<int>& trainData_spec, CArray<double>& trainLabel,
-				   CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel, float ratio = 0.85);
-	// Pre-train helper function that standardize the dataset
-	void StandardizeData(int numFeatures, CArray<double>& data, CArray<int>& data_spec);
-	// Pre-train helper function that standardize the label for regression problem.
-	void StandardizeLabel(CArray<double>& label);
-	// *******************************************
 	// *** Multivariate Statistical Operations ***
 	// *******************************************
 	void StandardizeDataMatrix(CArray <double>&, CArray <double>&, CArray <double>&);
@@ -351,6 +338,113 @@ protected:
 	int CModelingandAnalysisofUncertaintyDoc::factorial(int m);
 	void CModelingandAnalysisofUncertaintyDoc::GetConfusionMatrix(CArray<int>& ConfusionMatrix,
 																  std::vector<int>& yass0, std::vector<int>& ytrue);
+	// ********************
+	// *** LibTorch ANN ***
+	// ********************
+	// Model configs
+	struct ModelConfig {
+		ModelConfig(const std::string& configPath) : configPath(configPath) {}
+		bool loadConfig();
+		std::string configPath;
+		float splitRatio;
+		bool isMulti;
+		int fromPretrained;
+		std::string checkpointPath;
+		int numLayers;
+		std::vector<int> layerNodes;
+		double learningRate;
+		int iterations;
+		int batchSize;
+		torch::Device device = torch::cuda::is_available() ? torch::kCUDA : torch::kCPU;
+	};
+	// Data preprocessing
+	struct DataPreprocessor {
+		DataPreprocessor(const std::string& filePath) :filePath(filePath) {}
+
+		bool prepareData(const ModelConfig& config);
+
+		// Helper functions
+		int getNumFeatures() const { return numFeatures; }
+		int getNumLabels() const { return numLabels; }
+		int getDatasetSize() const { return data.size(); }
+		torch::Tensor getTrainData() const { return trainData; }
+		torch::Tensor getTrainLabels() const { return trainLabels; }
+		torch::Tensor getTestData() const { return testData; }
+		torch::Tensor getTestLabels() const { return testLabels; }
+
+		std::string filePath;
+		float splitRatio;
+		int numFeatures;
+		int numLabels;
+		std::vector<std::vector<float>> data;
+		std::vector<std::vector<float>> dataTrain;
+		std::vector<std::vector<float>> dataTest;
+		std::vector<float> flattenedDataTrain;
+		std::vector<float> flattenedDataTest;
+		std::vector<float> labels;
+		std::vector<float> labelsTrain;
+		std::vector<float> labelsTest;
+		torch::Tensor trainData;
+		torch::Tensor trainLabels;
+		torch::Tensor testData;
+		torch::Tensor testLabels;
+	};
+	// Libtorch custom dataset module
+	struct CustomDataset : torch::data::Dataset<CustomDataset> {
+		torch::Tensor data;
+		torch::Tensor labels;
+
+		explicit CustomDataset(const torch::Tensor data, const torch::Tensor labels)
+			: data(std::move(data)), labels(std::move(labels)) {}
+
+		torch::data::Example<> get(size_t index) override {
+			return { data[index], labels[index] };
+		}
+
+		torch::optional<size_t> size() const override {
+			return data.size(0);
+		}
+	};
+	// LibTorch neural network module
+	struct NeuralNetworkImpl : torch::nn::Module {
+		std::vector<torch::nn::Linear> layers;
+		bool isMulti;
+		NeuralNetworkImpl(const ModelConfig& config, int numFeatures, int numLabels) {
+			isMulti = config.isMulti;
+			layers.push_back(register_module("Input_Layer", torch::nn::Linear(numFeatures, config.layerNodes[0])));
+			for (size_t i = 0; i < config.numLayers - 1; ++i) {
+				layers.push_back(register_module("Layer_" + std::to_string(i), torch::nn::Linear(config.layerNodes[i], config.layerNodes[i + 1])));
+			}
+			layers.push_back(register_module("Output_Layer", torch::nn::Linear(config.layerNodes.back(), numLabels)));
+		};
+
+		torch::Tensor forward(torch::Tensor x) {
+			for (size_t i = 0; i < layers.size() - 1; ++i) {
+				// linear layer with TanH activation
+				x = torch::tanh(layers[i]->forward(x));
+			}
+			x = layers.back()->forward(x);
+			// if regression problem
+			if (!isMulti) { return x; }
+			// MultiClass problem with softmax, dim=1 normalizes across the class scores
+			else { return torch::log_softmax(x, /*dim*/1); }
+		};
+	};
+	TORCH_MODULE(NeuralNetwork);
+	// Training utils
+	template <typename DataLoader>
+	std::pair<double, double> trainModel(
+		NeuralNetwork& net,
+		DataLoader& trainLoader,
+		torch::optim::Optimizer& optimizer,
+		torch::Device device
+	);
+	template <typename DataLoader>
+	std::pair<double, double> validateModel(
+		NeuralNetwork& net,
+		DataLoader& testLoader,
+		torch::Device device
+	);
 	// Support Vector Machine Functions (SMO Algorithms)
 	// SMO Model Structures
 	struct SMOModel {
@@ -404,7 +498,6 @@ protected:
 	void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel, int numFeatures,
 		std::vector<double>& accuracies,std::vector<double>& sensitivities,std::vector<double>& specificities,std::vector<double>& ppvs,std::vector<double>& f1_scores,
 		std::vector<double>& mccs,std::vector<double>& auc_totals, std::vector<std::vector <double>>& tprList, std::vector<std::vector <double>>& fprList, int iteration) ;
-	void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier();
 	void CModelingandAnalysisofUncertaintyDoc::CalculateClassificationMetrics(const CArray<double>& y_pred, const CArray<double>& y_true, double threshold);
 	// Generated message map functions
 protected:
@@ -439,7 +532,10 @@ public:
 	afx_msg void OnL2_Regularization();
 	afx_msg void OnKPLS();
 	afx_msg void OnQPSolver();
-	afx_msg void OnANN_MFC();
+	afx_msg void OnANN_MFC();	
+	afx_msg void OnANN_LIBTORCH();
+
+
 	afx_msg void OnANN_MFC_layer1(double, int, int,HANDLE hEvent);
 	afx_msg void OnANN_batchParallel();
 	afx_msg void OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI);
@@ -466,4 +562,6 @@ public:
 	afx_msg void OnUpdateKPLS(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateANN(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateMachinelearningArtificialneuralnetworkwithaccuracy(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateMachinelearningArtificialneuralnetworkLIBTORCH(CCmdUI* pCmdUI);
+
 };

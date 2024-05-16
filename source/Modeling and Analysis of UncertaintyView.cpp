@@ -2532,7 +2532,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayPDF(CModelingandAnalysisofUnc
 		pDC->TextOutW(Point.x, Point.y, Text);
 	}
 	if (digit_old > 2) {
-		Text.Empty(), Text.Format(L"·1e-%d", digit_old);
+		Text.Empty(), Text.Format(L"?e-%d", digit_old);
 		pDC->SetTextAlign(TA_RIGHT | TA_TOP), pDC->TextOutW(x0 + Length, y0 + Height + 14, Text);
 	}
 	CPen Obs;
