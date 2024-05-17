@@ -1,0 +1,27 @@
+Checking if pretrained model exists at LibTorch/result/model.pt
+
+Pretrained model not found at LibTorch/result/model.pt
+
+CModelingandAnalysisofUncertaintyDoc::NeuralNetworkImpl(
+  (Input_Layer): torch::nn::Linear(in_features=18, out_features=64, bias=true)
+  (Layer_0): torch::nn::Linear(in_features=64, out_features=128, bias=true)
+  (Layer_1): torch::nn::Linear(in_features=128, out_features=64, bias=true)
+  (Output_Layer): torch::nn::Linear(in_features=64, out_features=6, bias=true)
+)
+
+Epoch [1/5] - Average Loss: 0.596814, Accuracy: 79.6763%
+Validation - Average Loss: 0.386978, Accuracy: 85.7044%
+
+Epoch [2/5] - Average Loss: 0.349237, Accuracy: 87.1462%
+Validation - Average Loss: 0.278761, Accuracy: 89.685%
+
+Epoch [3/5] - Average Loss: 0.270896, Accuracy: 89.8035%
+Validation - Average Loss: 0.224757, Accuracy: 91.9003%
+
+Epoch [4/5] - Average Loss: 0.219527, Accuracy: 91.9328%
+Validation - Average Loss: 0.186013, Accuracy: 93.2849%
+
+Epoch [5/5] - Average Loss: 0.176858, Accuracy: 93.8458%
+Validation - Average Loss: 0.156849, Accuracy: 94.3579%
+
+Training complete. Model parameters saved to 'Libtorch/result/model.pt'.

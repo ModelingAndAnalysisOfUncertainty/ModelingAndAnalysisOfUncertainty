@@ -8350,8 +8350,15 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_LIBTORCH() {
 			net->to(config.device);
 			torch::optim::Adam optimizer(net->parameters(), torch::optim::AdamOptions(config.learningRate));
 			if (config.fromPretrained) {
-				logFile << "Load pretrained model from " << config.checkpointPath << "\n" << std::endl;
-				torch::load(net, config.checkpointPath);
+				logFile << "Checking if pretrained model exists at " << config.checkpointPath << "\n" << std::endl;
+				if (std::filesystem::exists(config.checkpointPath)) {
+					logFile << "Load pretrained model from " << config.checkpointPath << "\n" << std::endl;
+					torch::load(net, config.checkpointPath);
+				}
+				else {
+					logFile << "Pretrained model not found at " << config.checkpointPath << "\n" << std::endl;
+					AfxMessageBox(_T("Pretrained model not found, model will train from scratch."));
+				}
 			}
 			logFile << net << "\n\n";
 			// Training loop
