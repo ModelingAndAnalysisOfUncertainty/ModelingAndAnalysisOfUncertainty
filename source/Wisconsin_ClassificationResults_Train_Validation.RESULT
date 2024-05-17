@@ -1,0 +1,36 @@
+*** Confusion matrix (training set) ***
+
+160	6
+3	286
+
+
+*** Classification metrics (trainig set) ***
+
+Accuracy (training set)                   : 0.98022
+Sensitivity (training set)                : 0.96386
+Specificity (training set)                : 0.98962
+F1 score (training set)                   : 0.97264
+MCC score (training set)                  : 0.95744
+Area under the ROC curve (training set)   : 0.9302
+Jaccard index (training set)              : 0.96384
+Fowlkes-Mellows index (training set)      : 0.96114
+Rand index (training set)                 : 0.95681
+Adjusted Rand index (training set)        : 0.99888
+
+
+*** Confusion matrix (validation set) ***
+
+40	6
+0	68
+
+
+Accuracy (validation set)                 : 0.94737
+Sensitivity (validation set)              : 0.86957
+Specificity (validation set)              : 1
+F1 score (validation set)                 : 0.93023
+MCC score (validation set)                : 0.89193
+Area under the ROC curve (validation set) : 0.82585
+Jaccard index (validation set)            : 0.9049
+Fowlkes-Mellows index (validation set)    : 0.89939
+Rand index (validation set)               : 0.79832
+Adjusted Rand index (validation set)      : 0.99009

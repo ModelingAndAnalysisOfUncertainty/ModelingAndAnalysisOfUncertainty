@@ -1,6 +1,6 @@
 splitRatio=0.8
 isMulti=Y
-fromPretrained=Y
+fromPretrained=N
 checkpointPath=LibTorch/result/model.pt
 numLayers=3
 layerNodes=64,128,64

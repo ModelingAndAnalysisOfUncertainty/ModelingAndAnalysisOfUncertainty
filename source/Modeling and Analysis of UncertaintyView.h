@@ -138,7 +138,11 @@ private:
 	void ShowModelPrediction(CModelingandAnalysisofUncertaintyDoc*, CDC*, CPoint&, CPoint&);
 	void ShowPredictionError(CModelingandAnalysisofUncertaintyDoc*, CDC*, CArray <double>&, CPoint&, CPoint&);
 	//----------------------------------
-	void CModelingandAnalysisofUncertaintyView::DisplayConfusionMatrix();
+	void DisplayConfusionMatrixTrainValidation(CModelingandAnalysisofUncertaintyDoc*, CDC*, int&, int&);
+	void DisplayClassificationMetricsTrainValidation(CModelingandAnalysisofUncertaintyDoc*, CDC*, int&, int&);
+	void DisplayClassificationMetricsCrossValidation(CModelingandAnalysisofUncertaintyDoc*, CDC*);
+	void DisplayROCCurve(CModelingandAnalysisofUncertaintyDoc*, CDC*, CPoint&, CPoint&);
+	void DisplayScoreValues(CModelingandAnalysisofUncertaintyDoc*, CDC*, CPoint&, CPoint&);
 
 	// Linear Classifier
 	void DisplayFoldMetrics(int foldIndex);

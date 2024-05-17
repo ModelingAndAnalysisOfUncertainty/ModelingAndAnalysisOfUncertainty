@@ -47,7 +47,6 @@
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>Static</UseOfMfc>
-    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -99,8 +98,6 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <DisableSpecificWarnings>4267;4251;4522;4838;4305;4244;4190;4101;4996;4275;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <UseFullPaths>false</UseFullPaths>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -199,6 +196,8 @@
     <ClInclude Include="CDisplayPCs.h" />
     <ClInclude Include="CLCDialog.h" />
     <ClInclude Include="CLinearClassificationDlg.h" />
+    <ClInclude Include="CLinearClassificationMulticlassFDA.h" />
+    <ClInclude Include="CLinearClassificationBinaryFDA.h" />
     <ClInclude Include="COneSampleHypothesisSelection.h" />
     <ClInclude Include="CSelectNumberPCs.h" />
     <ClInclude Include="CSelectScatterDiagrams.h" />
@@ -222,6 +221,8 @@
     <ClCompile Include="CDisplayPCs.cpp" />
     <ClCompile Include="CLCDialog.cpp" />
     <ClCompile Include="CLinearClassificationDlg.cpp" />
+    <ClCompile Include="CLinearClassificationMulticlassFDA.cpp" />
+    <ClCompile Include="CLinearClassificationBinaryFDA.cpp" />
     <ClCompile Include="COneSampleHypothesisSelection.cpp" />
     <ClCompile Include="CSelectNumberPCs.cpp" />
     <ClCompile Include="CSelectScatterDiagrams.cpp" />

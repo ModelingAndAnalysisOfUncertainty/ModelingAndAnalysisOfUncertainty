@@ -180,7 +180,7 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 
 
 		// Margaret's implementation on numerical value display 
-		CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
+		//CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
 
 		CString Text;
 		int number = 0;
@@ -188,8 +188,6 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		pDC->SetTextAlign(TA_LEFT | TA_TOP);
 		pDC->TextOutW(160, 30, _T("Descriptive Statistics"));
 		pDC->MoveTo(10, 50), pDC->LineTo(500, 50), Text.Format(L"%d", pDoc->n_Obs); 
-
-
 
 		pDC->TextOutW(20, 60, L"Variable"), pDC->TextOutW(248, 60, L":"), pDC->TextOutW(270, 60, pDoc->Tag.GetAt(pDoc->number));
 		pDC->TextOutW(20, 80, L"Name"), pDC->TextOutW(248, 80, L":"), pDC->TextOutW(270, 80, pDoc->Name.GetAt(pDoc->number));
@@ -432,9 +430,6 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 					pDC->TextOutW(20, 590, _T("T Confidence Interval")), pDC->TextOutW(250, 590, L":"), pDC->TextOutW(330, 590, L"mu >"), pDC->TextOutW(380, 590, sth1);
 
 					DisplayRectangleRightTailed(pDoc, pDC, nWt, 0.0, Temp1, L"confidence", pDoc->show_delta_x, nHt, 'T');
-
-
-
 				}
 				else {
 					Temp1 = pDoc->show_critical_L;
@@ -447,9 +442,6 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 					sth1.Format(L"%.2f", Temp1);
 					pDC->TextOutW(20, 590, _T("T Confidence Interval")), pDC->TextOutW(250, 590, L":"), pDC->TextOutW(330, 590, L"mu <"), pDC->TextOutW(370, 590, sth1);
 					DisplayRectangleLeftTailed(pDoc, pDC, nWt, Temp1, 0.0, L"confidence", pDoc->show_delta_x, nHt, 'T');
-
-
-
 				}
 				Temp1 = pDoc->show_delta_x;
 				sth1.Format(L"%.2f", Temp1);
@@ -479,9 +471,6 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 					sth1.Format(L"%.2f", Temp1);
 					sth2.Format(L"%.2f", Temp2);
 					pDC->TextOutW(20, 570, _T("T Critical Region")), pDC->TextOutW(250, 570, L":"), pDC->TextOutW(330, 570, L"xbar"), pDC->TextOutW(370, 570, L"<"), pDC->TextOutW(390, 570, sth2), pDC->TextOutW(450, 570, L" or xbar >"), pDC->TextOutW(530, 570, sth1);
-
-
-
 
 					DisplayRectangleTwoTailed(pDoc, pDC, nWt, Temp2, Temp1, L"critical", pDoc->show_delta_x, nHt, 'T');
 
@@ -567,9 +556,7 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		}
 		else {
 			bot = bot1;
-		}
-
-		
+		}	
 
 		TwoSampleBoxPlot(pDoc, pDC, nWt, nHt, pDoc->MAX_BOX, pDoc->MIN_BOX, pDoc->up2, pDoc->low2, pDoc->med2, pDoc->OutlierArray2, pDoc->ol2, TopLeft, BottomRight, pDoc->show_class2, top, bot);
 
@@ -590,18 +577,12 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		sth2.Format(L"%.2f", Temp2);
 		pDC->TextOutW(20, 250, L"min:"), pDC->TextOutW(170, 250, sth1), pDC->TextOutW(270, 250, L"min:"), pDC->TextOutW(420, 250, sth2);
 
-
-
-
-
 		BottomRight.x = TopLeft.x + 300 * nWt / 1920;
 		TopLeft.x = 570;
 		TopLeft.y = 500;
 		BottomRight.y = TopLeft.y + 330 * nHt / 1042;
 
 		TwoSampleSequencePlot(pDoc, pDC, pDoc->OverallArray, TopLeft, BottomRight, Text, pDoc->show_class1, pDoc->show_class2);
-
-
 	}
 
 	else if (pDoc->ANOVA) {
@@ -1116,162 +1097,34 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 			for (int j = 0; j < pDoc->n; j++) Matrix.Add(pDoc->RT.GetAt(pDoc->GetPosition(j, i, pDoc->RT_spec)));
 		}
 		DisplayMatrix(pDoc, pDC, Matrix, Matrix_temp, TopLeftCorner, Label);
-
 	}
 	else if (pDoc->FDA) {
 		if (counter > pDoc->n_classes - 2) counter = 0;
 		if (counter < 0) counter = pDoc->n_classes - 2;
 		DisplayPCA.ShowWindow(SW_HIDE);
-		Next_Variable.ShowWindow(SW_SHOW);
-		Previous_Variable.ShowWindow(SW_SHOW);
+		if (pDoc->n_classes - 1 > 3) {
+			Next_Variable.ShowWindow(SW_SHOW);
+			Previous_Variable.ShowWindow(SW_SHOW);
+		}
+		else {
+			Next_Variable.ShowWindow(SW_HIDE);
+			Previous_Variable.ShowWindow(SW_HIDE);
+		}
 		Ind_Ass_Regression.ShowWindow(SW_HIDE);
 		Sta_Ass_Regression.ShowWindow(SW_HIDE);
 		Settings_Descriptive_Statistics.ShowWindow(SW_HIDE);
-		pDC->TextOutW(118, 20, _T("Previous"));
-		pDC->TextOutW(201, 20, _T("Next"));
+		DisplayFileAndDataSetInformation(pDoc, pDC, true);
+		int Length = 300, Height = 200;
 
-		TopLeftCorner.x = 20, TopLeftCorner.y = 20, BottomRightCorner.x = 100, BottomRightCorner.y = 50;
-		//Displaying Elements of W per variable
-		pDC->TextOutW(50, 50, _T("Elements of W: "));
-		CString Text, Temp;
-		CPoint TEMP;
-		TEMP.x = 100, TEMP.y = 75;
-		//Loop for each w
-		for (int j = 0; j < pDoc->n_Var - 1; j++) {
-			Text.Empty(), Temp.Empty();
-			Temp.Format(L"%4f", pDoc->P.GetAt(((((pDoc->n_Var) - 1) * counter) + j))), Text.Append(Temp);
-			TEMP.y += 25;
-			//setting up the variable names
-			pDC->TextOutW(50, TEMP.y, pDoc->Tag.GetAt(j));
-			//Output the W variables
-			pDC->TextOutW(TEMP.x, TEMP.y, Text);
-		}
-
-		//Setting Up a Score Table
-		CPoint TopLeftCorner, BottomRightCorner;
-		TopLeftCorner.x = 400, TopLeftCorner.y = 75, BottomRightCorner.x = 1000, BottomRightCorner.y = 350;
-		Text.Empty(), Text.Append(_T("FDA Score variable "));
-		CArray <double> T_temp;
-		T_temp.RemoveAll();
-		T_temp.SetSize(pDoc->n_Obs);
-		for (int i = 0; i < pDoc->n_Obs; i++) {
-			T_temp.SetAt(i, pDoc->T.GetAt(((pDoc->n_Obs) * counter) + i));
-		}
-		FDADisplayScores(pDoc, pDC, T_temp, TopLeftCorner, BottomRightCorner, Text);
-		CPoint LoadingTop, LoadingBottom;
-		LoadingTop.x = 400, LoadingTop.y = 400, LoadingBottom.x = 1000, LoadingBottom.y = 800;
-		Text.Empty(), Temp.Empty(), Text.Append(_T("Eigenvector ")), Temp.Format(L"%d", counter + 1), Text.Append(Temp);
-		CArray <double> P_temp;
-		P_temp.RemoveAll();
-		P_temp.SetSize((pDoc->n_Var) - 1);
-		for (int i = 0; i < pDoc->n_Var - 1; i++) {
-			P_temp.SetAt(i, pDoc->P.GetAt((((pDoc->n_Var) - 1) * counter) + i));
-		}
-		DisplayLoadings(pDoc, pDC, P_temp, LoadingTop, LoadingBottom, Text);
-		if (pDoc->n_classes == 2) {
-			//Outputting Class Data
-			TEMP.x = 1100, TEMP.y = 75;
-			Text.Empty(), Text.Append(_T("Classification Data: "));
-			pDC->TextOutW(TEMP.x, TEMP.y, Text);
-			Text.Empty(), Temp.Empty();
-			Temp.Format(L"%d", pDoc->TP), Text.Append(L"True Positive: " + Temp);
-			TEMP.y += 25;
-			pDC->TextOutW(TEMP.x, TEMP.y, Text);
-			Text.Empty(), Temp.Empty();
-			Temp.Format(L"%d", pDoc->FP), Text.Append(L"False Positive: " + Temp);
-			TEMP.y += 25;
-			pDC->TextOutW(TEMP.x, TEMP.y, Text);
-			Text.Empty(), Temp.Empty();
-			Temp.Format(L"%d", pDoc->TN), Text.Append(L"True Negative: " + Temp);
-			TEMP.y += 25;
-			pDC->TextOutW(TEMP.x, TEMP.y, Text);
-			Text.Empty(), Temp.Empty();
-			Temp.Format(L"%d", pDoc->FN), Text.Append(L"False Negative: " + Temp);
-			TEMP.y += 25;
-			pDC->TextOutW(TEMP.x, TEMP.y, Text);
-			Text.Empty(), Temp.Empty();
-			Temp.Format(L"%4f", pDoc->sensitivity), Text.Append(L"Sensitivity: " + Temp);
-			TEMP.y += 25;
-			pDC->TextOutW(TEMP.x, TEMP.y, Text);
-			Text.Empty(), Temp.Empty();
-			Temp.Format(L"%4f", pDoc->specificity), Text.Append(L"Specificity: " + Temp);
-			TEMP.y += 25;
-			pDC->TextOutW(TEMP.x, TEMP.y, Text);
-			Text.Empty(), Temp.Empty();
-			Temp.Format(L"%4f", pDoc->mcc_test), Text.Append(L"Matthew's Coefficient: " + Temp);
-			TEMP.y += 25;
-			pDC->TextOutW(TEMP.x, TEMP.y, Text);
-			Text.Empty(), Temp.Empty();
-			Temp.Format(L"%4f", pDoc->ppv_test), Text.Append(L"Positive Predictive Value: " + Temp);
-			TEMP.y += 25;
-			pDC->TextOutW(TEMP.x, TEMP.y, Text);
-			Text.Empty(), Temp.Empty();
-			Temp.Format(L"%4f", pDoc->F1_test), Text.Append(L"F1 Test: " + Temp);
-			TEMP.y += 25;
-			pDC->TextOutW(TEMP.x, TEMP.y, Text);
-			Text.Empty(), Temp.Empty();
-			Temp.Format(L"%4f", pDoc->acc_test), Text.Append(L"Accuracy Test: " + Temp);
-			TEMP.y += 25;
-			pDC->TextOutW(TEMP.x, TEMP.y, Text);
-			//Working on ROC curve
-			Text.Empty(), Temp.Empty();
-			Temp.Format(L"%4f", pDoc->AUC_Total), Text.Append(L"AUC Value: " + Temp);
-			TEMP.y += 25;
-			pDC->TextOutW(TEMP.x, TEMP.y, Text);
-			CPoint ROC_Top, ROC_Bottom;
-			ROC_Top.x = 1500;
-			ROC_Top.y = 50;
-			ROC_Bottom.x = 1800;
-			ROC_Bottom.y = 350;
-			CString ROC_Title;
-			ROC_Title.Empty(), ROC_Title.Append(_T("ROC Plot "));
-			DisplayROC(pDoc, pDC, pDoc->ROC_X, pDoc->ROC_Y, ROC_Top, ROC_Bottom, ROC_Title);
-		}
-		else if (pDoc->n_classes > 2) {
-			TEMP.x = 1100, TEMP.y = 25;
-			Text.Empty(), Text.Append(_T("Classification Numbers: "));
-			pDC->TextOutW(TEMP.x, TEMP.y, Text);
-			CPoint Conf_Top, Conf_Bottom;
-			Conf_Top.x = 1100, Conf_Top.y = 50, Conf_Bottom.x = 1425, Conf_Bottom.y = 375;
-			CString Conf_Title;
-			Conf_Title.Empty(), Conf_Title.Append(_T("Confusion Matrix"));
-			ConfusionMatrix(pDoc, pDC, pDoc->Confusion_Label, Conf_Top, Conf_Bottom, Conf_Title);
-
-			//Setting up a score plot (should be rewritten to be more generic in the future)
-			CArray <double> T1_vec, T2_vec;
-			T1_vec.RemoveAll(), T2_vec.RemoveAll();
-			T1_vec.SetSize(pDoc->n_Obs), T2_vec.SetSize(pDoc->n_Obs);
-			for (int i = 0; i < pDoc->n_Obs; i++) {
-				T1_vec.SetAt(i, pDoc->T.GetAt(i));
-				T2_vec.SetAt(i, pDoc->T.GetAt(i + pDoc->n_Obs));
-			}
-			CPoint ScoreTop, ScoreBottom;
-			ScoreTop.x = 1000, ScoreTop.y = 400, ScoreBottom.x = 1400, ScoreBottom.y = 800;
-			CString Label_x, Label_y;
-			Label_x.Empty(), Label_x.Append(_T("T1 Score"));
-			Label_y.Empty(), Label_y.Append(_T("T2 Score"));
-			bool Task = true;
-			bool Display = false;
-			bool flag = true;
-			DisplayFDAScatterPlot(pDoc, pDC, T1_vec, T2_vec, ScoreTop, ScoreBottom, 1, 1, Label_x, Label_y, Task, Display, flag);
-			//Display Loadings Plot
-			CPoint LoadTop, LoadBottom;
-			LoadTop.x = 1450, LoadTop.y = 400, LoadBottom.x = 1850, LoadBottom.y = 800;
-			CArray <double> P1_vec, P2_vec;
-			P1_vec.RemoveAll(), P2_vec.RemoveAll();
-			P1_vec.SetSize(pDoc->n_Var - 1), P2_vec.SetSize(pDoc->n_Var - 1);
-			for (int i = 0; i < pDoc->n_Var - 1; i++) {
-				P1_vec.SetAt(i, pDoc->P.GetAt(i));
-				P2_vec.SetAt(i, pDoc->P.GetAt(i + (pDoc->n_Var - 1)));
-			}
-			Label_x.Empty(), Label_x.Append(_T("Loading 1"));
-			Label_y.Empty(), Label_y.Append(_T("Loading 2"));
-			bool Load_Task = false;
-			bool Load_Display = true;
-			bool Load_flag = true;
-			double f_crit = 0;
-			DisplayScatterPlot(pDoc, pDC, P1_vec, P2_vec, LoadTop, LoadBottom, 1, 1, Label_x, Label_y, Load_Task, Load_Display, Load_flag, f_crit);
-		}
+		if (pDoc->ValidationMethod == "TrainValidation") DisplayConfusionMatrixTrainValidation(pDoc, pDC, Length, Height);
+		if (pDoc->ValidationMethod == "TrainValidation") DisplayClassificationMetricsTrainValidation(pDoc, pDC, Length, Height);
+		else if ((pDoc->ValidationMethod == "5FoldCrossValidation") || (pDoc->ValidationMethod == "10FoldCrossValidation"))
+			DisplayClassificationMetricsCrossValidation(pDoc, pDC);
+		TopLeftCorner.x = 1500, TopLeftCorner.y = 50, BottomRightCorner.x = nWt, BottomRightCorner.y = (int)((nHt - Offset) / 2) - 25;
+		DisplayROCCurve(pDoc, pDC, TopLeftCorner, BottomRightCorner);
+		TopLeftCorner.x = 1300;
+		TopLeftCorner.y = BottomRightCorner.y + 25, BottomRightCorner.y = nHt - Offset;
+		if (pDoc->ValidationMethod == "TrainValidation") DisplayScoreValues(pDoc, pDC, TopLeftCorner, BottomRightCorner);
 	}
 	else if (pDoc->RegressionAnalysis) {
 		DisplayPCA.ShowWindow(SW_HIDE);
@@ -1321,20 +1174,27 @@ void CModelingandAnalysisofUncertaintyView::OnDraw(CDC* pDC){
 		DisplayFA.ShowWindow(SW_HIDE);
 		DisplayFactorLoadings.ShowWindow(SW_HIDE);
 		DisplayFactorScores.ShowWindow(SW_HIDE);
-		CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
+		//CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
 		// plot the loss and accuracy curve
 		DisplayFileAndDataSetInformation(pDoc, pDC, true);
 		PlotLossCurve();
 		//StartDrawing();
 		PlotAccuraciesCurve();
-		DisplayConfusionMatrix();
+		int Length = 300, Height = 200;
+		//BOOL flag = true;
+		DisplayConfusionMatrixTrainValidation(pDoc, pDC, Length, Height);
 		//m_nCurrentIndex = 0;
 		//m_nTimerID = SetTimer(1, 10, NULL);
 		//OnTimer(m_nTimerID);
 	}
 	else if (pDoc->Linear_Classification) {
+		CModelingandAnalysisofUncertaintyDoc* pDoc = GetDocument();
+		bool LOO= pDoc->LOO;
 		DisplayFileAndDataSetInformation(pDoc, pDC, true);
-		DisplayLinearClassifierMetrics();
+		if (LOO == false) {
+			DisplayLinearClassifierMetrics();
+		}
+		
 
 	}
 	
@@ -2532,7 +2392,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayPDF(CModelingandAnalysisofUnc
 		pDC->TextOutW(Point.x, Point.y, Text);
 	}
 	if (digit_old > 2) {
-		Text.Empty(), Text.Format(L"?e-%d", digit_old);
+		Text.Empty(), Text.Format(L"·1e-%d", digit_old);
 		pDC->SetTextAlign(TA_RIGHT | TA_TOP), pDC->TextOutW(x0 + Length, y0 + Height + 14, Text);
 	}
 	CPen Obs;
@@ -5154,9 +5014,6 @@ void CModelingandAnalysisofUncertaintyView::On_Display_Factor_Matrices() {
 }
 
 void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelingandAnalysisofUncertaintyDoc* pDoc, CDC* pDC, double max_width, double upper, double lower, CString kind, double obs, double max_height, char z_t) {
-
-
-
 	if (kind == "confidence") {
 		// drawing the confidence interval
 		CPoint top_left, bottom_right, tip_top_left, tip_bottom_right;
@@ -5170,9 +5027,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 
 		double height = top_left.y - bottom_right.y;
 		double ratio = height * 3;
-
-
-
 
 		if (top_left.x > 1200 && bottom_right.x > 1200) {
 
@@ -5201,7 +5055,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 				pDC->MoveTo(top_left.x, bottom_right.y + ratio), pDC->LineTo(top_left.x + offset / 1.5, bottom_right.y + ratio);
 				pDC->MoveTo(bottom_right.x, bottom_right.y + ratio), pDC->LineTo(bottom_right.x - offset / 1.5, bottom_right.y + ratio);
 
-
 				CString sth1, sth2;
 				sth1.Format(L"%.2f", upper);
 				sth2.Format(L"%.2f", lower);
@@ -5222,10 +5075,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 				BrushA.CreateSolidBrush(RGB(177, 156, 217));
 				pDC->FillRect(&rectA, &BrushA);
 				pDC->TextOutW(tip_bottom_right.x + 3, tip_top_left.y, L" Confidence Interval");
-
-
-
-
 
 				if (pDoc->show_mu <= upper && pDoc->show_mu >= lower) {
 
@@ -5258,11 +5107,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 10), pDC->LineTo(CircleCenter, bottom_right.y - 10);
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
-
 				}
-
-
-
 			}
 
 			else {
@@ -5273,9 +5118,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 				Brush_Header.CreateSolidBrush(RGB(177, 156, 217));
 				pDC->FillRect(&rect, &Brush_Header);
 
-
-
-
 				//drawing the vertical separation line 
 				pDC->MoveTo(top_left.x, top_left.y - ratio), pDC->LineTo(top_left.x, bottom_right.y + ratio);
 				pDC->MoveTo(bottom_right.x, top_left.y - ratio), pDC->LineTo(bottom_right.x, bottom_right.y + ratio);
@@ -5284,7 +5126,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 				pDC->MoveTo(bottom_right.x, top_left.y - ratio), pDC->LineTo(bottom_right.x - offset / 1.5, top_left.y - ratio);
 				pDC->MoveTo(top_left.x, bottom_right.y + ratio), pDC->LineTo(top_left.x + offset / 1.5, bottom_right.y + ratio);
 				pDC->MoveTo(bottom_right.x, bottom_right.y + ratio), pDC->LineTo(bottom_right.x - offset / 1.5, bottom_right.y + ratio);
-
 
 				CString sth1, sth2;
 				sth1.Format(L"%.2f", upper);
@@ -5307,12 +5148,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 				pDC->FillRect(&rectA, &BrushA);
 				pDC->TextOutW(tip_bottom_right.x + 3, tip_top_left.y, L" Confidence Interval");
 
-
-
-
-
-
-
 				if (pDoc->show_mu <= upper && pDoc->show_mu >= lower) {
 
 					int CircleCenter = top_left.x + (((bottom_right.x - top_left.x) / (upper - lower)) * (pDoc->show_mu - lower));
@@ -5325,7 +5160,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 				}
 
 				else if (pDoc->show_mu > upper) {
-
 					int CircleCenter = bottom_right.x + (int)offset * 0.8;
 					pDC->Ellipse(CircleCenter - (top_left.y - bottom_right.y) / 2, top_left.y, CircleCenter + (top_left.y - bottom_right.y) / 2, bottom_right.y);
 					CString sth3;
@@ -5336,7 +5170,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 				}
 
 				else if (pDoc->show_mu < lower) {
-
 					int CircleCenter = top_left.x - (int)offset * 0.8;
 					pDC->Ellipse(CircleCenter - (top_left.y - bottom_right.y) / 2, top_left.y, CircleCenter + (top_left.y - bottom_right.y) / 2, bottom_right.y);
 					CString sth3;
@@ -5347,22 +5180,12 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 
 				}
 			}
-
-
-
-
-
 		}
-
-
 		if (top_left.x <= 1200 && bottom_right.x > 1200) {
-
-
 			//just copy and paste 
 			top_left.x = 1200;
 			length = bottom_right.x - top_left.x;
 			offset = length * 0.1;
-
 
 			if (bottom_right.y <= 400) {
 				bottom_right.y = 400;
@@ -5387,13 +5210,11 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 				pDC->MoveTo(top_left.x, bottom_right.y + ratio), pDC->LineTo(top_left.x + offset / 1.5, bottom_right.y + ratio);
 				pDC->MoveTo(bottom_right.x, bottom_right.y + ratio), pDC->LineTo(bottom_right.x - offset / 1.5, bottom_right.y + ratio);
 
-
 				CString sth1, sth2;
 				sth1.Format(L"%.2f", upper);
 				sth2.Format(L"%.2f", lower);
 				pDC->TextOutW(bottom_right.x - 10, 10 + top_left.y, sth1);
 				pDC->TextOutW(top_left.x - 10, 10 + top_left.y, sth2);
-
 
 				// drawing the tip
 				CPoint tip_bottom_right, tip_top_left;
@@ -5409,12 +5230,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 				BrushA.CreateSolidBrush(RGB(177, 156, 217));
 				pDC->FillRect(&rectA, &BrushA);
 				pDC->TextOutW(tip_bottom_right.x + 3, tip_top_left.y, L" Confidence Interval");
-
-
-
-
-
-
 
 				if (pDoc->show_mu <= upper && pDoc->show_mu >= lower) {
 
@@ -5457,7 +5272,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 
 				}
 			}
-
 			else {
 				CRect rect(top_left.x, top_left.y, bottom_right.x, bottom_right.y);
 				pDC->Rectangle(rect);
@@ -5488,16 +5302,11 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 				pDC->FillRect(&rectA, &BrushA);
 				pDC->TextOutW(tip_bottom_right.x + 3, tip_top_left.y, L" Confidence Interval");
 
-
-
-
 				CString sth1, sth2;
 				sth1.Format(L"%.2f", upper);
 				sth2.Format(L"%.2f", lower);
 				pDC->TextOutW(bottom_right.x - 10, 10 + top_left.y, sth1);
 				pDC->TextOutW(top_left.x - 10, 10 + top_left.y, sth2);
-
-
 
 				if (top_left.y - tip_bottom_right.y <= 50) {
 					CRect rectA(tip_bottom_right.x, top_left.y + 50, tip_top_left.x, top_left.y + 70);
@@ -5507,15 +5316,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 					pDC->FillRect(&rectA, &BrushA);
 					pDC->TextOutW(tip_bottom_right.x + 3, top_left.y + 50, L" Confidence Interval");
 				}
-
-
-
-
-
-
-
-
-
 				if (pDoc->show_mu <= upper && pDoc->show_mu >= lower) {
 
 					int decrease = constant * 0.1 - offset;
@@ -5556,39 +5356,10 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
 
 				}
-
-
-
-
-
-
-
-
 			}
-
-
-
-
-
-
-
-
-
-
-
-
 		}
-
-
-
-
-
-
 	}
-
-
 	if (kind == "critical") {
-
 		// drawing the usable region (acceptance + rejection)
 		double range = fabs(upper - lower);
 		CPoint top_left, bottom_right, tip_top_left, tip_bottom_right;
@@ -5602,10 +5373,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 		double height = top_left.y - bottom_right.y;
 		double ratio = height * 3;
 
-
 		if (top_left.x > 1200 && bottom_right.x > 1200) {
-
-
 			if (bottom_right.y <= 180) {
 				bottom_right.y = 180;
 				height = top_left.y - bottom_right.y;
@@ -5621,7 +5389,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 				Brush_Header.CreateSolidBrush(RGB(0, 225, 98));
 				pDC->FillRect(&rect, &Brush_Header);
 
-
 				//lower bound
 				CRect rectR1(top_left.x, top_left.y, top_left.x - (int)offset, bottom_right.y);
 				pDC->Rectangle(rectR1);
@@ -5641,9 +5408,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 				sth2.Format(L"%.2f", lower);
 				pDC->TextOutW(bottom_right.x - 10, 10 + top_left.y, sth1);
 				pDC->TextOutW(top_left.x - 10, 10 + top_left.y, sth2);
-
-
-
 				// drawing the tip
 				CPoint tip_bottom_right, tip_top_left;
 				tip_bottom_right.x = bottom_right.x - 200 + 70 + (int)offset;
@@ -5804,11 +5568,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 							upper /= 15;
 						}
 					}
-
-
-
 				}
-
 				// drawing the target 
 				int center = (bottom_right.x - top_left.x) / 2;
 				center += top_left.x;
@@ -5848,8 +5608,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
 
 				}
-
-
 			}
 			else {
 				CRect rect(top_left.x, top_left.y, bottom_right.x, bottom_right.y);
@@ -5858,7 +5616,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 				Brush_Header.CreateSolidBrush(RGB(0, 225, 98));
 				pDC->FillRect(&rect, &Brush_Header);
 
-
 				//lower bound
 				CRect rectR1(top_left.x, top_left.y, top_left.x - (int)offset, bottom_right.y);
 				pDC->Rectangle(rectR1);
@@ -5878,8 +5635,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 				sth2.Format(L"%.2f", lower);
 				pDC->TextOutW(bottom_right.x - 10, 10 + top_left.y, sth1);
 				pDC->TextOutW(top_left.x - 10, 10 + top_left.y, sth2);
-
-
 
 				// drawing the tip
 				CPoint tip_bottom_right, tip_top_left;
@@ -5938,7 +5693,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 
 						double ratio_x = (double)range_pixel_x / range_value_x;
 						double ratio_y = (double)(range_pixel_y) / range_value_y;
-
 
 						value_coor.x = lower;
 						value_coor.y = y_lower;
@@ -6041,12 +5795,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 							upper /= 15;
 						}
 					}
-
-
-
 				}
-
-
 				// drawing the target 
 				int center = (bottom_right.x - top_left.x) / 2;
 				center += top_left.x;
@@ -6084,16 +5833,9 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 10), pDC->LineTo(CircleCenter, bottom_right.y - 10);
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
-
 				}
-
-
 			}
-
 		}
-
-
-
 		if (top_left.x <= 1200 && bottom_right.x > 1200) {
 
 			if (bottom_right.y <= 180) {
@@ -6109,8 +5851,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 				top_left.x = 1200;
 				length = bottom_right.x - top_left.x;
 				offset = length * 0.1;
-
-
 				CRect rect(top_left.x, top_left.y, bottom_right.x, bottom_right.y);
 				pDC->Rectangle(rect);
 				CBrush Brush_Header;
@@ -6135,8 +5875,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 				pDC->TextOutW(bottom_right.x - 10, 10 + top_left.y, sth1);
 				pDC->TextOutW(top_left.x - 10, 10 + top_left.y, sth2);
 
-
-
 				// drawing the tip
 				CPoint tip_bottom_right, tip_top_left;
 				tip_bottom_right.x = bottom_right.x - 200 + 70 + (int)offset;
@@ -6158,7 +5896,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 				BrushB.CreateSolidBrush(RGB(0, 225, 98));
 				pDC->FillRect(&rectB, &BrushB);
 				pDC->TextOutW(tip_bottom_right.x + 3, tip_top_left.y + 30, L" Acceptance Region");
-
 
 				if (1 + 1 == 2) {
 					// plotting the bell curve
@@ -6298,16 +6035,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 							upper /= 15;
 						}
 					}
-
-
-
 				}
-
-
-
-
-
-
 				if (obs <= upper && obs >= lower) {
 					int decrease = constant * 0.1 - offset;
 					decrease /= 4;
@@ -6320,9 +6048,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
 
 				}
-
 				else if (obs > upper) {
-
 					int CircleCenter = bottom_right.x + (int)offset * 0.7;
 					int decrease = constant * 0.1 - offset;
 					decrease /= 4;
@@ -6331,10 +6057,8 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 					sth3.Format(L"%.2f", obs);
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 6), pDC->LineTo(CircleCenter, bottom_right.y - 6);
-
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
 				}
-
 				else if (obs < lower) {
 					int decrease = constant * 0.1 - offset;
 					decrease /= 4;
@@ -6345,18 +6069,13 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 6), pDC->LineTo(CircleCenter, bottom_right.y - 6);
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
-
 				}
-
-
 			}
-
 			else {
 				top_left.x = 1200;
 				length = bottom_right.x - top_left.x;
 				offset = length * 0.1;
 
-
 				CRect rect(top_left.x, top_left.y, bottom_right.x, bottom_right.y);
 				pDC->Rectangle(rect);
 				CBrush Brush_Header;
@@ -6380,7 +6099,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 				sth2.Format(L"%.2f", lower);
 				pDC->TextOutW(bottom_right.x - 10, 10 + top_left.y, sth1);
 				pDC->TextOutW(top_left.x - 10, 10 + top_left.y, sth2);
-
 
 				// drawing the tip
 				CPoint tip_bottom_right, tip_top_left;
@@ -6440,7 +6158,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 						double ratio_x = (double)range_pixel_x / range_value_x;
 						double ratio_y = (double)(range_pixel_y) / range_value_y;
 
-
 						value_coor.x = lower;
 						value_coor.y = y_lower;
 
@@ -6471,7 +6188,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 							pDC->LineTo(pixel_coor.x, pixel_coor.y);
 						}
 					}
-
 					if (z_t == 'T') {
 						double specialized = fabs(pDoc->show_tcrit);
 						double rl = lower, ul = upper;
@@ -6483,7 +6199,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 						else {
 							var = (lower - mu) / (-specialized);
 						}
-
 						// y_upper is at x=mu
 						double y_upper = exp(0);
 						y_upper /= sqrt(2 * PI * var);
@@ -6505,8 +6220,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 
 						double ratio_x = (double)range_pixel_x / range_value_x;
 						double ratio_y = (double)(range_pixel_y) / range_value_y;
-
-
 						value_coor.x = lower;
 						value_coor.y = y_lower;
 
@@ -6542,17 +6255,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 							upper /= 15;
 						}
 					}
-
-
-
 				}
-
-
-
-
-
-
-
 				if (obs <= upper && obs >= lower) {
 					int decrease = constant * 0.1 - offset;
 					decrease /= 4;
@@ -6563,11 +6266,8 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 6), pDC->LineTo(CircleCenter, bottom_right.y - 6);
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
-
 				}
-
 				else if (obs > upper) {
-
 					int CircleCenter = bottom_right.x + (int)offset * 0.7;
 					int decrease = constant * 0.1 - offset;
 					decrease /= 4;
@@ -6576,10 +6276,8 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 					sth3.Format(L"%.2f", obs);
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 6), pDC->LineTo(CircleCenter, bottom_right.y - 6);
-
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
 				}
-
 				else if (obs < lower) {
 					int decrease = constant * 0.1 - offset;
 					decrease /= 4;
@@ -6590,26 +6288,13 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleTwoTailed(CModelinga
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 6), pDC->LineTo(CircleCenter, bottom_right.y - 6);
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
-
 				}
-
-
 			}
-
-
 		}
-
-
-
-
-
-
 	}
-
 }
+
 void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModelingandAnalysisofUncertaintyDoc* pDoc, CDC* pDC, double max_width, double upper, double lower, CString kind, double obs, double max_height, char z_t) {
-
-
 
 	if (kind == "confidence") {
 		lower = pDoc->show_delta_x - (upper - pDoc->show_delta_x);
@@ -6626,10 +6311,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 
 		double height = top_left.y - bottom_right.y;
 		double ratio = height * 3;
-
-
-
-
 		if (top_left.x > 1200 && bottom_right.x > 1200) {
 
 			if (bottom_right.y <= 400) {
@@ -6641,32 +6322,23 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 					top_left.y = 405;
 					ratio = 15;
 				}
-
 				// drawing the cofidence interval
 				CRect rect(top_left.x, top_left.y, bottom_right.x, bottom_right.y);
 				pDC->Rectangle(rect);
 				CBrush Brush_Header, b1;
 				Brush_Header.CreateSolidBrush(RGB(177, 156, 217));
 				pDC->FillRect(&rect, &Brush_Header);
-
-
-
 				//vertical separation line 
 
 				pDC->MoveTo(bottom_right.x, top_left.y - ratio), pDC->LineTo(bottom_right.x, bottom_right.y + ratio);
 
-
 				pDC->MoveTo(bottom_right.x, top_left.y - ratio), pDC->LineTo(bottom_right.x - offset / 1.5, top_left.y - ratio);
 
 				pDC->MoveTo(bottom_right.x, bottom_right.y + ratio), pDC->LineTo(bottom_right.x - offset / 1.5, bottom_right.y + ratio);
-
-
 				CString sth1, sth2;
 				sth1.Format(L"%.2f", upper);
 				sth2.Format(L"%.2f", lower);
 				pDC->TextOutW(bottom_right.x - 10, 10 + top_left.y, sth1);
-
-
 				// drawing the tip
 				CPoint tip_bottom_right, tip_top_left;
 				tip_bottom_right.x = bottom_right.x - 200 + 70 + (int)offset;
@@ -6674,20 +6346,13 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 
 				tip_top_left.y = bottom_right.y - 120;
 				tip_bottom_right.y = tip_top_left.y + 10 + ratio * 0.1;
-
 				CRect rectA(tip_bottom_right.x, tip_bottom_right.y, tip_top_left.x, tip_top_left.y);
 				pDC->Rectangle(rectA);
 				CBrush BrushA;
 				BrushA.CreateSolidBrush(RGB(177, 156, 217));
 				pDC->FillRect(&rectA, &BrushA);
 				pDC->TextOutW(tip_bottom_right.x + 3, tip_top_left.y, L" Confidence Interval");
-
-
-
-
-
 				if (pDoc->show_mu <= upper && pDoc->show_mu >= lower) {
-
 					CRect rect_t(top_left.x - (int)offset - 10, top_left.y, top_left.x, bottom_right.y);
 					pDC->Rectangle(rect_t);
 					CBrush b1;
@@ -6699,14 +6364,9 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 					sth3.Format(L"%.2f", pDoc->show_mu);
 					pDC->TextOutW(CircleCenter - 23, 100 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 10), pDC->LineTo(CircleCenter, bottom_right.y - 10);
-
-
-
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
 				}
-
 				else if (pDoc->show_mu > upper) {
-
 					CRect rect_t(top_left.x - (int)offset - 10, top_left.y, top_left.x, bottom_right.y);
 					pDC->Rectangle(rect_t);
 					CBrush b1;
@@ -6718,14 +6378,9 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 					sth3.Format(L"%.2f", pDoc->show_mu);
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 10), pDC->LineTo(CircleCenter, bottom_right.y - 10);
-
-
-
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
 				}
-
 				else if (pDoc->show_mu < lower) {
-
 					CRect rect_t(top_left.x - (int)offset - 10, top_left.y, top_left.x, bottom_right.y);
 					pDC->Rectangle(rect_t);
 					CBrush b1;
@@ -6737,17 +6392,9 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 					sth3.Format(L"%.2f", pDoc->show_mu);
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 10), pDC->LineTo(CircleCenter, bottom_right.y - 10);
-
-
-
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
-
 				}
-
-
-
 			}
-
 			else {
 				// drawing the cofidence interval
 				CRect rect(top_left.x, top_left.y, bottom_right.x, bottom_right.y);
@@ -6756,24 +6403,18 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 				Brush_Header.CreateSolidBrush(RGB(177, 156, 217));
 				pDC->FillRect(&rect, &Brush_Header);
 
-
-
-
 				//drawing the vertical separation line 
 
 				pDC->MoveTo(bottom_right.x, top_left.y - ratio), pDC->LineTo(bottom_right.x, bottom_right.y + ratio);
-
 
 				pDC->MoveTo(bottom_right.x, top_left.y - ratio), pDC->LineTo(bottom_right.x - offset / 1.5, top_left.y - ratio);
 
 				pDC->MoveTo(bottom_right.x, bottom_right.y + ratio), pDC->LineTo(bottom_right.x - offset / 1.5, bottom_right.y + ratio);
 
-
 				CString sth1, sth2;
 				sth1.Format(L"%.2f", upper);
 				sth2.Format(L"%.2f", lower);
 				pDC->TextOutW(bottom_right.x - 10, 10 + top_left.y, sth1);
-
 
 				// drawing the tip
 				CPoint tip_bottom_right, tip_top_left;
@@ -6790,16 +6431,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 				pDC->FillRect(&rectA, &BrushA);
 				pDC->TextOutW(tip_bottom_right.x + 3, tip_top_left.y, L" Confidence Interval");
 
-
-
-
-
-
-
 				if (pDoc->show_mu <= upper && pDoc->show_mu >= lower) {
-
-
-
 					CRect rect_t(top_left.x - (int)offset - 10, top_left.y, top_left.x, bottom_right.y);
 					pDC->Rectangle(rect_t);
 					CBrush b1;
@@ -6820,7 +6452,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 
 					int CircleCenter = bottom_right.x + (int)offset * 0.8;
 
-
 					CRect rect_t(top_left.x - (int)offset - 10, top_left.y, top_left.x, bottom_right.y);
 					pDC->Rectangle(rect_t);
 					CBrush b1;
@@ -6832,8 +6463,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 					sth3.Format(L"%.2f", pDoc->show_mu);
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 10), pDC->LineTo(CircleCenter, bottom_right.y - 10);
-
-
 
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
 				}
@@ -6842,7 +6471,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 
 					int CircleCenter = top_left.x - (int)offset * 0.8;
 
-
 					CRect rect_t(top_left.x - (int)offset - 10, top_left.y, top_left.x, bottom_right.y);
 					pDC->Rectangle(rect_t);
 					CBrush b1;
@@ -6854,28 +6482,15 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 					sth3.Format(L"%.2f", pDoc->show_mu);
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 10), pDC->LineTo(CircleCenter, bottom_right.y - 10);
-
-
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
-
 				}
 			}
-
-
-
-
-
 		}
-
-
 		if (top_left.x <= 1200 && bottom_right.x > 1200) {
-
-
 			//just copy and paste 
 			top_left.x = 1200;
 			length = bottom_right.x - top_left.x;
 			offset = length * 0.1;
-
 
 			if (bottom_right.y <= 400) {
 				bottom_right.y = 400;
@@ -6895,17 +6510,14 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 
 				pDC->MoveTo(bottom_right.x, top_left.y - ratio), pDC->LineTo(bottom_right.x, bottom_right.y + ratio);
 
-
 				pDC->MoveTo(bottom_right.x, top_left.y - ratio), pDC->LineTo(bottom_right.x - offset / 1.5, top_left.y - ratio);
 
 				pDC->MoveTo(bottom_right.x, bottom_right.y + ratio), pDC->LineTo(bottom_right.x - offset / 1.5, bottom_right.y + ratio);
-
 
 				CString sth1, sth2;
 				sth1.Format(L"%.2f", upper);
 
 				pDC->TextOutW(bottom_right.x - 10, 10 + top_left.y, sth1);
-
 
 				// drawing the tip
 				CPoint tip_bottom_right, tip_top_left;
@@ -6921,13 +6533,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 				BrushA.CreateSolidBrush(RGB(177, 156, 217));
 				pDC->FillRect(&rectA, &BrushA);
 				pDC->TextOutW(tip_bottom_right.x + 3, tip_top_left.y, L" Confidence Interval");
-
-
-
-
-
-
-
 				if (pDoc->show_mu <= upper && pDoc->show_mu >= lower) {
 
 					int decrease = constant * 0.1 - offset;
@@ -6995,10 +6600,8 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 					pDC->MoveTo(CircleCenter, top_left.y + 6), pDC->LineTo(CircleCenter, bottom_right.y - 6);
 
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
-
 				}
 			}
-
 			else {
 				CRect rect(top_left.x, top_left.y, bottom_right.x, bottom_right.y);
 				pDC->Rectangle(rect);
@@ -7006,9 +6609,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 				Brush_Header.CreateSolidBrush(RGB(177, 156, 217));
 				pDC->FillRect(&rect, &Brush_Header);
 
-
 				pDC->MoveTo(bottom_right.x, top_left.y - ratio), pDC->LineTo(bottom_right.x, bottom_right.y + ratio);
-
 
 				pDC->MoveTo(bottom_right.x, top_left.y - ratio), pDC->LineTo(bottom_right.x - offset / 1.5, top_left.y - ratio);
 
@@ -7029,15 +6630,10 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 				pDC->FillRect(&rectA, &BrushA);
 				pDC->TextOutW(tip_bottom_right.x + 3, tip_top_left.y, L" Confidence Interval");
 
-
-
-
 				CString sth1, sth2;
 				sth1.Format(L"%.2f", upper);
 
 				pDC->TextOutW(bottom_right.x - 10, 10 + top_left.y, sth1);
-
-
 
 				if (top_left.y - tip_bottom_right.y <= 50) {
 					CRect rectA(tip_bottom_right.x, top_left.y + 50, tip_top_left.x, top_left.y + 70);
@@ -7047,15 +6643,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 					pDC->FillRect(&rectA, &BrushA);
 					pDC->TextOutW(tip_bottom_right.x + 3, top_left.y + 50, L" Confidence Interval");
 				}
-
-
-
-
-
-
-
-
-
 				if (pDoc->show_mu <= upper && pDoc->show_mu >= lower) {
 
 					int decrease = constant * 0.1 - offset;
@@ -7126,38 +6713,9 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
 
 				}
-
-
-
-
-
-
-
-
 			}
-
-
-
-
-
-
-
-
-
-
-
-
 		}
-
-
-
-
-
-
 	}
-
-
-
 	if (kind == "critical") {
 		upper = pDoc->show_mu + (pDoc->show_mu - lower);
 		// drawing the usable region (acceptance + rejection)
@@ -7172,8 +6730,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 		int constant = bottom_right.x - top_left.x;
 		double height = top_left.y - bottom_right.y;
 		double ratio = height * 3;
-
-
 		if (top_left.x > 1200 && bottom_right.x > 1200) {
 
 
@@ -7212,9 +6768,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 				sth2.Format(L"%.2f", lower);
 
 				pDC->TextOutW(top_left.x - 10, 10 + top_left.y, sth2);
-
-
-
 				// drawing the tip
 				CPoint tip_bottom_right, tip_top_left;
 				tip_bottom_right.x = bottom_right.x - 200 + 70 + (int)offset;
@@ -7356,7 +6909,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 							pixel_coor.y = (temporary)-(int)(ratio_y * (f - y_lower));
 							pDC->LineTo(pixel_coor.x, pixel_coor.y);
 						}
-
 						pixel_coor.x = top_left.x + (int)(ratio_x * (lower - lower));
 						pixel_coor.y = (temporary)-(int)(ratio_y * (y_lower - y_lower));
 						pDC->MoveTo(pixel_coor.x, pixel_coor.y);
@@ -7369,18 +6921,12 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 							pixel_coor.y = (temporary)-(int)(ratio_y * (f - y_lower));
 							pDC->LineTo(pixel_coor.x, pixel_coor.y);
 						}
-
 						if (rl != lower) {
 							lower /= 15;
 							upper /= 15;
 						}
 					}
-
-
-
 				}
-
-
 				// drawing the target 
 				int center = (bottom_right.x - top_left.x) / 2;
 				center += top_left.x;
@@ -7450,10 +6996,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 				sth2.Format(L"%.2f", lower);
 
 				pDC->TextOutW(top_left.x - 10, 10 + top_left.y, sth2);
-
-
-
-
 				// drawing the tip
 				CPoint tip_bottom_right, tip_top_left;
 				tip_bottom_right.x = bottom_right.x - 200 + 70 + (int)offset;
@@ -7614,12 +7156,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 							upper /= 15;
 						}
 					}
-
-
-
 				}
-
-
 				// drawing the target 
 				int center = (bottom_right.x - top_left.x) / 2;
 				center += top_left.x;
@@ -7636,9 +7173,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 					pDC->MoveTo(CircleCenter, top_left.y + 10), pDC->LineTo(CircleCenter, bottom_right.y - 10);
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
 				}
-
 				else if (obs > upper) {
-
 					int CircleCenter = bottom_right.x + (int)offset * 0.7;
 					pDC->Ellipse(CircleCenter - (top_left.y - bottom_right.y) / 2, top_left.y, CircleCenter + (top_left.y - bottom_right.y) / 2, bottom_right.y);
 					CString sth3;
@@ -7647,9 +7182,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 					pDC->MoveTo(CircleCenter, top_left.y + 10), pDC->LineTo(CircleCenter, bottom_right.y - 10);
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
 				}
-
 				else if (obs < lower) {
-
 					int CircleCenter = top_left.x - (int)offset * 0.7;
 					pDC->Ellipse(CircleCenter - (top_left.y - bottom_right.y) / 2, top_left.y, CircleCenter + (top_left.y - bottom_right.y) / 2, bottom_right.y);
 					CString sth3;
@@ -7657,16 +7190,9 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 10), pDC->LineTo(CircleCenter, bottom_right.y - 10);
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
-
 				}
-
-
 			}
-
 		}
-
-
-
 		if (top_left.x <= 1200 && bottom_right.x > 1200) {
 
 			if (bottom_right.y <= 180) {
@@ -7768,8 +7294,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 
 						double ratio_x = (double)range_pixel_x / range_value_x;
 						double ratio_y = (double)(range_pixel_y) / range_value_y;
-
-
 						value_coor.x = lower;
 						value_coor.y = y_lower;
 
@@ -7871,16 +7395,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 							upper /= 15;
 						}
 					}
-
-
-
 				}
-
-
-
-
-
-
 				if (obs <= upper && obs >= lower) {
 					int decrease = constant * 0.1 - offset;
 					decrease /= 4;
@@ -7918,18 +7433,12 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 6), pDC->LineTo(CircleCenter, bottom_right.y - 6);
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
-
 				}
-
-
 			}
-
 			else {
 				top_left.x = 1200;
 				length = bottom_right.x - top_left.x;
 				offset = length * 0.1;
-
-
 				CRect rect(top_left.x, top_left.y, bottom_right.x, bottom_right.y);
 				pDC->Rectangle(rect);
 				CBrush Brush_Header;
@@ -8012,8 +7521,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 
 						double ratio_x = (double)range_pixel_x / range_value_x;
 						double ratio_y = (double)(range_pixel_y) / range_value_y;
-
-
 						value_coor.x = lower;
 						value_coor.y = y_lower;
 
@@ -8115,17 +7622,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 							upper /= 15;
 						}
 					}
-
-
-
 				}
-
-
-
-
-
-
-
 				if (obs <= upper && obs >= lower) {
 					int decrease = constant * 0.1 - offset;
 					decrease /= 4;
@@ -8163,22 +7660,10 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleLeftTailed(CModeling
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 6), pDC->LineTo(CircleCenter, bottom_right.y - 6);
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
-
 				}
-
-
 			}
-
-
 		}
-
-
-
-
-
-
 	}
-
 }
 void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelingandAnalysisofUncertaintyDoc* pDoc, CDC* pDC, double max_width, double upper, double lower, CString kind, double obs, double max_height, char z_t) {
 
@@ -8196,10 +7681,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 		double offset = length * 0.1;
 		double height = top_left.y - bottom_right.y;
 		double ratio = height * 3;
-
-
-
-
 		if (top_left.x > 1200 && bottom_right.x > 1200) {
 
 			if (bottom_right.y <= 400) {
@@ -8218,9 +7699,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 				CBrush Brush_Header, b1;
 				Brush_Header.CreateSolidBrush(RGB(177, 156, 217));
 				pDC->FillRect(&rect, &Brush_Header);
-
-
-
 				//vertical separation line 
 
 				pDC->MoveTo(top_left.x, top_left.y - ratio), pDC->LineTo(top_left.x, bottom_right.y + ratio);
@@ -8247,11 +7725,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 				BrushA.CreateSolidBrush(RGB(177, 156, 217));
 				pDC->FillRect(&rectA, &BrushA);
 				pDC->TextOutW(tip_bottom_right.x + 3, tip_top_left.y, L" Confidence Interval");
-
-
-
-
-
 				if (pDoc->show_mu <= upper && pDoc->show_mu >= lower) {
 
 					CRect rect_t(bottom_right.x + (int)offset + 10, top_left.y, bottom_right.x, bottom_right.y);
@@ -8266,9 +7739,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 					sth3.Format(L"%.2f", pDoc->show_mu);
 					pDC->TextOutW(CircleCenter - 23, 100 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 10), pDC->LineTo(CircleCenter, bottom_right.y - 10);
-
-
-
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
 				}
 
@@ -8285,14 +7755,9 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 					sth3.Format(L"%.2f", pDoc->show_mu);
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 10), pDC->LineTo(CircleCenter, bottom_right.y - 10);
-
-
-
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
 				}
-
 				else if (pDoc->show_mu < lower) {
-
 					CRect rect_t(bottom_right.x + (int)offset + 10, top_left.y, bottom_right.x, bottom_right.y);
 					pDC->Rectangle(rect_t);
 					CBrush b1;
@@ -8304,17 +7769,9 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 					sth3.Format(L"%.2f", pDoc->show_mu);
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 10), pDC->LineTo(CircleCenter, bottom_right.y - 10);
-
-
-
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
-
 				}
-
-
-
 			}
-
 			else {
 				// drawing the cofidence interval
 				CRect rect(top_left.x, top_left.y, bottom_right.x, bottom_right.y);
@@ -8322,12 +7779,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 				CBrush Brush_Header;
 				Brush_Header.CreateSolidBrush(RGB(177, 156, 217));
 				pDC->FillRect(&rect, &Brush_Header);
-
-
-
-
 				//drawing the vertical separation line 
-
 				pDC->MoveTo(top_left.x, top_left.y - ratio), pDC->LineTo(top_left.x, bottom_right.y + ratio);
 				pDC->MoveTo(top_left.x, top_left.y - ratio), pDC->LineTo(top_left.x + offset / 1.5, top_left.y - ratio);
 				pDC->MoveTo(top_left.x, bottom_right.y + ratio), pDC->LineTo(top_left.x + offset / 1.5, bottom_right.y + ratio);
@@ -8353,15 +7805,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 				pDC->FillRect(&rectA, &BrushA);
 				pDC->TextOutW(tip_bottom_right.x + 3, tip_top_left.y, L" Confidence Interval");
 
-
-
-
-
-
-
 				if (pDoc->show_mu <= upper && pDoc->show_mu >= lower) {
-
-
 
 					CRect rect_t(bottom_right.x + (int)offset + 10, top_left.y, bottom_right.x, bottom_right.y);
 					pDC->Rectangle(rect_t);
@@ -8383,7 +7827,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 
 					int CircleCenter = bottom_right.x + (int)offset * 0.8;
 
-
 					CRect rect_t(bottom_right.x + (int)offset + 10, top_left.y, bottom_right.x, bottom_right.y);
 					pDC->Rectangle(rect_t);
 					CBrush b1;
@@ -8395,8 +7838,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 					sth3.Format(L"%.2f", pDoc->show_mu);
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 10), pDC->LineTo(CircleCenter, bottom_right.y - 10);
-
-
 
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
 				}
@@ -8405,7 +7846,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 
 					int CircleCenter = top_left.x - (int)offset * 0.8;
 
-
 					CRect rect_t(bottom_right.x + (int)offset + 10, top_left.y, bottom_right.x, bottom_right.y);
 					pDC->Rectangle(rect_t);
 					CBrush b1;
@@ -8418,28 +7858,15 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 10), pDC->LineTo(CircleCenter, bottom_right.y - 10);
 
-
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
-
 				}
 			}
-
-
-
-
-
 		}
-
-
 		if (top_left.x <= 1200 && bottom_right.x > 1200) {
-
-
 			//just copy and paste 
 			top_left.x = 1200;
 			length = bottom_right.x - top_left.x;
 			offset = length * 0.1;
-
-
 			if (bottom_right.y <= 400) {
 				bottom_right.y = 400;
 				height = top_left.y - bottom_right.y;
@@ -8480,20 +7907,10 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 				BrushA.CreateSolidBrush(RGB(177, 156, 217));
 				pDC->FillRect(&rectA, &BrushA);
 				pDC->TextOutW(tip_bottom_right.x + 3, tip_top_left.y, L" Confidence Interval");
-
-
-
-
-
-
-
 				if (pDoc->show_mu <= upper && pDoc->show_mu >= lower) {
-
 					int decrease = constant * 0.1 - offset;
 					decrease /= 4;
 					int CircleCenter = top_left.x + ((bottom_right.x - top_left.x) / (upper - lower) * (pDoc->show_mu - lower));
-
-
 					CRect rect_t(bottom_right.x + (int)offset + 10, top_left.y, bottom_right.x, bottom_right.y);
 					pDC->Rectangle(rect_t);
 					CBrush b1;
@@ -8590,12 +8007,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 				pDC->FillRect(&rectA, &BrushA);
 				pDC->TextOutW(tip_bottom_right.x + 3, tip_top_left.y, L" Confidence Interval");
 
-
-
-
-
-
-
 				if (top_left.y - tip_bottom_right.y <= 50) {
 					CRect rectA(tip_bottom_right.x, top_left.y + 50, tip_top_left.x, top_left.y + 70);
 					pDC->Rectangle(rectA);
@@ -8604,21 +8015,9 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 					pDC->FillRect(&rectA, &BrushA);
 					pDC->TextOutW(tip_bottom_right.x + 3, top_left.y + 50, L" Confidence Interval");
 				}
-
-
-
-
-
-
-
-
-
 				if (pDoc->show_mu <= upper && pDoc->show_mu >= lower) {
-
 					int decrease = constant * 0.1 - offset;
 					decrease /= 4;
-
-
 					CRect rect_t(bottom_right.x + (int)offset + 10, top_left.y, bottom_right.x, bottom_right.y);
 					pDC->Rectangle(rect_t);
 					CBrush b1;
@@ -8631,7 +8030,6 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 					sth3.Format(L"%.2f", pDoc->show_mu);
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 6), pDC->LineTo(CircleCenter, bottom_right.y - 6);
-
 
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
 
@@ -8660,13 +8058,9 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 				}
 
 				else if (pDoc->show_mu < lower) {
-
-
 					int decrease = constant * 0.1 - offset;
 					decrease /= 4;
 					int CircleCenter = top_left.x - (int)offset * 0.7;
-
-
 					CRect rect_t(bottom_right.x + (int)offset + 10, top_left.y, bottom_right.x, bottom_right.y);
 					pDC->Rectangle(rect_t);
 					CBrush b1;
@@ -8683,40 +8077,10 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
 
 				}
-
-
-
-
-
-
-
-
 			}
-
-
-
-
-
-
-
-
-
-
-
-
 		}
-
-
-
-
-
-
 	}
-
-
-
 	if (kind == "critical") {
-
 		lower = pDoc->show_mu - (upper - pDoc->show_mu);
 		// drawing the usable region (acceptance + rejection)
 		double range = fabs(upper - lower);
@@ -9669,17 +9033,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 							upper /= 15;
 						}
 					}
-
-
-
 				}
-
-
-
-
-
-
-
 				if (obs <= upper && obs >= lower) {
 					int decrease = constant * 0.1 - offset;
 					decrease /= 4;
@@ -9690,9 +9044,7 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 					pDC->TextOutW(CircleCenter - 23, 10 + top_left.y, sth3);
 					pDC->MoveTo(CircleCenter, top_left.y + 6), pDC->LineTo(CircleCenter, bottom_right.y - 6);
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
-
 				}
-
 				else if (obs > upper) {
 
 					int CircleCenter = bottom_right.x + (int)offset * 0.7;
@@ -9719,20 +9071,11 @@ void CModelingandAnalysisofUncertaintyView::DisplayRectangleRightTailed(CModelin
 					pDC->MoveTo(top_left.x - (int)offset - 20, (top_left.y + bottom_right.y) / 2), pDC->LineTo(bottom_right.x + (int)offset + 20, (top_left.y + bottom_right.y) / 2);
 
 				}
-
-
 			}
-
-
 		}
-
-
-
-
-
-
 	}
 }
+
 double CModelingandAnalysisofUncertaintyView::Normal(double para_mu, double para_var, double x) {
 	double f = (double)0, PI = 3.141592653589793115997963468544185161590576171875;
 	double mu = para_mu, var = para_var;
@@ -9865,6 +9208,7 @@ double CModelingandAnalysisofUncertaintyView::GAM(double xx) {
 	for (j = 0; j <= 5; j++) ser += coef[j] / ++y;
 	return -tmp + log(2.5066282746310005 * ser / x);
 }
+
 void CModelingandAnalysisofUncertaintyView::TwoSampleBoxPlot(CModelingandAnalysisofUncertaintyDoc* pDoc, CDC* pDC, int max_width, int max_height, double MAX_PURE, double MIN_PURE, double UpperQ, double LowerQ, double MediumQ, CArray<double>& O2, int N2, CPoint& TopLeft, CPoint& BottomRight, int WhatClass, double rooftop, double floor) {
 	
 	CPoint TopPurePixel, BottomPurePixel;
@@ -10318,61 +9662,564 @@ void CModelingandAnalysisofUncertaintyView::OnMachinelearningArtificialneuralnet
 ///////////Linear Classification/////////////
 ////////////////////////////////////////////
 
-void CModelingandAnalysisofUncertaintyView::DisplayConfusionMatrix() {
-	/*
-	std::ifstream inFile("confusionMatrix.txt");
-	if (!inFile.is_open()) {
-		AfxMessageBox(_T("Unable to open confusionMatrix.txt"));
-		return;
+void CModelingandAnalysisofUncertaintyView::DisplayConfusionMatrixTrainValidation(CModelingandAnalysisofUncertaintyDoc* pDoc, CDC* pDC, int& Length, int& Height) {
+	int xOffset = 700, yOffset = 50, pos;
+	CPen Standard, Solid;
+	Standard.CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
+	Solid.CreatePen(PS_SOLID, 2, RGB(0, 0, 0));
+	pDC->SelectObject(&Standard);
+	CPoint Point;
+	CRect rectA(xOffset, yOffset, xOffset + 240, yOffset + 38);
+	pDC->Rectangle(rectA);
+	CBrush Brush_Header;
+	Brush_Header.CreateSolidBrush(RGB(238, 228, 50));
+	pDC->FillRect(&rectA, &Brush_Header);
+	pDC->SetBkMode(TRANSPARENT);
+	CFont Standard_Font, Rotated_Header_Font, Header_Font, Chapter_Font;
+	Standard_Font.CreateStockObject(SYSTEM_FONT);
+	Header_Font.CreateFont(20, 10, 0, 0, FALSE, FALSE, FALSE, 0, ARABIC_CHARSET, OUT_TT_PRECIS,
+		CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_ROMAN, _T("Times New Roman"));
+	Rotated_Header_Font.CreateFont(20, 10, 900, 0, FALSE, FALSE, FALSE, 0, ARABIC_CHARSET, OUT_TT_PRECIS,
+		CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_ROMAN, _T("Times New Roman"));
+	Chapter_Font.CreateFont(24, 12, 0, 0, 700, FALSE, FALSE, 0, ARABIC_CHARSET, OUT_TT_PRECIS,
+		CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_ROMAN, _T("Arial"));
+	pDC->SelectObject(Standard_Font);
+	CString Text;
+	if (pDoc->ValidationMethod == "TrainValidation") {
+		pDC->SetTextAlign(TA_LEFT);
+		pDC->TextOutW(xOffset + 10, yOffset + 10, _T("Confusion matrices:"));
+		pDC->SetTextAlign(TA_CENTER);
+		pDC->SelectObject(&Chapter_Font);
+		pDC->TextOutW(xOffset + 60 + (int)(Length/2), yOffset + 50, _T("Training set"));
+		pDC->TextOutW(xOffset + (int)(1.5*Length) + 135, yOffset + 50, _T("Validation set"));
+		pDC->SelectObject(&Header_Font);
+		// Drawing confusion matrix for training set
+		pDC->TextOutW(xOffset + 60 + Length/2, yOffset + 75, _T("Assigned"));
+		pDC->SelectObject(&Standard_Font);
+		pDC->SelectObject(&Solid);
+		pDC->TextOutW(xOffset+35, yOffset + 100, _T("Class"));
+		Point.x = xOffset + 60, Point.y = yOffset + 120, pDC->MoveTo(Point), Point.y += Height, pDC->LineTo(Point);
+		Point.x = xOffset + 60, Point.y = yOffset + 120, pDC->MoveTo(Point), Point.x += Length, pDC->LineTo(Point);
+		double dx = Length / (double)pDoc->n_classes, dy = Height / (double)pDoc->n_classes;
+		for (int k = 0; k < pDoc->n_classes; k++) {
+			Text.Empty(), Text.Format(L"%d", k + 1);
+			pDC->TextOutW(xOffset + 35, yOffset + 113 + (int)(dy/2 + k * dy), Text);
+			pDC->TextOutW(xOffset + 60 + (int)(dx/2 + k * dx), yOffset + 100, Text);
+			Point.x = xOffset + 60, Point.y = yOffset + 120 + (int)((k + 1) * dy), pDC->MoveTo(Point), Point.x += Length, pDC->LineTo(Point);
+			Point.x = xOffset + 60 + (k + 1) * dx, Point.y = yOffset + 120, pDC->MoveTo(Point), Point.y += Height, pDC->LineTo(Point);
+		}
+		pDC->SelectObject(&Standard);
+		pDC->SelectObject(&Rotated_Header_Font);
+		pDC->TextOutW(xOffset-10, yOffset + 120 + (int)(Height / 2), L"True");
+		pDC->SelectObject(&Standard_Font);
+		for (int i = 0; i < pDoc->n_classes; i++) {
+			for (int j = 0; j < pDoc->n_classes; j++) {
+				pos = j * pDoc->n_classes + i;
+				Text.Empty(), Text.Format(L"%d", pDoc->ConfMatr_train.GetAt(pos));
+				pDC->TextOutW(xOffset + 60 + (int)(dx / 2 + j * dx), yOffset + 113 + (int)(dy / 2 + i * dy), Text);
+			}
+		}
+		// Drawing confusion matrix for valiation set
+		pDC->SelectObject(&Header_Font);
+		pDC->TextOutW(xOffset + 110 + (int)(1.5*Length) + 25, yOffset + 75, _T("Assigned"));
+		pDC->SelectObject(&Standard_Font);
+		pDC->SelectObject(&Solid);
+		Point.x = xOffset + 135 + Length, Point.y = yOffset + 120, pDC->MoveTo(Point), Point.y += Height, pDC->LineTo(Point);
+		Point.x = xOffset + 135 + Length, Point.y = yOffset + 120, pDC->MoveTo(Point), Point.x += Length, pDC->LineTo(Point);
+		for (int k = 0; k < pDoc->n_classes; k++) {
+			Text.Empty(), Text.Format(L"%d", k + 1);
+			pDC->TextOutW(xOffset + 135 + Length + (int)(dx / 2 + k * dx), yOffset + 100, Text);
+			Point.x = xOffset + 135 + Length, Point.y = yOffset + 120 + (int)((k + 1) * dy), pDC->MoveTo(Point), Point.x += Length, pDC->LineTo(Point);
+			Point.x = xOffset + 135 + Length + (k + 1) * dx, Point.y = yOffset + 120, pDC->MoveTo(Point), Point.y += Height, pDC->LineTo(Point);
+		}
+		for (int i = 0; i < pDoc->n_classes; i++) {
+			for (int j = 0; j < pDoc->n_classes; j++) {
+				pos = j * pDoc->n_classes + i;
+				Text.Empty(), Text.Format(L"%d", pDoc->ConfMatr_valid.GetAt(pos));
+				pDC->TextOutW(xOffset + 135 + Length + (int)(dx / 2 + j * dx), yOffset + 113 + (int)(dy / 2 + i * dy), Text);
+			}
+		}
 	}
+	else {
+		pDC->TextOutW(xOffset + 10, yOffset + 10, _T("Confusion matrix:"));
+		pDC->TextOutW(xOffset, yOffset + 50, _T("Validation sets"));
+		pDC->TextOutW(xOffset+75, yOffset + 75, _T("Assigned"));
+		pDC->TextOutW(xOffset, yOffset + 100, _T("Class"));
+	}
+}
 
+void CModelingandAnalysisofUncertaintyView::DisplayClassificationMetricsTrainValidation(CModelingandAnalysisofUncertaintyDoc* pDoc, CDC* pDC, int & Length, int &Height) {
+	int xOffset = 700, yOffset = 400;
+	CPen Standard, Dashed_thick, Dashed;
+	Standard.CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
+	Dashed_thick.CreatePen(PS_DASH, 1, RGB(0,0,0));
+	Dashed.CreatePen(PS_DOT, 0.5, RGB(0, 0, 0));
+	pDC->SelectObject(&Standard);
+	CPoint Point;
+	CRect rectA(xOffset, yOffset, xOffset + 240, yOffset + 38);
+	pDC->Rectangle(rectA);
+	CBrush Brush_Header;
+	Brush_Header.CreateSolidBrush(RGB(238, 228, 50));
+	pDC->FillRect(&rectA, &Brush_Header);
+	pDC->SetBkMode(TRANSPARENT);
+	CFont Standard_Font;
+	Standard_Font.CreateStockObject(SYSTEM_FONT);
+	pDC->SelectObject(&Standard_Font);
+	pDC->SetTextAlign(TA_LEFT);
+	pDC->TextOutW(xOffset + 10, yOffset + 10, _T("Classification metrics:"));
+	int dY = 35;
+	CString Text;
+	pDC->SelectObject(&Dashed_thick);
+	Point.x = xOffset + 98 + Length, Point.y = yOffset - Height - 30, pDC->MoveTo(Point), Point.y = yOffset + 68 + 9 * dY, pDC->LineTo(Point);
+	pDC->SelectObject(&Dashed);
+	if (pDoc->ValidationMethod == "TrainValidation") {
+		if (pDoc->n_classes == 2) {
+			pDC->TextOutW(xOffset + 60, yOffset + 50, _T("Accuracy")), pDC->TextOutW(xOffset + 290, yOffset + 50, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Train.GetAt(0)), pDC->TextOutW(xOffset + 315, yOffset + 50, Text);
+			pDC->TextOutW(xOffset + 435, yOffset + 50, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(0)), pDC->TextOutW(xOffset + 460, yOffset + 50, Text);
+			Point.x = xOffset + 60, Point.y = yOffset + 68, pDC->MoveTo(Point), Point.x+= 480, pDC->LineTo(Point);
+			pDC->TextOutW(xOffset + 60, yOffset + 50 + dY, _T("Sensitivity")), pDC->TextOutW(xOffset + 290, yOffset + 50 + dY, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Train.GetAt(1)), pDC->TextOutW(xOffset + 315, yOffset + 50 + dY, Text);
+			pDC->TextOutW(xOffset + 435, yOffset + 50 + dY, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(1)), pDC->TextOutW(xOffset + 460, yOffset + 50 + dY, Text);
+			Point.x = xOffset + 60, Point.y = yOffset + 68 + dY, pDC->MoveTo(Point), Point.x += 480, pDC->LineTo(Point);
+			pDC->TextOutW(xOffset + 60, yOffset + 50 + 2 * dY, _T("Specificity")), pDC->TextOutW(xOffset + 290, yOffset + 50 + 2 * dY, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Train.GetAt(2)), pDC->TextOutW(xOffset + 315, yOffset + 50 + 2 * dY, Text);
+			pDC->TextOutW(xOffset + 435, yOffset + 50 + 2 * dY, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(2)), pDC->TextOutW(xOffset + 460, yOffset + 50 + 2* dY, Text);
+			Point.x = xOffset + 60, Point.y = yOffset + 68 + 2 * dY, pDC->MoveTo(Point), Point.x += 480, pDC->LineTo(Point);
+			pDC->TextOutW(xOffset + 60, yOffset + 50 + 3 * dY, _T("F1-score")), pDC->TextOutW(xOffset + 290, yOffset + 50 + 3 * dY, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Train.GetAt(3)), pDC->TextOutW(xOffset + 315, yOffset + 50 + 3 * dY, Text);
+			pDC->TextOutW(xOffset + 435, yOffset + 50 + 3 * dY, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(3)), pDC->TextOutW(xOffset + 460, yOffset + 50 + 3 * dY, Text);
+			Point.x = xOffset + 60, Point.y = yOffset + 68 + 3 * dY, pDC->MoveTo(Point), Point.x += 480, pDC->LineTo(Point);
+			pDC->TextOutW(xOffset + 60, yOffset + 50 + 4 * dY, _T("Matthews correlation coefficient")), pDC->TextOutW(xOffset + 290, yOffset + 50 + 4 * dY, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Train.GetAt(4)), pDC->TextOutW(xOffset + 315, yOffset + 50 + 4 * dY, Text);
+			pDC->TextOutW(xOffset + 435, yOffset + 50 + 4 * dY, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(4)), pDC->TextOutW(xOffset + 460, yOffset + 50 + 4 * dY, Text);
+			Point.x = xOffset + 60, Point.y = yOffset + 68 + 4 * dY, pDC->MoveTo(Point), Point.x += 480, pDC->LineTo(Point);
+			pDC->TextOutW(xOffset + 60, yOffset + 50 + 5 * dY, _T("Area under ROC curve")), pDC->TextOutW(xOffset + 290, yOffset + 50 + 5 * dY, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Train.GetAt(9)), pDC->TextOutW(xOffset + 315, yOffset + 50 + 5 * dY, Text);
+			pDC->TextOutW(xOffset + 435, yOffset + 50 + 5 * dY, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(9)), pDC->TextOutW(xOffset + 460, yOffset + 50 + 5 * dY, Text);
+			Point.x = xOffset + 60, Point.y = yOffset + 68 + 5 * dY, pDC->MoveTo(Point), Point.x += 480, pDC->LineTo(Point);
+			pDC->TextOutW(xOffset + 60, yOffset + 50 + 6 * dY, _T("Jaccard index")), pDC->TextOutW(xOffset + 290, yOffset + 50 + 6 * dY, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Train.GetAt(5)), pDC->TextOutW(xOffset + 315, yOffset + 50 + 6 * dY, Text);
+			pDC->TextOutW(xOffset + 435, yOffset + 50 + 6 * dY, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(5)), pDC->TextOutW(xOffset + 460, yOffset + 50 + 6 * dY, Text);
+			Point.x = xOffset + 60, Point.y = yOffset + 68 + 6 * dY, pDC->MoveTo(Point), Point.x += 480, pDC->LineTo(Point);
+			pDC->TextOutW(xOffset + 60, yOffset + 50 + 7 * dY, _T("Fowlkes-Mellows index")), pDC->TextOutW(xOffset + 290, yOffset + 50 + 7 * dY, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Train.GetAt(6)), pDC->TextOutW(xOffset + 315, yOffset + 50 + 7 * dY, Text);
+			pDC->TextOutW(xOffset + 435, yOffset + 50 + 7 * dY, _T(":"));
+			Point.x = xOffset + 60, Point.y = yOffset + 68 + 7 * dY, pDC->MoveTo(Point), Point.x += 480, pDC->LineTo(Point);
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(6)), pDC->TextOutW(xOffset + 460, yOffset + 50 + 7 * dY, Text);
+			pDC->TextOutW(xOffset + 60, yOffset + 50 + 8 * dY, _T("Rand index")), pDC->TextOutW(xOffset + 290, yOffset + 50 + 8 * dY, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Train.GetAt(7)), pDC->TextOutW(xOffset + 315, yOffset + 50 + 8 * dY, Text);
+			pDC->TextOutW(xOffset + 435, yOffset + 50 + 8 * dY, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(7)), pDC->TextOutW(xOffset + 460, yOffset + 50 + 8 * dY, Text);
+			Point.x = xOffset + 60, Point.y = yOffset + 68 + 8 * dY, pDC->MoveTo(Point), Point.x += 480, pDC->LineTo(Point);
+			pDC->TextOutW(xOffset + 60, yOffset + 50 + 9 * dY, _T("Adjusted Rand index")), pDC->TextOutW(xOffset + 290, yOffset + 50 + 9 * dY, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Train.GetAt(8)), pDC->TextOutW(xOffset + 315, yOffset + 50 + 9 * dY, Text);
+			pDC->TextOutW(xOffset + 435, yOffset + 50 + 9 * dY, _T(":"));
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(8)), pDC->TextOutW(xOffset + 460, yOffset + 50 + 9 * dY, Text);
+			Point.x = xOffset + 60, Point.y = yOffset + 68 + 9 * dY, pDC->MoveTo(Point), Point.x += 480, pDC->LineTo(Point);
+		}
+	}
+	else {
 
-	int TP, FP, FN, TN;
-	inFile >> TP >> FP >> FN >> TN;
-	inFile.close();
-	*/
-	CClientDC dc(this);
-	CRect clientRect;
-	GetClientRect(&clientRect);
-	int matrixTop = 50;
-	int matrixRight = clientRect.right - 50;
-	int matrixCellWidth = 150;
-	int matrixCellHeight = 100;
-	int matrixLeft = matrixRight - 2 * matrixCellWidth;
-	CRect matrixRect(matrixLeft, matrixTop, matrixLeft + 2 * matrixCellWidth, matrixTop + 2 * matrixCellHeight);
-	dc.Rectangle(matrixRect);
+	}
+}
 
+void CModelingandAnalysisofUncertaintyView::DisplayClassificationMetricsCrossValidation(CModelingandAnalysisofUncertaintyDoc* pDoc, CDC* pDC) {
+	int xOffset = 700, yOffset = 50;
+	CPen Standard, Dashed_thick, Dashed;
+	Standard.CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
+	Dashed_thick.CreatePen(PS_DASH, 1, RGB(0, 0, 0));
+	Dashed.CreatePen(PS_DOT, 0.5, RGB(0, 0, 0));
+	pDC->SelectObject(&Standard);
+	CPoint Point;
+	CRect rectA(xOffset, yOffset, xOffset + 240, yOffset + 38);
+	pDC->Rectangle(rectA);
+	CBrush Brush_Header;
+	Brush_Header.CreateSolidBrush(RGB(238, 228, 50));
+	pDC->FillRect(&rectA, &Brush_Header);
+	pDC->SetBkMode(TRANSPARENT);
+	CFont Standard_Font;
+	Standard_Font.CreateStockObject(SYSTEM_FONT);
+	pDC->SelectObject(&Standard_Font);
+	pDC->SetTextAlign(TA_LEFT);
+	CString Text;
+	int dY;
+	if (pDoc->nFold == 5) dY = 35;
+	else dY = 25;
+	pDC->TextOutW(xOffset + 10, yOffset + 10, _T("Classification metrics:"));
+	pDC->SetTextAlign(TA_CENTER);
+	for (int i = 0; i < 5; i++) {
+		Text.Empty(), Text.Format(L"Fold %d", i + 1), pDC->TextOutW(xOffset + 300 + i * 100, yOffset + 55, Text);
+	}
+	pDC->SetTextAlign(TA_LEFT);
+	pDC->TextOutW(xOffset + 10, yOffset + 75, _T("True positives")), pDC->TextOutW(xOffset + 230, yOffset + 75, _T(":"));
+	pDC->TextOutW(xOffset + 10, yOffset + 75 + dY, _T("False negatives")), pDC->TextOutW(xOffset + 230, yOffset + 75 + dY, _T(":"));
+	pDC->TextOutW(xOffset + 10, yOffset + 75 + 2 * dY, _T("False positives")), pDC->TextOutW(xOffset + 230, yOffset + 75 + 2 * dY, _T(":"));
+	pDC->TextOutW(xOffset + 10, yOffset + 75 + 3 * dY, _T("True negatives")), pDC->TextOutW(xOffset + 230, yOffset + 75 + 3 * dY, _T(":"));
+	pDC->TextOutW(xOffset + 10, yOffset + 75 + 4 * dY, _T("Accuracy")), pDC->TextOutW(xOffset + 230, yOffset + 75 + 4 * dY, _T(":"));
+	if (pDoc->n_classes == 2) {
+		pDC->TextOutW(xOffset + 10, yOffset + 75 + 5 * dY, _T("Sensitivity")), pDC->TextOutW(xOffset + 230, yOffset + 75 + 5 * dY, _T(":"));
+		pDC->TextOutW(xOffset + 10, yOffset + 75 + 6 * dY, _T("Specificity")), pDC->TextOutW(xOffset + 230, yOffset + 75 + 6 * dY, _T(":"));
+		pDC->TextOutW(xOffset + 10, yOffset + 75 + 7 * dY, _T("F1-score")), pDC->TextOutW(xOffset + 230, yOffset + 75 + 7 * dY, _T(":"));
+	}
+	else {
+		pDC->TextOutW(xOffset + 10, yOffset + 75 + 5 * dY, _T("F1-score(micro)")), pDC->TextOutW(xOffset + 230, yOffset + 75 + 5 * dY, _T(":"));
+		pDC->TextOutW(xOffset + 10, yOffset + 75 + 6 * dY, _T("F1-score(macro)")), pDC->TextOutW(xOffset + 230, yOffset + 75 + 6 * dY, _T(":"));
+		pDC->TextOutW(xOffset + 10, yOffset + 75 + 7 * dY, _T("F1-score(weighted)")), pDC->TextOutW(xOffset + 230, yOffset + 75 + 7 * dY, _T(":"));
+	}
+	pDC->TextOutW(xOffset + 10, yOffset + 75 + 8 * dY, _T("Matthews correlation coefficient")), pDC->TextOutW(xOffset + 230, yOffset + 75 + 8 * dY, _T(":"));
+	pDC->TextOutW(xOffset + 10, yOffset + 75 + 9 * dY, _T("Jaccard index")), pDC->TextOutW(xOffset + 230, yOffset + 75 + 9 * dY, _T(":"));
+	pDC->TextOutW(xOffset + 10, yOffset + 75 + 10 * dY, _T("Fowlkes-Mellows index")), pDC->TextOutW(xOffset + 230, yOffset + 75 + 10 * dY, _T(":"));
+	pDC->TextOutW(xOffset + 10, yOffset + 75 + 11 * dY, _T("Rand index")), pDC->TextOutW(xOffset + 230, yOffset + 75 + 11 * dY, _T(":"));
+	pDC->TextOutW(xOffset + 10, yOffset + 75 + 12 * dY, _T("Adjusted Rand index")), pDC->TextOutW(xOffset + 230, yOffset + 75 + 12 * dY, _T(":"));
 
-	//Draw confusion matrix
+	if (pDoc->n_classes == 2) {
+		pDC->TextOutW(xOffset + 10, yOffset + 75 + 13 * dY, _T("Area under ROC curve")), pDC->TextOutW(xOffset + 230, yOffset + 75 + 13 * dY, _T(":"));
+		pDC->SetTextAlign(TA_CENTER);
+		for (int i = 0; i < 5; i++) {
+			Text.Empty(), Text.Format(L"%d", pDoc->ConfMatr_valid.GetAt(static_cast <int64_t>(i) * 4));
+			pDC->TextOutW(xOffset + 300 + i * 100, yOffset + 75, Text);
+			Text.Empty(), Text.Format(L"%d", pDoc->ConfMatr_valid.GetAt(static_cast <int64_t>(i) * 4 + 2));
+			pDC->TextOutW(xOffset + 300 + i * 100, yOffset + 75 + dY, Text);
+			Text.Empty(), Text.Format(L"%d", pDoc->ConfMatr_valid.GetAt(static_cast <int64_t>(i) * 4 + 1));
+			pDC->TextOutW(xOffset + 300 + i * 100, yOffset + 75 + 2 * dY, Text);
+			Text.Empty(), Text.Format(L"%d", pDoc->ConfMatr_valid.GetAt(static_cast <int64_t>(i) * 4 + 3));
+			pDC->TextOutW(xOffset + 300 + i * 100, yOffset + 75 + 3 * dY, Text);
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10));
+			pDC->TextOutW(xOffset + 300 + i * 100, yOffset + 75 + 4 * dY, Text);
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10 + 1));
+			pDC->TextOutW(xOffset + 300 + i * 100, yOffset + 75 + 5 * dY, Text);
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10 + 2));
+			pDC->TextOutW(xOffset + 300 + i * 100, yOffset + 75 + 6 * dY, Text);
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10 + 3));
+			pDC->TextOutW(xOffset + 300 + i * 100, yOffset + 75 + 7 * dY, Text);
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10 + 4));
+			pDC->TextOutW(xOffset + 300 + i * 100, yOffset + 75 + 8 * dY, Text);
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10 + 5));
+			pDC->TextOutW(xOffset + 300 + i * 100, yOffset + 75 + 9 * dY, Text);
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10 + 6));
+			pDC->TextOutW(xOffset + 300 + i * 100, yOffset + 75 + 10 * dY, Text);
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10 + 7));
+			pDC->TextOutW(xOffset + 300 + i * 100, yOffset + 75 + 11 * dY, Text);
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10 + 8));
+			pDC->TextOutW(xOffset + 300 + i * 100, yOffset + 75 + 12 * dY, Text);
+			Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10 + 9));
+			pDC->TextOutW(xOffset + 300 + i * 100, yOffset + 75 + 13 * dY, Text);
+		}
+	}
+	if (pDoc->nFold == 10) {
+		pDC->SetTextAlign(TA_LEFT);
+		pDC->TextOutW(xOffset + 10, yOffset + 475, _T("True positives")), pDC->TextOutW(xOffset + 230, yOffset + 475, _T(":"));
+		pDC->TextOutW(xOffset + 10, yOffset + 475 + dY, _T("False negatives")), pDC->TextOutW(xOffset + 230, yOffset + 475 + dY, _T(":"));
+		pDC->TextOutW(xOffset + 10, yOffset + 475 + 2 * dY, _T("False positives")), pDC->TextOutW(xOffset + 230, yOffset + 475 + 2 * dY, _T(":"));
+		pDC->TextOutW(xOffset + 10, yOffset + 475 + 3 * dY, _T("True negatives")), pDC->TextOutW(xOffset + 230, yOffset + 475 + 3 * dY, _T(":"));
+		pDC->TextOutW(xOffset + 10, yOffset + 475 + 4 * dY, _T("Accuracy")), pDC->TextOutW(xOffset + 230, yOffset + 475 + 4 * dY, _T(":"));
+		if (pDoc->n_classes == 2) {
+			pDC->TextOutW(xOffset + 10, yOffset + 475 + 5 * dY, _T("Sensitivity")), pDC->TextOutW(xOffset + 230, yOffset + 475 + 5 * dY, _T(":"));
+			pDC->TextOutW(xOffset + 10, yOffset + 475 + 6 * dY, _T("Specificity")), pDC->TextOutW(xOffset + 230, yOffset + 475 + 6 * dY, _T(":"));
+			pDC->TextOutW(xOffset + 10, yOffset + 475 + 7 * dY, _T("F1-score")), pDC->TextOutW(xOffset + 230, yOffset + 475 + 7 * dY, _T(":"));
+		}
+		else {
+			pDC->TextOutW(xOffset + 10, yOffset + 475 + 5 * dY, _T("F1-score(micro)")), pDC->TextOutW(xOffset + 230, yOffset + 475 + 5 * dY, _T(":"));
+			pDC->TextOutW(xOffset + 10, yOffset + 475 + 6 * dY, _T("F1-score(macro)")), pDC->TextOutW(xOffset + 230, yOffset + 475 + 6 * dY, _T(":"));
+			pDC->TextOutW(xOffset + 10, yOffset + 475 + 7 * dY, _T("F1-score(weighted)")), pDC->TextOutW(xOffset + 230, yOffset + 475 + 7 * dY, _T(":"));
+		}
+		pDC->TextOutW(xOffset + 10, yOffset + 475 + 8 * dY, _T("Matthews correlation coefficient")), pDC->TextOutW(xOffset + 230, yOffset + 475 + 8 * dY, _T(":"));
+		pDC->TextOutW(xOffset + 10, yOffset + 475 + 9 * dY, _T("Jaccard index")), pDC->TextOutW(xOffset + 230, yOffset + 475 + 9 * dY, _T(":"));
+		pDC->TextOutW(xOffset + 10, yOffset + 475 + 10 * dY, _T("Fowlkes-Mellows index")), pDC->TextOutW(xOffset + 230, yOffset + 475 + 10 * dY, _T(":"));
+		pDC->TextOutW(xOffset + 10, yOffset + 475 + 11 * dY, _T("Rand index")), pDC->TextOutW(xOffset + 230, yOffset + 475 + 11 * dY, _T(":"));
+		pDC->TextOutW(xOffset + 10, yOffset + 475 + 12 * dY, _T("Adjusted Rand index")), pDC->TextOutW(xOffset + 230, yOffset + 475 + 12 * dY, _T(":"));
+		if (pDoc->n_classes == 2) {
+			pDC->TextOutW(xOffset + 10, yOffset + 475 + 13 * dY, _T("Area under ROC curve")), pDC->TextOutW(xOffset + 230, yOffset + 475 + 13 * dY, _T(":"));
+			for (int i = 5; i < 10; i++) {
+				Text.Empty(), Text.Format(L"Fold %d", i + 1), pDC->TextOutW(xOffset + 300 + (i - 5) * 100, yOffset + 450, Text);
+				Text.Empty(), Text.Format(L"%d", pDoc->ConfMatr_valid.GetAt(static_cast <int64_t>(i) * 4));
+				pDC->TextOutW(xOffset + 300 + (i - 5) * 100, yOffset + 475, Text);
+				Text.Empty(), Text.Format(L"%d", pDoc->ConfMatr_valid.GetAt(static_cast <int64_t>(i) * 4 + 2));
+				pDC->TextOutW(xOffset + 300 + (i - 5) * 100, yOffset + 475 + dY, Text);
+				Text.Empty(), Text.Format(L"%d", pDoc->ConfMatr_valid.GetAt(static_cast <int64_t>(i) * 4 + 1));
+				pDC->TextOutW(xOffset + 300 + (i - 5) * 100, yOffset + 475 + 2 * dY, Text);
+				Text.Empty(), Text.Format(L"%d", pDoc->ConfMatr_valid.GetAt(static_cast <int64_t>(i) * 4 + 3));
+				pDC->TextOutW(xOffset + 300 + (i - 5) * 100, yOffset + 475 + 3 * dY, Text);
+				Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10));
+				pDC->TextOutW(xOffset + 300 + (i - 5) * 100, yOffset + 475 + 4 * dY, Text);
+				Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10 + 1));
+				pDC->TextOutW(xOffset + 300 + (i - 5) * 100, yOffset + 475 + 5 * dY, Text);
+				Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10 + 2));
+				pDC->TextOutW(xOffset + 300 + (i - 5) * 100, yOffset + 475 + 6 * dY, Text);
+				Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10 + 3));
+				pDC->TextOutW(xOffset + 300 + (i - 5) * 100, yOffset + 475 + 7 * dY, Text);
+				Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10 + 4));
+				pDC->TextOutW(xOffset + 300 + (i - 5) * 100, yOffset + 475 + 8 * dY, Text);
+				Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10 + 5));
+				pDC->TextOutW(xOffset + 300 + (i - 5) * 100, yOffset + 475 + 9 * dY, Text);
+				Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10 + 6));
+				pDC->TextOutW(xOffset + 300 + (i - 5) * 100, yOffset + 475 + 10 * dY, Text);
+				Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10 + 7));
+				pDC->TextOutW(xOffset + 300 + (i - 5) * 100, yOffset + 475 + 11 * dY, Text);
+				Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10 + 8));
+				pDC->TextOutW(xOffset + 300 + (i - 5) * 100, yOffset + 475 + 12 * dY, Text);
+				Text.Empty(), Text.Format(L"%.4f", pDoc->Metrics_Valid.GetAt(static_cast <int64_t>(i) * 10 + 9));
+				pDC->TextOutW(xOffset + 300 + (i - 5) * 100, yOffset + 475 + 13 * dY, Text);
+			}
+		}
+	}
+}
 
-	int TP = 0, FP = 0, FN = 0, TN = 0;
+void CModelingandAnalysisofUncertaintyView::DisplayROCCurve(CModelingandAnalysisofUncertaintyDoc* pDoc, CDC* pDC, CPoint & TopLeft, CPoint& BottomRight) {
+	double xRel, yRel;
+	int xAbs, yAbs, yOffset = 50, Width = BottomRight.x - TopLeft.x, Height = BottomRight.y - TopLeft.y - yOffset;
+	CPen Standard, Color1, Color2, Color3, Color4, Color5, Color6, Color7, Color8, Color9, Color10, BaselinePen;
+	Standard.CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
+	Color1.CreatePen(PS_SOLID, 2, RGB(12, 129, 0));
+	Color2.CreatePen(PS_SOLID, 2, RGB(178, 34, 52));
+	Color3.CreatePen(PS_SOLID, 2, RGB(154, 33, 222));
+	Color4.CreatePen(PS_SOLID, 2, RGB(243, 102, 25));
+	Color5.CreatePen(PS_SOLID, 2, RGB(60, 59, 110));
+	Color6.CreatePen(PS_SOLID, 2, RGB(149, 132, 106));
+	Color7.CreatePen(PS_SOLID, 2, RGB(209, 46, 205));
+	Color8.CreatePen(PS_SOLID, 2, RGB(150, 150, 253));
+	Color10.CreatePen(PS_SOLID, 2, RGB(253, 150, 203));
+	BaselinePen.CreatePen(PS_DASH, 0.5, RGB(0, 0, 0));
+	pDC->SelectObject(&Standard);
+	CPoint Point;
+	CRect rectA(TopLeft.x, TopLeft.y, TopLeft.x + 240, TopLeft.y + 38);
+	pDC->Rectangle(rectA);
+	CBrush Brush_Header;
+	Brush_Header.CreateSolidBrush(RGB(238, 228, 50));
+	pDC->FillRect(&rectA, &Brush_Header);
+	pDC->SetBkMode(TRANSPARENT);
+	CFont Standard_Font, Label_Font, RotatedLabel_Font;
+	Label_Font.CreateFont(16, 8, 0, 0, FALSE, FALSE, FALSE, 0, ARABIC_CHARSET, OUT_TT_PRECIS,
+		CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_ROMAN, _T("Times New Roman"));
+	RotatedLabel_Font.CreateFont(16, 8, 900, 0, FALSE, FALSE, FALSE, 0, ARABIC_CHARSET, OUT_TT_PRECIS,
+		CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_ROMAN, _T("Times New Roman"));	pDC->SelectObject(&Label_Font);
+	Standard_Font.CreateStockObject(SYSTEM_FONT);
+	pDC->SelectObject(&Standard_Font);
+	pDC->SetTextAlign(TA_LEFT);
+	pDC->TextOutW(TopLeft.x + 10, TopLeft.y + 10, _T("ROC curve:"));
+	xRel = 0.05, xAbs = TopLeft.x + (int)(xRel * Width), yAbs = TopLeft.y + yOffset, Point.x = xAbs, Point.y = yAbs, pDC->MoveTo(Point);
+	Point.y += (int)(0.95*Height), pDC->LineTo(Point);
+	yRel = 0.95, xAbs = TopLeft.x + (int)(0.05*Width), yAbs = TopLeft.y + (int)(yRel * Height) + yOffset, Point.x = xAbs, Point.y = yAbs, pDC->MoveTo(Point);
+	Point.x += Width, pDC->LineTo(Point);
+	pDC->SelectObject(&RotatedLabel_Font);
+	pDC->SetTextAlign(TA_CENTER);
+	xAbs = TopLeft.x, yAbs = TopLeft.y + yOffset + (int)(0.5 * Height), pDC->TextOutW(xAbs, yAbs, _T("True positive rate"));
+	pDC->SelectObject(&Label_Font);
+	xAbs = TopLeft.x + (int)(0.525 * Width), yAbs = TopLeft.y + yOffset + Height, pDC->TextOutW(xAbs, yAbs, _T("False positive rate"));
+	xAbs = TopLeft.x + (int)(0.05 * Width), yAbs = TopLeft.y + yOffset + (int)(0.95 * Height), Point.x = xAbs, Point.y = yAbs, pDC->MoveTo(Point);
+	pDC->SelectObject(&BaselinePen);
+	Point.x += (int)(0.95 * Width), Point.y -= (int)(0.95 * Height), pDC->LineTo(Point);
+	CArray <double> Ticks, TickLabels;
+	GetTicks(0., 1., Ticks, TickLabels);
+	pDC->SelectObject(&Standard_Font);
+	CString Text;
+	for (int i = 0; i < Ticks.GetSize(); i++) {
+		xRel = 0.05 + Ticks.GetAt(i) * 0.95, xAbs = TopLeft.x + (int)(xRel * Width), Point.x = xAbs;
+		yAbs = TopLeft.y + (int)(0.95 * Height) - 5 + yOffset, Point.y = yAbs, pDC->MoveTo(Point);
+		Point.y += 10, pDC->LineTo(Point);
+		Text.Empty();
+		if ( (i==0) || (i == Ticks.GetSize()-1) ) Text.Format(L"%.0f", TickLabels.GetAt(i));
+		else Text.Format(L"%.1f", TickLabels.GetAt(i));
+		pDC->SetTextAlign(TA_CENTER);
+		pDC->TextOutW(Point.x,Point.y,Text);
+		yRel = xRel;
+		xAbs = TopLeft.x + (int)(0.05 * Width) + 5, yAbs = TopLeft.y + yOffset + (int)((1- yRel) * Height), Point.x = xAbs, Point.y = yAbs;
+		pDC->MoveTo(Point);
+		Point.x -= 10, pDC->LineTo(Point);
+		pDC->SetTextAlign(TA_RIGHT);
+		pDC->TextOutW(Point.x, Point.y - 9, Text);
+	}
+	if (pDoc->ValidationMethod == "TrainValidation") {
+		int nPoints = pDoc->ROC_train.GetSize() / 2;
+		pDC->SelectObject(&Color1);
+		Point.x = TopLeft.x + (int)(0.05 * Width), Point.y = TopLeft.y + (int)(0.95 * Height) + yOffset, pDC->MoveTo(Point);
+		for (int k = 0; k < nPoints; k++) {
+			xRel = 0.05 + 0.95 * pDoc->ROC_train.GetAt(static_cast <int64_t>(2) * k);
+			yRel = 0.95 - 0.95 * pDoc->ROC_train.GetAt(static_cast <int64_t>(2) * k + 1);
+			xAbs = TopLeft.x + (int)(xRel * Width), yAbs = TopLeft.y + yOffset + (int)(yRel*Height), Point.x = xAbs, Point.y = yAbs;
+			pDC->LineTo(Point);
+		}
+		pDC->SelectObject(&Standard_Font);
+		pDC->SetTextAlign(TA_RIGHT);
+		xAbs = BottomRight.x, yAbs= BottomRight.y - yOffset, pDC->TextOutW(xAbs, yAbs, _T("Training set"));
+		xAbs = BottomRight.x - 125, yAbs = BottomRight.y - yOffset + 9, Point.x = xAbs, Point.y = yAbs, pDC->MoveTo(Point);
+		Point.x -= 50, pDC->LineTo(Point);
+		nPoints = pDoc->ROC_valid.GetSize() / 2;
+		pDC->SelectObject(&Color2);
+		Point.x = TopLeft.x + (int)(0.05 * Width), Point.y = TopLeft.y + (int)(0.95 * Height) + yOffset, pDC->MoveTo(Point);
+		for (int k = 0; k < nPoints; k++) {
+			xRel = 0.05 + 0.95 * pDoc->ROC_valid.GetAt(static_cast <int64_t>(2) * k);
+			yRel = 0.95 - 0.95 * pDoc->ROC_valid.GetAt(static_cast <int64_t>(2) * k + 1);
+			xAbs = TopLeft.x + (int)(xRel * Width), yAbs = TopLeft.y + yOffset + (int)(yRel * Height), Point.x = xAbs, Point.y = yAbs;
+			pDC->LineTo(Point);
+		}
+		xAbs = BottomRight.x, yAbs = BottomRight.y - yOffset - 35, pDC->TextOutW(xAbs, yAbs, _T("Validation set"));
+		xAbs = BottomRight.x - 125, yAbs = BottomRight.y - yOffset - 35 + 9, Point.x = xAbs, Point.y = yAbs, pDC->MoveTo(Point);
+		Point.x -= 50, pDC->LineTo(Point);
+	}
+	else {
+		int len, nPoints, start = 0;
+		pDC->SetTextAlign(TA_LEFT);
+		for (int i = 0; i < pDoc->nFold; i++) { 
+			len = pDoc->ROC_len.GetAt(i);
+			nPoints = (int)(len / 2);
+			if (i == 0) pDC->SelectObject(&Color1);
+			else if (i == 1) pDC->SelectObject(&Color2);
+			else if (i == 2) pDC->SelectObject(&Color3);
+			else if (i == 3) pDC->SelectObject(&Color4);
+			else if (i == 4) pDC->SelectObject(&Color5);
+			else if (i == 5) pDC->SelectObject(&Color6);
+			else if (i == 6) pDC->SelectObject(&Color7);
+			else if (i == 7) pDC->SelectObject(&Color8);
+			else if (i == 8) pDC->SelectObject(&Color9);
+			else if (i == 9) pDC->SelectObject(&Color10);
+			Point.x = TopLeft.x + (int)(0.05 * Width), Point.y = TopLeft.y + (int)(0.95 * Height) + yOffset, pDC->MoveTo(Point);
+			for (int k = 0; k < nPoints; k++) {
+				xRel = 0.05 + 0.95 * pDoc->ROC_valid.GetAt(static_cast <int64_t>(2) * k + start);
+				yRel = 0.95 - 0.95 * pDoc->ROC_valid.GetAt(static_cast <int64_t>(2) * k + 1 + start);
+				xAbs = TopLeft.x + (int)(xRel * Width), yAbs = TopLeft.y + yOffset + (int)(yRel * Height), Point.x = xAbs, Point.y = yAbs;
+				pDC->LineTo(Point);
+			}
+			Text.Empty(), Text.Format(L"Fold %d", i + 1);
+			if (pDoc->nFold == 5) {
+				pDC->TextOutW(TopLeft.x + 275 + i * 100, TopLeft.y + 10, Text);
+				Point.x = TopLeft.x + 260 + i * 100, Point.y = TopLeft.y + 19, pDC->MoveTo(Point);
+				Point.x += 25, pDC->LineTo(Point);
+			}
+			else {
+				if (i < 5) {
+					pDC->TextOutW(TopLeft.x + 300 + i * 100, TopLeft.y, Text);
+					Point.x = TopLeft.x + 260 + i * 100, Point.y = TopLeft.y+10, pDC->MoveTo(Point);
+					Point.x += 25, pDC->LineTo(Point);
+				}
+				else {
+					pDC->TextOutW(TopLeft.x + 300 + (i - 5) * 100, TopLeft.y + 20, Text);
+					Point.x = TopLeft.x + 260 + (i - 5) * 100, Point.y = TopLeft.y + 29, pDC->MoveTo(Point);
+					Point.x += 25, pDC->LineTo(Point);
+				}
+			}
+			start += len;
+		}
+	}
+}
 
-
-
-	// Draw the confusion matrix internal lines
-	dc.MoveTo(matrixLeft + matrixCellWidth, matrixTop);
-	dc.LineTo(matrixLeft + matrixCellWidth, matrixTop + 2 * matrixCellHeight);
-	dc.MoveTo(matrixLeft, matrixTop + matrixCellHeight);
-	dc.LineTo(matrixRight, matrixTop + matrixCellHeight);
-
-	// Add labels for confusion matrix
-	dc.TextOutW(matrixLeft + 10, matrixTop - 20, L"Actually Positive");
-	dc.TextOutW(matrixLeft + matrixCellWidth + 10, matrixTop - 20, L"Actually Negative");
-	dc.TextOutW(matrixLeft - 150, matrixTop + 10, L"Predicted Positive");
-	dc.TextOutW(matrixLeft - 150, matrixTop + matrixCellHeight + 10, L"Predicted Negative");
-
-	// Assuming you have the values for TP, FP, FN, TN already calculated
-	CString strTP, strFP, strFN, strTN;
-	strTP.Format(_T("TP: %d"), TP);  // True Positives
-	strFP.Format(_T("FP: %d"), FP);  // False Positives
-	strFN.Format(_T("FN: %d"), FN);  // False Negatives
-	strTN.Format(_T("TN: %d"), TN);  // True Negatives
-
-	// Output the values in the corresponding cells
-	dc.TextOutW(matrixLeft + 10, matrixTop + 10, strTP);
-	dc.TextOutW(matrixLeft + matrixCellWidth + 10, matrixTop + 10, strFP);
-	dc.TextOutW(matrixLeft + 10, matrixTop + matrixCellHeight + 10, strFN);
-	dc.TextOutW(matrixLeft + matrixCellWidth + 10, matrixTop + matrixCellHeight + 10, strTN);
+void CModelingandAnalysisofUncertaintyView::DisplayScoreValues(CModelingandAnalysisofUncertaintyDoc* pDoc, CDC* pDC, CPoint& TopLeft, CPoint& BottomRight) {
+	double xRel, yRel;
+	int xAbs, yAbs, yOffset = 50, Width = BottomRight.x - TopLeft.x, Height = BottomRight.y - TopLeft.y - yOffset;
+	CString Text;
+	CPen Standard, Color1, Color2, Color3, Color4, Color5, BaselinePen;
+	Standard.CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
+	Color1.CreatePen(PS_DASH, 0.5, RGB(154, 33, 222));
+	Color2.CreatePen(PS_DASH, 0.5, RGB(243, 102, 25));
+	Color3.CreatePen(PS_DASH, 0.5, RGB(12, 129, 0));
+	Color4.CreatePen(PS_DASH, 0.5, RGB(178, 34, 52));
+	Color5.CreatePen(PS_DASH, 0.5, RGB(60, 59, 110));
+	BaselinePen.CreatePen(PS_DASH, 0.5, RGB(0, 0, 0));
+	pDC->SelectObject(&Standard);
+	CPen Class1, Class2, Class3, Class4, Class5;
+	CBrush Fill;
+	Fill.CreateSolidBrush(RGB(255, 224, 146));
+	Class1.CreatePen(PS_SOLID, 2, RGB(154, 33, 222));
+	Class2.CreatePen(PS_SOLID, 2, RGB(243, 102, 25));
+	Class3.CreatePen(PS_SOLID, 2, RGB(12, 129, 0));
+	Class4.CreatePen(PS_SOLID, 2, RGB(178, 34, 52));
+	Class5.CreatePen(PS_SOLID, 2, RGB(60, 59, 110));
+	CPoint Point;
+	CRect rectA(TopLeft.x, TopLeft.y, TopLeft.x + 240, TopLeft.y + 38);
+	pDC->Rectangle(rectA);
+	CBrush Brush_Header;
+	Brush_Header.CreateSolidBrush(RGB(238, 228, 50));
+	pDC->FillRect(&rectA, &Brush_Header);
+	pDC->SetBkMode(TRANSPARENT);
+	CFont Standard_Font, Label_Font, RotatedLabel_Font;
+	Label_Font.CreateFont(16, 8, 0, 0, FALSE, FALSE, FALSE, 0, ARABIC_CHARSET, OUT_TT_PRECIS,
+		CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_ROMAN, _T("Times New Roman"));
+	RotatedLabel_Font.CreateFont(16, 8, 900, 0, FALSE, FALSE, FALSE, 0, ARABIC_CHARSET, OUT_TT_PRECIS,
+		CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_ROMAN, _T("Times New Roman"));	pDC->SelectObject(&Label_Font);
+	Standard_Font.CreateStockObject(SYSTEM_FONT);
+	pDC->SelectObject(&Standard_Font);
+	pDC->SetTextAlign(TA_LEFT);
+	pDC->TextOutW(TopLeft.x + 10, TopLeft.y + 10, _T("Projection coordinates:"));
+	xRel = 0.05, xAbs = TopLeft.x + (int)(xRel * Width), yAbs = TopLeft.y + yOffset, Point.x = xAbs, Point.y = yAbs, pDC->MoveTo(Point);
+	Point.y += (int)(0.95*Height), pDC->LineTo(Point);
+	yRel = 0.95, xAbs = TopLeft.x+ (int)(0.05*Width), yAbs = TopLeft.y + (int)(yRel * Height) + yOffset, Point.x = xAbs, Point.y = yAbs, pDC->MoveTo(Point);
+	Point.x += (int)(0.95*Width), pDC->LineTo(Point);
+	pDC->SelectObject(&RotatedLabel_Font);
+	pDC->SetTextAlign(TA_CENTER);
+	xAbs = TopLeft.x, yAbs = TopLeft.y + yOffset + (int)(0.5 * Height), pDC->TextOutW(xAbs, yAbs, _T("Score value"));
+	pDC->SelectObject(&Label_Font);
+	xAbs = TopLeft.x + (int)(0.525 * Width), yAbs = TopLeft.y + yOffset + Height, pDC->TextOutW(xAbs, yAbs, _T("Data record"));
+	xAbs = TopLeft.x + (int)(0.05 * Width), yAbs = TopLeft.y + yOffset + (int)(0.95 * Height), Point.x = xAbs, Point.y = yAbs, pDC->MoveTo(Point);
+	CArray <double> Ticks, TickLabels;
+	GetTicks((double)1, (double)pDoc->n_Obs, Ticks, TickLabels);
+	pDC->SelectObject(&Standard_Font);
+	for (int i = 0; i < Ticks.GetSize(); i++) {
+		xRel = 0.05 + Ticks.GetAt(i) * 0.95, xAbs = TopLeft.x + (int)(xRel * Width), Point.x = xAbs;
+		yAbs = TopLeft.y + (int)(0.95 * Height) - 5 + yOffset, Point.y = yAbs, pDC->MoveTo(Point);
+		Point.y += 10, pDC->LineTo(Point);
+		Text.Empty(), Text.Format(L"%.0f", TickLabels.GetAt(i));
+		pDC->TextOutW(Point.x, Point.y, Text);
+	}
+	double min, max;
+	int pos;
+	GetMinimum(pDoc->T, pos, min);
+	GetMaximum(pDoc->T, pos, max);
+	GetTicks(min, max, Ticks, TickLabels);
+	int digit_old = 0, digit_new;
+	pDC->SetTextAlign(TA_RIGHT);
+	for (int i = 0; i < Ticks.GetSize(); i++) {
+		yRel = 0.95 * (1 - Ticks.GetAt(i)); yAbs = TopLeft.y + yOffset + (int)(yRel * 0.95 * Height), Point.y = yAbs;
+		xAbs = TopLeft.x + (int)(0.05 * Width) + 5, Point.x = xAbs, pDC->MoveTo(Point), Point.x -= 10, pDC->LineTo(Point);
+		digit_new = FormatTickLabel(Text, TickLabels.GetAt(i), digit_old);
+		if (digit_new > digit_new) digit_old = digit_new;
+		pDC->TextOutW(Point.x, Point.y - 9, Text);
+	}
+	double dx = 1 / (double)pDoc->n_Obs;
+	xRel = dx;
+	for (int i = 0; i < pDoc->n_Obs; i++) {
+		yRel = pDoc->T.GetAt(i);
+		yRel -= min;
+		yRel /= (max - min);
+		yRel = 0.95 * ( 1 - yRel );
+		xAbs = TopLeft.x + (int)((0.05 + 0.95 * xRel) * Width), yAbs = TopLeft.y + yOffset + (int)(yRel * Height);
+		Point.x = xAbs, Point.y = yAbs;
+		pDC->SelectObject(&Fill);
+		CRect rect(Point.x - 3, Point.y - 3, Point.x + 3, Point.y + 3);
+		pDC->FillRect(&rect, &Fill);
+		if ((int)pDoc->label.GetAt(i) == 1) pDC->SelectObject(&Class1);
+		else if ((int)pDoc->label.GetAt(i) == 2) pDC->SelectObject(&Class2);
+		else if ((int)pDoc->label.GetAt(i) == 3) pDC->SelectObject(&Class3);
+		else if ((int)pDoc->label.GetAt(i) == 4) pDC->SelectObject(&Class4);
+		else if ((int)pDoc->label.GetAt(i) == 5) pDC->SelectObject(&Class5);
+		pDC->Ellipse(Point.x - 4, Point.y - 4, Point.x + 4, Point.y + 4);
+		xRel += dx;
+	}
+	for (int i = 0; i < pDoc->n_classes; i++) {
+		if (i == 0) pDC->SelectObject(&Color1);
+		else if (i == 1) pDC->SelectObject(&Color2);
+		else if (i == 2) pDC->SelectObject(&Color3);
+		else if (i == 3) pDC->SelectObject(&Color4);
+		else if (i == 4) pDC->SelectObject(&Color5);
+		yRel = pDoc->Tcenter.GetAt(i);
+		yRel -= min;
+		yRel /= (max - min);
+		yRel = 0.95 * (1 - yRel);
+		xAbs = TopLeft.x + (int)(0.05 * Width), yAbs = TopLeft.y + yOffset + (int)(yRel * Height);
+		Point.x = xAbs, Point.y = yAbs, pDC->MoveTo(Point);
+		Point.x += (int)(0.95 * Width), pDC->LineTo(Point);
+	}
+	pDoc->SaveVector("ClusterCenter.txt", pDoc->Tcenter);
+	CArray <double> MinMax;
+	MinMax.RemoveAll(), MinMax.Add(min), MinMax.Add(max);
+	pDoc->SaveVector("MinMax.txt", MinMax);
 }
 
 double CalculateAverage(const std::vector<double>& values) {
@@ -10403,7 +10250,8 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 	double F1_test = pDoc->F1_test;
 	double mcc_test = pDoc->mcc_test;
 	double AUC_Total = pDoc->AUC_Total;
-
+	int numFolds = pDoc->numFolds;
+	bool TrainValidation = pDoc->TrainingValidation;
 	// Determine the right boundary of the existing content
 	int currentRightBoundary = 650; // Assuming this is the current right boundary of the content
 	int newContentStartX = currentRightBoundary + 20; // Start new content to the right of the boundary
@@ -10422,218 +10270,277 @@ void CModelingandAnalysisofUncertaintyView::DisplayLinearClassifierMetrics() {
 	std::vector<double>spe = pDoc->specificities;
 	std::vector<double>f1s = pDoc->f1_scores;
 	std::vector<double>mcc = pDoc->mccs;
-	std::vector<double>	auc = pDoc->auc_totals;
-	const int numFolds = 5; 
+	std::vector<double>	auc = pDoc->auc_totals; 
 	
-	int temp_X = newContentStartX;
-	for (int foldIndex = 0; foldIndex < numFolds; ++foldIndex) {
-
+	if (TrainValidation == true) {
 		CFont font;
-		int temp_startY = startY;
-		
 		font.CreatePointFont(90, _T("Arial"));
 		CFont* pOldFont = dc.SelectObject(&font);
+
+		// Draw text for each performance metric
 		CString strText;
-		strText.Format(_T("Fold %d Metrics:"), foldIndex + 1);
-		dc.TextOut(temp_X, temp_startY, strText);
-		temp_startY -= lineHeight;
 
-		strText.Format(_T("Accuracy: %.3f"), acc[foldIndex]);
-		dc.TextOut(temp_X, temp_startY, strText);
-		temp_startY -= lineHeight;
+		// Display Accuracy
+		strText.Format(_T("Accuracy: %.3f"), acc_test);
+		dc.TextOut(newContentStartX, startY, strText);
 
-		strText.Format(_T("Sensitivity: %.3f"), sen[foldIndex]);
-		dc.TextOut(temp_X, temp_startY, strText);
-		temp_startY -= lineHeight;
+		// Display Sensitivity
+		startY -= lineHeight;
+		strText.Format(_T("Sensitivity: %.3f"), sensitivity);
+		dc.TextOut(newContentStartX, startY, strText);
 
-		strText.Format(_T("Specificity: %.3f"), spe[foldIndex]);
-		dc.TextOut(temp_X, temp_startY, strText);
-		temp_startY -= lineHeight;
+		// Display Specificity
+		startY -= lineHeight;
+		strText.Format(_T("Specificity: %.3f"), specificity);
+		dc.TextOut(newContentStartX, startY, strText);
 
-		strText.Format(_T("F1 Score: %.3f"), f1s[foldIndex]);
-		dc.TextOut(temp_X, temp_startY, strText);
-		temp_startY -= lineHeight;
+		// Display F1 Score
+		startY -= lineHeight;
+		strText.Format(_T("F1 Score: %.3f"), F1_test);
+		dc.TextOut(newContentStartX, startY, strText);
 
-		strText.Format(_T("MCC: %.3f"), mcc[foldIndex]);
-		dc.TextOut(temp_X, temp_startY, strText);
-		temp_startY -= lineHeight;
+		// Display MCC
+		startY -= lineHeight;
+		strText.Format(_T("MCC: %.3f"), mcc_test);
+		dc.TextOut(newContentStartX, startY, strText);
 
-		strText.Format(_T("AUC: %.3f"), auc[foldIndex]);
-		dc.TextOut(temp_X, temp_startY, strText);
-		temp_X += 150;
-	}
+		// Display AUC
+		startY -= lineHeight;
+		strText.Format(_T("AUC: %.3f"), AUC_Total);
+		dc.TextOut(newContentStartX, startY, strText);
 
-	
-	double mean_acc = CalculateAverage(acc);
-	double mean_sen = CalculateAverage(sen);
-	double mean_spe = CalculateAverage(spe);
-	double mean_f1s = CalculateAverage(f1s);
-	double mean_mcc = CalculateAverage(mcc);
-	double mean_auc = CalculateAverage(auc);
-	//Display mean metrix
-	int temp_startY = startY;
+		// After displaying metrics, plot the ROC curve
+		int rocGraphTop = startY - (6 * lineHeight);
+		int rocGraphLeft = newContentStartX;
+		int rocGraphWidth = 300;
+		int rocGraphHeight = 300;
 
-	strText.Format(_T("Mean Metrics:"));
-	dc.TextOut(temp_X, temp_startY, strText);
-	temp_startY -= lineHeight;
+		// Draw the border for the ROC graph
+		CRect rocRect(rocGraphLeft, rocGraphTop, rocGraphLeft + rocGraphWidth, rocGraphTop + rocGraphHeight);
+		dc.Rectangle(rocRect);
 
-	strText.Format(_T("Accuracy: %.3f"), mean_acc);
-	dc.TextOut(temp_X, temp_startY, strText);
-	temp_startY -= lineHeight;
+		// Retrieve TPR and FPR data points for ROC
+		std::vector<double>& tpr = pDoc->tpr; // True Positive Rates
+		std::vector<double>& fpr = pDoc->fpr; // False Positive Rates
 
-	strText.Format(_T("Sensitivity: %.3f"), mean_sen);
-	dc.TextOut(temp_X, temp_startY, strText);
-	temp_startY -= lineHeight;
-
-	strText.Format(_T("Specificity: %.3f"), mean_spe);
-	dc.TextOut(temp_X, temp_startY, strText);
-	temp_startY -= lineHeight;
-
-	strText.Format(_T("F1 Score: %.3f"), mean_f1s);
-	dc.TextOut(temp_X, temp_startY, strText);
-	temp_startY -= lineHeight;
-
-	strText.Format(_T("MCC: %.3f"), mean_mcc);
-	dc.TextOut(temp_X, temp_startY, strText);
-	temp_startY -= lineHeight;
-
-	strText.Format(_T("AUC: %.3f"), mean_auc);
-	dc.TextOut(temp_X, temp_startY, strText);
-	temp_X += 150;
-	startY -= 6 * lineHeight;
-	/*
-	// Display Accuracy
-	strText.Format(_T("Accuracy: %.3f"), acc_test);
-	dc.TextOut(newContentStartX, startY, strText);
-
-	// Display Sensitivity
-	startY -= lineHeight;
-	strText.Format(_T("Sensitivity: %.3f"), sensitivity);
-	dc.TextOut(newContentStartX, startY, strText);
-
-	// Display Specificity
-	startY -= lineHeight;
-	strText.Format(_T("Specificity: %.3f"), specificity);
-	dc.TextOut(newContentStartX, startY, strText);
-
-	// Display F1 Score
-	startY -= lineHeight;
-	strText.Format(_T("F1 Score: %.3f"), F1_test);
-	dc.TextOut(newContentStartX, startY, strText);
-
-	// Display MCC
-	startY -= lineHeight;
-	strText.Format(_T("MCC: %.3f"), mcc_test);
-	dc.TextOut(newContentStartX, startY, strText);
-
-	// Display AUC
-	startY -= lineHeight;
-	strText.Format(_T("AUC: %.3f"), AUC_Total);
-	dc.TextOut(newContentStartX, startY, strText);
-
-	*/
-
-	// After displaying metrics, plot the ROC curve
-	int rocGraphTop = startY - (6 * lineHeight); 
-	int rocGraphLeft = newContentStartX; 
-	int rocGraphWidth = 300;
-	int rocGraphHeight = 300; 
-
-	// Draw the border for the ROC graph
-	CRect rocRect(rocGraphLeft, rocGraphTop, rocGraphLeft + rocGraphWidth, rocGraphTop + rocGraphHeight);
-	dc.Rectangle(rocRect);
-
-	// Retrieve TPR and FPR data points for ROC
-	std::vector<double>& tpr = pDoc->tpr; // True Positive Rates
-	std::vector<double>& fpr = pDoc->fpr; // False Positive Rates
-
-	// Set the pen for drawing the ROC curve
-	CPen pen(PS_SOLID, 2, RGB(0, 0, 255)); 
-	CPen* pOldPen = dc.SelectObject(&pen);
-
-	
-	// Array of colors for each fold's ROC curve
-	const COLORREF colors[5] = { RGB(255, 0, 0), RGB(0, 255, 0), RGB(0, 0, 255), RGB(255, 255, 0), RGB(0, 255, 255) };
-
-	for (int fold = 0; fold < 5; ++fold) {
-		// Retrieve TPR and FPR data points for the current fold's ROC
-		std::vector<std::vector<double>>& tpr_fold = pDoc->tprList; // True Positive Rates for current fold
-		std::vector<std::vector<double>>& fpr_fold = pDoc->fprList; // False Positive Rates for current fold
-
-		// Create a pen with the color for the current fold
-		CPen pen(PS_SOLID, 2, colors[fold]);
+		// Set the pen for drawing the ROC curve
+		CPen pen(PS_SOLID, 2, RGB(0, 0, 255));
 		CPen* pOldPen = dc.SelectObject(&pen);
 
-		// Assuming tpr_fold and fpr_fold vectors are prepared and sorted
-		for (size_t i = 0; i < tpr_fold[fold].size(); ++i) {
-			int x = rocGraphLeft + static_cast<int>(fpr_fold[fold][i] * rocGraphWidth);
-			int y = rocGraphTop + rocGraphHeight - static_cast<int>(tpr_fold[fold][i] * rocGraphHeight);
 
-			// Move to the first point without drawing a line
+
+
+		// Assuming tpr and fpr vectors are prepared and sorted
+		for (size_t i = 0; i < tpr.size(); ++i) {
+			int x = rocGraphLeft + static_cast<int>(fpr[i] * rocGraphWidth);
+			int y = rocGraphTop + rocGraphHeight - static_cast<int>(tpr[i] * rocGraphHeight);
 			if (i == 0) {
-				dc.MoveTo(x, y);
+				dc.MoveTo(x, y); // Start drawing from the first point
 			}
 			else {
-				// Draw lines to subsequent points
-				dc.LineTo(x, y);
+				dc.LineTo(x, y); // Draw lines to subsequent points
 			}
 		}
 
-		// Reset the pen at the end of drawing each fold's ROC
-		dc.SelectObject(pOldPen);
-		pen.DeleteObject(); // Clean up the pen resource
+
+
+		CString title = _T("ROC Curve");
+		dc.TextOutW(rocGraphLeft + rocGraphWidth / 2 - 40, rocGraphTop - 30, title); // Adding the title
+
+		CString xlabel = _T("FPR");
+		dc.TextOutW(rocGraphLeft + rocGraphWidth / 2 - 30, rocGraphTop + rocGraphHeight + 5, xlabel); // Adding the X-axis label
+
+		CString ylabel = _T("TPR");
+
+		dc.TextOutW(rocGraphLeft - 45, rocGraphTop + rocGraphHeight / 2, ylabel);
+		// Restore the old font
+		dc.SelectObject(pOldFont);
+		// Clean up the font resource
+		font.DeleteObject();
+		
 	}
-	/*
-	// Assuming tpr and fpr vectors are prepared and sorted
-	for (size_t i = 0; i < tpr.size(); ++i) {
-		int x = rocGraphLeft + static_cast<int>(fpr[i] * rocGraphWidth);
-		int y = rocGraphTop + rocGraphHeight - static_cast<int>(tpr[i] * rocGraphHeight);
-		if (i == 0) {
-			dc.MoveTo(x, y); // Start drawing from the first point
+	/**/
+	else if (TrainValidation == false) {
+		int temp_X = newContentStartX;
+		for (int foldIndex = 0; foldIndex < numFolds; ++foldIndex) {
+
+			CFont font;
+			int temp_startY = startY;
+
+			font.CreatePointFont(90, _T("Arial"));
+			CFont* pOldFont = dc.SelectObject(&font);
+			CString strText;
+			strText.Format(_T("Fold %d Metrics:"), foldIndex + 1);
+			dc.TextOut(temp_X, temp_startY, strText);
+			temp_startY -= lineHeight;
+
+			strText.Format(_T("Accuracy: %.3f"), acc[foldIndex]);
+			dc.TextOut(temp_X, temp_startY, strText);
+			temp_startY -= lineHeight;
+
+			strText.Format(_T("Sensitivity: %.3f"), sen[foldIndex]);
+			dc.TextOut(temp_X, temp_startY, strText);
+			temp_startY -= lineHeight;
+
+			strText.Format(_T("Specificity: %.3f"), spe[foldIndex]);
+			dc.TextOut(temp_X, temp_startY, strText);
+			temp_startY -= lineHeight;
+
+			strText.Format(_T("F1 Score: %.3f"), f1s[foldIndex]);
+			dc.TextOut(temp_X, temp_startY, strText);
+			temp_startY -= lineHeight;
+
+			strText.Format(_T("MCC: %.3f"), mcc[foldIndex]);
+			dc.TextOut(temp_X, temp_startY, strText);
+			temp_startY -= lineHeight;
+
+			strText.Format(_T("AUC: %.3f"), auc[foldIndex]);
+			dc.TextOut(temp_X, temp_startY, strText);
+			temp_X += 150;
+
+			if (foldIndex == 4) {
+				startY -= 8 * lineHeight;
+				temp_X = newContentStartX;
+			}
 		}
-		else {
-			dc.LineTo(x, y); // Draw lines to subsequent points
+
+
+		double mean_acc = CalculateAverage(acc);
+		double mean_sen = CalculateAverage(sen);
+		double mean_spe = CalculateAverage(spe);
+		double mean_f1s = CalculateAverage(f1s);
+		double mean_mcc = CalculateAverage(mcc);
+		double mean_auc = CalculateAverage(auc);
+		//Display mean metrix
+		int temp_startY = startY;
+
+		strText.Format(_T("Mean Metrics:"));
+		dc.TextOut(temp_X, temp_startY, strText);
+		temp_startY -= lineHeight;
+
+		strText.Format(_T("Accuracy: %.3f"), mean_acc);
+		dc.TextOut(temp_X, temp_startY, strText);
+		temp_startY -= lineHeight;
+
+		strText.Format(_T("Sensitivity: %.3f"), mean_sen);
+		dc.TextOut(temp_X, temp_startY, strText);
+		temp_startY -= lineHeight;
+
+		strText.Format(_T("Specificity: %.3f"), mean_spe);
+		dc.TextOut(temp_X, temp_startY, strText);
+		temp_startY -= lineHeight;
+
+		strText.Format(_T("F1 Score: %.3f"), mean_f1s);
+		dc.TextOut(temp_X, temp_startY, strText);
+		temp_startY -= lineHeight;
+
+		strText.Format(_T("MCC: %.3f"), mean_mcc);
+		dc.TextOut(temp_X, temp_startY, strText);
+		temp_startY -= lineHeight;
+
+		strText.Format(_T("AUC: %.3f"), mean_auc);
+		dc.TextOut(temp_X, temp_startY, strText);
+		temp_X += 150;
+		startY -= 6 * lineHeight;
+
+
+		// After displaying metrics, plot the ROC curve
+		int rocGraphTop = startY - (6 * lineHeight);
+		int rocGraphLeft = newContentStartX;
+		int rocGraphWidth = 300;
+		int rocGraphHeight = 300;
+
+		// Draw the border for the ROC graph
+		CRect rocRect(rocGraphLeft, rocGraphTop, rocGraphLeft + rocGraphWidth, rocGraphTop + rocGraphHeight);
+		dc.Rectangle(rocRect);
+
+		// Retrieve TPR and FPR data points for ROC
+		std::vector<double>& tpr = pDoc->tpr; // True Positive Rates
+		std::vector<double>& fpr = pDoc->fpr; // False Positive Rates
+
+		// Set the pen for drawing the ROC curve
+		CPen pen(PS_SOLID, 2, RGB(0, 0, 255));
+		CPen* pOldPen = dc.SelectObject(&pen);
+
+
+		// Array of colors for each fold's ROC curve
+		std::vector<COLORREF> colors(numFolds);
+		for (int i = 0; i < numFolds; ++i) {
+
+			colors[i] = RGB(255 * (i % 2), 255 * ((i / 2) % 2), 255 * ((i / 4) % 2));
 		}
-	}
-	*/
+		for (int fold = 0; fold < numFolds; ++fold) {
+			// Retrieve TPR and FPR data points for the current fold's ROC
+			std::vector<std::vector<double>>& tpr_fold = pDoc->tprList; // True Positive Rates for current fold
+			std::vector<std::vector<double>>& fpr_fold = pDoc->fprList; // False Positive Rates for current fold
+
+			// Create a pen with the color for the current fold
+			CPen pen(PS_SOLID, 2, colors[fold]);
+			CPen* pOldPen = dc.SelectObject(&pen);
+
+			// Assuming tpr_fold and fpr_fold vectors are prepared and sorted
+			for (size_t i = 0; i < tpr_fold[fold].size(); ++i) {
+				int x = rocGraphLeft + static_cast<int>(fpr_fold[fold][i] * rocGraphWidth);
+				int y = rocGraphTop + rocGraphHeight - static_cast<int>(tpr_fold[fold][i] * rocGraphHeight);
+
+				// Move to the first point without drawing a line
+				if (i == 0) {
+					dc.MoveTo(x, y);
+				}
+				else {
+					// Draw lines to subsequent points
+					dc.LineTo(x, y);
+				}
+			}
+
+			// Reset the pen at the end of drawing each fold's ROC
+			dc.SelectObject(pOldPen);
+			pen.DeleteObject(); // Clean up the pen resource
+		}
 
 
-	CString title = _T("ROC Curve");
-	dc.TextOutW(rocGraphLeft + rocGraphWidth / 2 - 40, rocGraphTop - 30, title); // Adding the title
 
-	CString xlabel = _T("FPR");
-	dc.TextOutW(rocGraphLeft + rocGraphWidth / 2 - 30, rocGraphTop + rocGraphHeight + 5, xlabel); // Adding the X-axis label
+		CString title = _T("ROC Curve");
+		dc.TextOutW(rocGraphLeft + rocGraphWidth / 2 - 40, rocGraphTop - 30, title); // Adding the title
 
-	CString ylabel = _T("TPR");
+		CString xlabel = _T("FPR");
+		dc.TextOutW(rocGraphLeft + rocGraphWidth / 2 - 30, rocGraphTop + rocGraphHeight + 5, xlabel); // Adding the X-axis label
+
+		CString ylabel = _T("TPR");
+
+		dc.TextOutW(rocGraphLeft - 45, rocGraphTop + rocGraphHeight / 2, ylabel);
+		// Restore the old font
+		dc.SelectObject(pOldFont);
+		// Clean up the font resource
+		font.DeleteObject();
+		int legendStartX = rocGraphLeft + rocGraphWidth + 10; // 10 pixels to the right of the ROC curve
+		int legendStartY = rocGraphTop + rocGraphHeight - 20; // 20 pixels up from the bottom of the ROC curve
+
+		// Iterate over the folds to draw the legend
+		for (int fold = 0; fold < numFolds; ++fold) {
+			// Set the pen for the legend color
+			CPen legendPen(PS_SOLID, 2, colors[fold]);
+			dc.SelectObject(&legendPen);
+
+			// Draw the line segment for the legend
+			dc.MoveTo(legendStartX, legendStartY - (fold * 15)); // Offset each line by 15 pixels
+			dc.LineTo(legendStartX + 20, legendStartY - (fold * 15)); // 20-pixel long line segment
+
+			// Draw the fold label text
+			CString strFold;
+			strFold.Format(_T("Fold %d"), fold + 1);
+			dc.TextOut(legendStartX + 25, legendStartY - (fold * 15) - 5, strFold); // Position text right to the line
+
+			// Reset the pen
+			dc.SelectObject(pOldPen);
+			legendPen.DeleteObject(); // Clean up the pen resource
+		}
 	
-	dc.TextOutW(rocGraphLeft - 45, rocGraphTop + rocGraphHeight / 2 , ylabel);
-	// Restore the old font
-	dc.SelectObject(pOldFont);
-	// Clean up the font resource
-	font.DeleteObject();
-	int legendStartX = rocGraphLeft + rocGraphWidth + 10; // 10 pixels to the right of the ROC curve
-	int legendStartY = rocGraphTop + rocGraphHeight - 20; // 20 pixels up from the bottom of the ROC curve
-
-	// Iterate over the folds to draw the legend
-	for (int fold = 0; fold < 5; ++fold) {
-		// Set the pen for the legend color
-		CPen legendPen(PS_SOLID, 2, colors[fold]);
-		dc.SelectObject(&legendPen);
-
-		// Draw the line segment for the legend
-		dc.MoveTo(legendStartX, legendStartY - (fold * 15)); // Offset each line by 15 pixels
-		dc.LineTo(legendStartX + 20, legendStartY - (fold * 15)); // 20-pixel long line segment
-
-		// Draw the fold label text
-		CString strFold;
-		strFold.Format(_T("Fold %d"), fold + 1);
-		dc.TextOut(legendStartX + 25, legendStartY - (fold * 15) - 5, strFold); // Position text right to the line
-
-		// Reset the pen
-		dc.SelectObject(pOldPen);
-		legendPen.DeleteObject(); // Clean up the pen resource
 	}
+	
 
+	
+	
 }
 
 void CModelingandAnalysisofUncertaintyView::DisplayFoldMetrics(int foldIndex) {

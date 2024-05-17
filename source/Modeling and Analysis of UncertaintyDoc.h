@@ -1,4 +1,5 @@
  // Modeling and Analysis of UncertaintyDoc.h : interface of the CModelingandAnalysisofUncertaintyDoc class
+//
 #include <fstream>
 #include <ctime>
 #include "ProbabilityDistributions.h"
@@ -70,16 +71,14 @@ public:
 	double minimum_sample1;
 	double minimum_sample2;
 
-
-
 private:
 	CString my_text;
 
 public:
 	// VARIABLES FOR DATA INFO
-	//number of x
+	//number of attributes plus response
 	int n_Var = 0;
-	//number of y data
+	//number of data records
 	int n_Obs = 0;
 	CString PathAndFileName;
 	bool FileOpen = false;
@@ -117,8 +116,8 @@ public:
 	// *** VARIABLES FOR HYPOTHESIS TESTING
 	int VariableSelected;
 	// *** VARIABLES FOR PCA
-	CArray <double> R, P, lambda, T, T_2, SPE, vre, vpc, CumVar;
-	CArray <int> R_spec, T_spec, P_spec, PCs;
+	CArray <double> R, P, lambda, T_2, SPE, vre, vpc, CumVar;
+	CArray <int> R_spec, P_spec, PCs;
 	double T95 = 0, Q95 = 0, alpha = 0.05;
 	int n = 1, n_kg = 0, n_vpc = 0, n_vre = 0;
 	bool OnlyX = true;
@@ -126,7 +125,35 @@ public:
 	CArray <double> RT, A, Sf, Se, F;
 	CArray <int> RT_spec, A_spec, S_spec, F_spec;
 	// VARIABLES FOR CLASSIFICATION
+	CArray <double> W;
+	CArray <int> W_spec;
 	int n_classes = 1;
+	CString ClassificationMethod;
+	CString MulticlassMethod;
+	CString ValidationMethod;
+	double Fraction = 0.8;
+	int n_MC_Runs = 100;
+	int nFold;
+	double MCC;
+	double F1_Micro;
+	double F1_Macro;
+	double F1_Weighted;
+	double ACCURACY;
+	double ARI;
+	double RI;
+	double FMI;
+	double JI;
+	double F1;
+	double SENSITIVITY;
+	double SPECIFICITY;
+	double AUROC_train, AUROC_valid;
+	CArray <double> T, Ttrain, Tvalid;
+	CArray <int> T_spec, Ttrain_spec, Tvalid_spec;
+	CArray <double> Tcenter;
+	CArray <double> ROC_train, ROC_valid, ROC_multi;
+	CArray <int> ConfMatr_train, ConfMatr_valid, ROC_len;
+	CArray <double> Metrics_Train, Metrics_Valid;
+	CArray <double> label;
 	// VARIABLES FOR REGRESSION ANALYSIS
 	CArray <double> Metrics_Raw;
 	CArray <double> Metrics;
@@ -162,13 +189,15 @@ public:
 	bool FDA = false;
 	CArray <double> Class_Y, Label_Y, avg_ClassY, ROC_Y, ROC_X;
 	CArray <int> Class_count, Confusion_Label;
-	int TP, FP, TN, FN;// True_Label, False_Label;
+	int TP, FP, TN, FN, numFolds;// True_Label, False_Label;
 	double sensitivity, specificity, mcc_test, ppv_test, F1_test, acc_test, AUC_Total;
 	std::vector<double>accuracies,sensitivities,specificities,ppvs,f1_scores,mccs, auc_totals;
 	std::vector<double> tpr, fpr;
 	std::vector<std::vector<double>> tprList, fprList;  // save tpr,fpr for the k-fold
 	CArray<double> y_pred_class, y_true_class;
 	// FLAGS FOR LINEAR MULTIPLE REGRESSION ANALYSIS
+	bool TrainingValidation = false;
+	bool LOO = false;
 	bool RegressionAnalysis = false;
 	bool RegressionAnalysis_Independent = false;
 	bool ShowStatisticalAnalysis = false;
@@ -201,8 +230,6 @@ public:
 	double Model_F1;
 	double Model_SEN;
 	double Model_SPE;
-
-
 
 public:
 
@@ -243,6 +270,8 @@ protected:
 	double GetSquaredLength(CArray <double>&);
 	void CenterVector(CArray <double>&);
 	double ScalarProduct(CArray <double>&, CArray <double>&);
+	int GetSmallestElement(CArray <double>&);
+	void GetMinMax(CArray <double>&, double&, double&);
 	// *******************************************
 	// ***     Basic   Matrix   Operations     ***
 	// *******************************************
@@ -278,6 +307,13 @@ protected:
 	void GaussJordanEliminationParallel(CArray<double>&, CArray<int>&, CArray<double>&, CArray<double>&);
 	void MatrixParallelTest();
 	// *******************************************
+	// ***      Matrix  Format  Conversion     ***
+	// *******************************************
+	//std::vector<std::vector<double>> CarrayToVectorM(CArray <double>&, CArray <int>&);
+	//void VectorToCarrayM(std::vector<std::vector<double>>&, CArray <double>&, CArray <int>&);
+	//std::vector<double> CarrayToVectorV(CArray <double>&);
+	//void VectorToCarrayV(std::vector<double>&, CArray <double>&);
+	// *******************************************
 	// ***      Matrix     Decompositions      ***
 	// *******************************************
 	void QR(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, bool&);
@@ -291,6 +327,18 @@ protected:
 	void Transformation(CArray <double>& Temp, CArray <int>& Temp_spec, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&);
 	void GEVD(CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&, int, bool&);
 	// *******************************************
+	// ***      Pre-train Helper Functions     ***
+	// *******************************************
+	// Pre-train helper function that load a dataset given the file path, return the int for features for the dataset
+	int LoadData(const std::string& filename, CArray<double>& data, CArray <int>& data_spec,CArray<double>& label);
+	//Pre-train helper function that shuffle a dataset
+	void ShuffleData(CArray<double>& data, CArray <int>& data_spec,CArray<double>& label);
+	//Pre-train helper function that split the dataset into training and validation set given the split ratio
+	// Pre-train helper function that standardize the dataset
+	void StandardizeData(int numFeatures, CArray<double>& data, CArray<int>& data_spec);
+	// Pre-train helper function that standardize the label for regression problem.
+	void StandardizeLabel(CArray<double>& label);
+	// *******************************************
 	// *** Multivariate Statistical Operations ***
 	// *******************************************
 	void StandardizeDataMatrix(CArray <double>&, CArray <double>&, CArray <double>&);
@@ -300,7 +348,6 @@ protected:
 	// *** Additional functions
 	double GetOptimalBandwidth(CArray <double>&);
 	double NumericalIntegration(CArray <double>&, double);
-	void SetUpFDAMatrices(CArray <double>&, CArray <double>&, CArray <int>&, CArray <double>&);
 	// Regression analysis
 	void GetStandardRegressionModel(CArray <double>&, CArray <int>&, CArray <double>&, CArray <double>&, CArray <double>&);
 	void GetRegressionModel_LOOCV(CArray <double>&, CArray <int>&, CArray <double>&);
@@ -311,6 +358,21 @@ protected:
 	void GetRegressionVector(CArray <double>&, CArray <int>&, CArray <double>&, CArray <double>&, bool);
 	void GetStatisticalRegressorAnalysis(CArray <double>&);
 	void GetRegressionMetrics(CArray <double>&, CArray <double>&, CArray <double>&);
+	// Solving Classification Problems
+	void GetClassificationModel();
+	void CopyRawData(CArray <double>&, CArray <int>&, CArray <double>&);
+	void RandomlyShuffleData(CArray <double>&, CArray <int>&, CArray <double>&);
+	void SplitRowData(CArray <double>&, CArray<int>&, CArray <double>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <double>&, CArray <int> &, CArray <double>&);
+	void GetFoldPetition(CArray <double>&, CArray<int>&, CArray <double>&, CArray <double>&, CArray<int>&, CArray <double>&, CArray <double>&, CArray<int>&, CArray <double>&, int&, int&);
+	void StandardizeTrainingSet(CArray <double>&, CArray<int>&, CArray <double>&, CArray<int>&, CArray <double>&, CArray <int>&, BOOL&);
+	void GetFDAModel(CArray <double>&, CArray <int>&, CArray <double>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <double>&, CArray <int>&);
+	void SetUpFDAMatrices(CArray <double>&, CArray <double>&, CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&);
+	BOOL GetClusterCenters(CArray <double>&, CArray <int>&, CArray <double>&, CArray <double>&, CArray <int>&);
+	void GetConfusionMatrixFDA(CArray <double>&, CArray <int>&, CArray <double>&, CArray <double>&, CArray <int>&, CArray <int>&, CArray <int>&);
+	int AssignClassFDA(CArray <double>&, CArray <int>&, CArray <double>&);
+	void GetClassificationMetrics(CArray <int>&, CArray <double>&, CArray <int>&, CArray <double>&);
+	void GetROCCurve(CArray <double>&, CArray <int>&, CArray <double>&, double&, CArray <double>&);
+	BOOL SaveClassificationResults();
 	//Neural Network Functions
 	std::vector<int> randsample(int n, int k);
 	void GetNetworkPrediction(const std::vector<std::vector<double>>& X, const int H,
@@ -325,19 +387,28 @@ protected:
 	double sum_squared_error_parallel(const std::vector<std::vector<double>>& Y1, const std::vector<std::vector<double>>& Y2);
 	void VecTranspose(std::vector<std::vector<double> >& b);
 	void VecTransposeInt(std::vector<std::vector<int> >& b);
-	void getTrainTestData(std::vector<std::vector<double> >& X,
-						  std::vector<std::vector<double> >& Xtrain, std::vector<std::vector<double> >& Xtest,
-						  std::vector<std::vector<int>>& Y, std::vector<std::vector<int>>& Ytrain,
-						  std::vector<std::vector<int>>& Ytest, double trainFraction, const int M, const int C);
+    void getTrainTestData(std::vector<std::vector<double> >& X,
+		std::vector<std::vector<double> >& Xtrain, std::vector<std::vector<double> >& Xtest,
+		std::vector<std::vector<int>>& Y, std::vector<std::vector<int>>& Ytrain,
+		std::vector<std::vector<int>>& Ytest, double trainFraction, const int M, const int C);
 	void UpdateBiases(int c, int n_weights, const int M, const int H, const int train,
-					  std::vector<double>& yhat, std::vector<double>& private_w, const int eta, std::vector<std::vector<double>>& F,
-					  std::vector<std::vector<int>>& Ytrain, int n_biases, std::vector<std::vector<double> >& Xslice, std::vector<double>& private_b,
-					  int slice_index, int Ntrain);
+		std::vector<double>& yhat, std::vector<double>& private_w, const int eta, std::vector<std::vector<double>>& F,
+		std::vector<std::vector<int>>& Ytrain, int n_biases, std::vector<std::vector<double> >& Xslice, std::vector<double>& private_b,
+		int slice_index, int Ntrain);
 	void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(std::vector<int>& yass0, std::vector<int>& ytrue);
 	int CModelingandAnalysisofUncertaintyDoc::n_choose_k(int n, int k);
 	int CModelingandAnalysisofUncertaintyDoc::factorial(int m);
 	void CModelingandAnalysisofUncertaintyDoc::GetConfusionMatrix(CArray<int>& ConfusionMatrix,
-																  std::vector<int>& yass0, std::vector<int>& ytrue);
+		std::vector<int>& yass0, std::vector<int>& ytrue);
+
+	// Linear Classification
+	void CModelingandAnalysisofUncertaintyDoc::SplitDataForKFold(int currentFold, int foldSize, int numFolds, int numRows, int numCols, CArray<double>& data, CArray<double>& label,
+		CArray<double>& trainData, CArray<int>& trainData_spec, CArray<double>& trainLabel, CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel);
+	void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel, int numFeatures,
+		std::vector<double>& accuracies,std::vector<double>& sensitivities,std::vector<double>& specificities,std::vector<double>& ppvs,std::vector<double>& f1_scores,
+		std::vector<double>& mccs,std::vector<double>& auc_totals, std::vector<std::vector <double>>& tprList, std::vector<std::vector <double>>& fprList, int iteration) ;
+	void CModelingandAnalysisofUncertaintyDoc::TestLinearClassifier();
+	void CModelingandAnalysisofUncertaintyDoc::CalculateClassificationMetrics(const CArray<double>& y_pred, const CArray<double>& y_true, double threshold);
 	// ********************
 	// *** LibTorch ANN ***
 	// ********************
@@ -445,61 +516,6 @@ protected:
 		DataLoader& testLoader,
 		torch::Device device
 	);
-	// Support Vector Machine Functions (SMO Algorithms)
-	// SMO Model Structures
-	struct SMOModel {
-		CArray<double> alphas;
-		double b;
-		CArray<int> supportVectorIndices;
-		// Default constructor
-		SMOModel() : b(0) {}
-
-		// Custom copy constructor
-		SMOModel(const SMOModel& other) : b(other.b) {
-			// Manually copy elements of alphas
-			for (int i = 0; i < other.alphas.GetSize(); ++i) {
-				alphas.Add(other.alphas[i]);
-			}
-			// Manually copy elements of supportVectorIndices
-			for (int i = 0; i < other.supportVectorIndices.GetSize(); ++i) {
-				supportVectorIndices.Add(other.supportVectorIndices[i]);
-			}
-		}
-		// Custom copy assignment operator
-		SMOModel& operator=(const SMOModel& other) {
-			if (this != &other) { // self-assignment check
-				b = other.b;
-				alphas.RemoveAll();
-				supportVectorIndices.RemoveAll();
-				// Copy elements
-				for (int i = 0; i < other.alphas.GetSize(); ++i) {
-					alphas.Add(other.alphas[i]);
-				}
-				for (int i = 0; i < other.supportVectorIndices.GetSize(); ++i) {
-					supportVectorIndices.Add(other.supportVectorIndices[i]);
-				}
-			}
-			return *this;
-		}
-	};
-	// Linear Kernal Function, dot product of two vectors
-	double linearKernal(CArray <double>&, CArray <double>&);
-	// Calculate the SVM output for a given input vector
-	double svmOutput(CArray<double>&, CArray<double>&, CArray<double>&, CArray<int>&, CArray<double>&, double);
-	// Select the alpha pair for optimization
-	bool selectAlphaPair(int&, int&, CArray<double>&, CArray<double>&, CArray<int>&, CArray<double>&, double&, double&, double);
-	// Optimize a pair of Lagrange multipliers
-	bool optimizeAlphaPair(int, int, CArray<double>&, CArray<double>&, CArray<double>&, CArray<int>&, double&, double);
-	// train SVM with SMO
-	SMOModel trainSMO(CArray<double>&, CArray<int>&, CArray<double>&, double, double, int);
-	// Linear Classification
-	void CModelingandAnalysisofUncertaintyDoc::SplitDataForKFold(int currentFold, int foldSize, int numFolds, int numRows, int numCols, CArray<double>& data, CArray<double>& label,
-		CArray<double>& trainData, CArray<int>& trainData_spec, CArray<double>& trainLabel, CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel);
-	void CModelingandAnalysisofUncertaintyDoc::EvaluateModel(CArray<double>& testData, CArray<int>& testData_spec, CArray<double>& testLabel, int numFeatures,
-		std::vector<double>& accuracies,std::vector<double>& sensitivities,std::vector<double>& specificities,std::vector<double>& ppvs,std::vector<double>& f1_scores,
-		std::vector<double>& mccs,std::vector<double>& auc_totals, std::vector<std::vector <double>>& tprList, std::vector<std::vector <double>>& fprList, int iteration) ;
-	void CModelingandAnalysisofUncertaintyDoc::CalculateClassificationMetrics(const CArray<double>& y_pred, const CArray<double>& y_true, double threshold);
-	// Generated message map functions
 protected:
 	DECLARE_MESSAGE_MAP()
 
@@ -525,6 +541,9 @@ public:
 	afx_msg void OnPLS();
 	afx_msg void OnKPCA();
 	afx_msg void OnLR();
+	afx_msg void OnLR_test(double eta, CArray<double>& w,
+		const CArray < CArray<double> >& XTrain, const CArray < CArray<double> >& XVal,
+		const CArray<int>& YTrain, const CArray<int>& YVal, int nIter);
 	afx_msg void OnSVM();
 	afx_msg void OnKSVM();
 	afx_msg void OnKFDA();
@@ -532,11 +551,9 @@ public:
 	afx_msg void OnL2_Regularization();
 	afx_msg void OnKPLS();
 	afx_msg void OnQPSolver();
-	afx_msg void OnANN_MFC();	
 	afx_msg void OnANN_LIBTORCH();
-
-
-	afx_msg void OnANN_MFC_layer1(double, int, int,HANDLE hEvent);
+	//afx_msg void OnANN_MFC();
+	//afx_msg void OnANN_MFC_layer1(double learningRate, int epochs, int batchSize,HANDLE hEvent);
 	afx_msg void OnANN_batchParallel();
 	afx_msg void OnUpdateDescriptiveStatistics(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateOnesample(CCmdUI* pCmdUI);
@@ -560,8 +577,7 @@ public:
 	afx_msg void OnUpdateL1_Regularization(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateL2_Regularization(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateKPLS(CCmdUI* pCmdUI);
-	afx_msg void OnUpdateANN(CCmdUI* pCmdUI);
-	afx_msg void OnUpdateMachinelearningArtificialneuralnetworkwithaccuracy(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateMachinelearningArtificialneuralnetworkLIBTORCH(CCmdUI* pCmdUI);
-
+	//afx_msg void OnUpdateANN(CCmdUI* pCmdUI);
+	//afx_msg void OnUpdateMachinelearningArtificialneuralnetworkwithaccuracy(CCmdUI* pCmdUI);
 };
