@@ -19,8 +19,6 @@
 #include <set>
 #include <map>
 #include <filesystem>
-#include <torch/torch.h>
-#include <torch/script.h>
 
 // SHARED_HANDLERS can be defined in an ATL project implementing preview, thumbnail
 // and search filter handlers and allows sharing of document code with that project.
@@ -76,7 +74,9 @@ BEGIN_MESSAGE_MAP(CModelingandAnalysisofUncertaintyDoc, CDocument)
 	ON_COMMAND(ID_REGULARIZATION_L2NORM, &CModelingandAnalysisofUncertaintyDoc::OnL2_Regularization)
 	ON_COMMAND(ID_MACHINELEARNING_KERNELPARTIALLEASTSQUARES, &CModelingandAnalysisofUncertaintyDoc::OnKPLS)
 	ON_COMMAND(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORK, &CModelingandAnalysisofUncertaintyDoc::OnANN_MFC)
+	#ifdef USE_LIBTORCH
 	ON_COMMAND(ID_MACHINELEARNING_ARTIFICIALNEURALNETWORK_LIBTORCH, &CModelingandAnalysisofUncertaintyDoc::OnANN_LIBTORCH)
+	#endif
 
 
 
@@ -8059,6 +8059,7 @@ void CModelingandAnalysisofUncertaintyDoc::GetNetworkPredictionParallel(const st
 	}
 }
 
+#ifdef USE_LIBTORCH
 // *********************************
 // *** LibTorch Helper Functions ***
 // *********************************
@@ -8377,6 +8378,7 @@ void CModelingandAnalysisofUncertaintyDoc::OnANN_LIBTORCH() {
 		}
 	}
 }
+#endif
 
 void CModelingandAnalysisofUncertaintyDoc::OnQPSolver() {
 }

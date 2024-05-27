@@ -5,8 +5,11 @@
 #include <vector>
 #include <omp.h>
 #include <stdlib.h>
+//#define USE_LIBTORCH
+#ifdef USE_LIBTORCH
 #include <torch/torch.h>
 #include <torch/script.h>
+#endif
 
 #pragma once
 
@@ -338,6 +341,7 @@ protected:
 	int CModelingandAnalysisofUncertaintyDoc::factorial(int m);
 	void CModelingandAnalysisofUncertaintyDoc::GetConfusionMatrix(CArray<int>& ConfusionMatrix,
 																  std::vector<int>& yass0, std::vector<int>& ytrue);
+	#ifdef USE_LIBTORCH
 	// ********************
 	// *** LibTorch ANN ***
 	// ********************
@@ -445,6 +449,7 @@ protected:
 		DataLoader& testLoader,
 		torch::Device device
 	);
+	#endif
 	// Support Vector Machine Functions (SMO Algorithms)
 	// SMO Model Structures
 	struct SMOModel {
@@ -532,8 +537,10 @@ public:
 	afx_msg void OnL2_Regularization();
 	afx_msg void OnKPLS();
 	afx_msg void OnQPSolver();
-	afx_msg void OnANN_MFC();	
+	afx_msg void OnANN_MFC();
+	#ifdef USE_LIBTORCH
 	afx_msg void OnANN_LIBTORCH();
+	#endif
 
 
 	afx_msg void OnANN_MFC_layer1(double, int, int,HANDLE hEvent);
